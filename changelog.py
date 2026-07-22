@@ -397,4 +397,26 @@ CHANGELOG = [
         "lines_changed": 139,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "更新日志页面对所有人公开，其余页面仍需登录",
+        "title_en": "Changelog page is now public; everything else still needs login",
+        "summary": (
+            "部署到公网后之前是全站都要密码登录，现在改成只有更新日志页面（含中英切换、"
+            "两张一键分享图）任何人都能直接看，不用登录；其他页面（首页、条目详情、搜索等）"
+            "照旧需要密码。顺带修了个小问题：没登录时访问更新日志页，之前会错误地显示"
+            "「退出登录」按钮，现在只有真正登录了才会出现。"
+        ),
+        "summary_en": (
+            "After deploying publicly, the whole site used to require a password. Now only "
+            "the changelog page (including the Chinese/English toggle and both one-click "
+            "share images) is open to anyone without logging in; everything else (homepage, "
+            "item detail, search, etc.) still needs the password. Also fixed a small bug "
+            "where the \"Log out\" button showed up even for anonymous visitors to the "
+            "changelog page — it now only appears when actually logged in."
+        ),
+        "image": "public-changelog.png",
+        "lines_changed": 7,
+        "estimated": False,
+    },
 ]

@@ -135,11 +135,14 @@ def inject_asset_version():
     return {"asset_version": version}
 
 
+PUBLIC_ENDPOINTS = {"login", "static", "changelog", "changelog_more", "changelog_share_image"}
+
+
 @app.before_request
 def require_login():
     if not app_password():
         return None
-    if request.endpoint in ("login", "static") or request.endpoint is None:
+    if request.endpoint in PUBLIC_ENDPOINTS or request.endpoint is None:
         return None
     if not session.get("authed"):
         return redirect(url_for("login", next=request.path))
