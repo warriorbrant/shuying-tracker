@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }}{% endblock %}
+{% block content %}
+
+<div class="detail-header">
+  <div class="cover large">
+    {% if item.cover_url %}
+      <img src="{{ cover_src(item.cover_url) }}" alt="{{ item.title }}">
+    {% else %}
+      <div class="cover-placeholder">{{ '📚' if item.type == 'book' else '🎬' }}</div>
+    {% endif %}
+  </div>
+  <div class="detail-info">
+    <h1>{{ item.title }}</h1>
+    {% if item.creator %}<p class="creator">{{ item.creator }}</p>{% endif %}
+    <form class="quick-status" method="post" action="{{ url_for('item_status', item_id=item.id) }}">
+      <input type="hidden" name="next" value="{{ request.full_path }}">
+      <select name="status" class="status-select" data-status="{{ item.status }}" onchange="this.form.submit()">
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if item.status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    {% if item.rating %}<div class="rating">{{ '★' * item.rating }}{{ '☆' * (5 - item.rating) }}</div>{% endif %}
+
+    {% if item.total_units %}
+    <div class="progress-bar"><div class="progress-fill" style="width: {{ pct }}%"></div></div>
+    <div class="progress-text">{{ current_progress | round(1) }} / {{ item.total_units }} {{ item.unit_label }}（{{ pct }}%）</div>
+    {% endif %}
+
+    <div class="stats">
+      <span>⏱ 总用时 {{ total_minutes }} 分钟</span>
+      <span>📝 {{ log_count }} 条记录</span>
+    </div>
+
+    {% if item.review %}
+      <div class="review">
+        <h3>总评 / 感想</h3>
+        <p>{{ item.review }}</p>
+      </div>
+    {% endif %}
+
+    <div class="actions">
+      <a class="btn-link" href="{{ url_for('item_edit', item_id=item.id) }}">编辑条目</a>
+      <a class="btn-share" href="{{ url_for('item_share_image', item_id=item.id, download=1) }}">📤 一键生成分享图</a>
+      <a class="btn-link" href="{{ url_for('item_share_image', item_id=item.id) }}" target="_blank">先预览</a>
+      <form method="post" action="{{ url_for('item_delete', item_id=item.id) }}"
+            onsubmit="return confirm('确定删除《{{ item.title }}》及其所有记录吗？此操作不可撤销。');">
+        <button type="submit" class="btn-danger">删除条目</button>
+      </form>
+    </div>
+    <p class="hint">生成的图片可直接上传到小红书发笔记（小红书暂不支持网页一键跳转发布）。</p>
+  </div>
+</div>
+
+<section class="log-section">
+  <h2>添加今日进度</h2>
+  <form class="form log-form" method="post" action="{{ url_for('log_add', item_id=item.id) }}">
+    <div class="row">
+      <label>
+        日期
+        <input type="date" name="log_date" value="{{ today }}" required>
+      </label>
+      <label>
+        用时（分钟）
+        <input type="number" name="minutes_spent" min="0" value="0" required>
+      </label>
+      <label>
+        进度到第几{{ item.unit_label or '页' }}
+        <input type="number" name="progress_at" min="0" step="0.5" value="{{ current_progress if current_progress else '' }}">
+      </label>
+    </div>
+    <label>
+      备注 / 感想
+      <textarea name="comment" rows="2" placeholder="今天读到/看到哪里，有什么想法…"></textarea>
+    </label>
+    <button type="submit">保存记录</button>
+  </form>
+</section>
+
+<section class="log-section">
+  <h2>历史记录</h2>
+  {% if not logs %}
+    <p class="empty">还没有记录。</p>
+  {% else %}
+  <ul class="log-list">
+    {% for log in logs %}
+    <li class="log-item">
+      <div class="log-meta">
+        <strong>{{ log.log_date }}</strong>
+        <span>⏱ {{ log.minutes_spent }} 分钟</span>
+        {% if log.progress_at is not none %}<span>进度：{{ log.progress_at | round(1) }} {{ item.unit_label }}</span>{% endif %}
+      </div>
+      {% if log.comment %}<p class="log-comment">{{ log.comment }}</p>{% endif %}
+      <form method="post" action="{{ url_for('log_delete', log_id=log.id) }}"
+            onsubmit="return confirm('删除这条记录？');">
+        <button type="submit" class="btn-link-danger">删除</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{% endblock %}

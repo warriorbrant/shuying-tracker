@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}截图识别导入{% endblock %}
+{% block content %}
+
+<h1>从朋友圈截图批量导入</h1>
+<p class="hint">
+  在手机上把你自己发的朋友圈截图（文字+图片都行），传到电脑上传上来。
+  AI 会自动识别文字、判断类型、草拟内容，你确认修改后再保存，不会跳过审核直接入库。
+</p>
+
+{% if not configured %}
+<div class="warn-box">
+  还没有配置 AI 识图功能。请在项目目录下新建一个 <code>.env</code> 文件（可以参考 <code>.env.example</code>），
+  填入一行 <code>ANTHROPIC_API_KEY=你的key</code>，保存后重启服务即可生效。
+</div>
+{% endif %}
+
+{% if error %}
+<div class="warn-box">{{ error }}</div>
+{% endif %}
+
+<form class="form" method="post" enctype="multipart/form-data">
+  <label>
+    选择截图（可多选）
+    <input type="file" name="images" accept="image/*" multiple required {{ 'disabled' if not configured }}>
+  </label>
+  <div class="actions">
+    <button type="submit" {{ 'disabled' if not configured }}>开始识别</button>
+    <a class="btn-link" href="{{ url_for('moment_new') }}">改为手动添加</a>
+  </div>
+</form>
+
+{% endblock %}

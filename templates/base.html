@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}我的书影追踪{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#b5654a">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="书影追踪">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">📚🎬 书影追踪</a>
+    <nav>
+      <a href="{{ url_for('item_new', type='book') }}">+ 添加书</a>
+      <a href="{{ url_for('item_new', type='show') }}">+ 添加剧</a>
+      <a href="{{ url_for('moment_new') }}">+ 记录动态</a>
+      <a href="{{ url_for('moment_scan') }}">+ 截图导入</a>
+      <a href="{{ url_for('changelog') }}">更新日志</a>
+      {% if auth_enabled %}
+      <form class="logout-form" method="post" action="{{ url_for('logout') }}">
+        <button type="submit" class="logout-btn">退出登录</button>
+      </form>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

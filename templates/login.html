@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · 书影追踪</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#b5654a">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+</head>
+<body>
+  <main class="login-wrap">
+    <form class="form login-form-box" method="post">
+      <h1 class="login-title">📚🎬 书影追踪</h1>
+      <input type="hidden" name="next" value="{{ next }}">
+      <label>
+        密码
+        <input type="password" name="password" autofocus required>
+      </label>
+      {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
+      <button type="submit">登录</button>
+    </form>
+  </main>
+</body>
+</html>

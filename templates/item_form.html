@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if item else '添加' }}{% endblock %}
+{% block content %}
+
+<h1>{{ '编辑条目' if item else '添加新条目' }}</h1>
+
+{% if not item %}
+<div class="douban-import">
+  <label>
+    从豆瓣链接自动填充（豆瓣读书 / 豆瓣电影·剧集）
+    <div class="row">
+      <input type="url" id="doubanUrl" placeholder="粘贴豆瓣页面链接，例如 https://book.douban.com/subject/xxxxx/">
+      <button type="button" id="doubanFetchBtn">自动填充</button>
+    </div>
+  </label>
+  <p id="doubanStatus" class="hint"></p>
+</div>
+{% endif %}
+
+<form class="form" id="itemForm" method="post">
+  <label>
+    类型
+    <select name="type" required>
+      <option value="book" {{ 'selected' if (item.type if item else default_type) == 'book' }}>📚 书</option>
+      <option value="show" {{ 'selected' if (item.type if item else default_type) == 'show' }}>🎬 剧</option>
+    </select>
+  </label>
+
+  <label>
+    标题
+    <input type="text" name="title" required value="{{ item.title if item else '' }}">
+  </label>
+
+  <label>
+    作者 / 导演·出品方
+    <input type="text" name="creator" value="{{ item.creator if item else '' }}">
+  </label>
+
+  <label>
+    封面图片链接（可选）
+    <input type="url" name="cover_url" value="{{ item.cover_url if item else '' }}">
+  </label>
+
+  <div class="row">
+    <label>
+      总量（总页数 / 总集数）
+      <input type="number" name="total_units" min="0" value="{{ item.total_units if item else '' }}">
+    </label>
+    <label>
+      单位
+      <input type="text" name="unit_label" placeholder="页 / 集" value="{{ item.unit_label if item else '' }}">
+    </label>
+  </div>
+
+  <div class="row">
+    <label>
+      状态
+      <select name="status">
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if (item.status if item else '想看') == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      评分（1-5，可选）
+      <input type="number" name="rating" min="1" max="5" value="{{ item.rating if item and item.rating else '' }}">
+    </label>
+  </div>
+
+  <label>
+    总评 / 感想
+    <textarea name="review" rows="4">{{ item.review if item else '' }}</textarea>
+  </label>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    {% if item %}
+      <a class="btn-link" href="{{ url_for('item_detail', item_id=item.id) }}">取消</a>
+    {% else %}
+      <a class="btn-link" href="{{ url_for('index') }}">取消</a>
+    {% endif %}
+  </div>
+</form>
+
+{% if not item %}
+<script>
+document.getElementById('doubanFetchBtn').addEventListener('click', async () => {
+  const url = document.getElementById('doubanUrl').value.trim();
+  const status = document.getElementById('doubanStatus');
+  if (!url) {
+    status.textContent = '请先粘贴豆瓣链接';
+    status.className = 'hint hint-error';
+    return;
+  }
+  status.textContent = '正在抓取…';
+  status.className = 'hint';
+
+  try {
+    const res = await fetch('/douban/fetch?url=' + encodeURIComponent(url));
+    const data = await res.json();
+    if (!res.ok) {
+      status.textContent = data.error || '抓取失败，请手动填写';
+      status.className = 'hint hint-error';
+      return;
+    }
+    const form = document.getElementById('itemForm');
+    form.querySelector('[name=type]').value = data.type;
+    form.querySelector('[name=title]').value = data.title || '';
+    form.querySelector('[name=creator]').value = data.creator || '';
+    form.querySelector('[name=cover_url]').value = data.cover_url || '';
+    if (data.total_units) form.querySelector('[name=total_units]').value = data.total_units;
+    if (data.unit_label) form.querySelector('[name=unit_label]').value = data.unit_label;
+    if (data.review_draft && !form.querySelector('[name=review]').value) {
+      form.querySelector('[name=review]').value = data.review_draft;
+    }
+    status.textContent = '已自动填充，请检查并按需修改后保存';
+    status.className = 'hint hint-ok';
+  } catch (err) {
+    status.textContent = '抓取失败，请检查网络或手动填写';
+    status.className = 'hint hint-error';
+  }
+});
+</script>
+{% endif %}
+
+{% endblock %}

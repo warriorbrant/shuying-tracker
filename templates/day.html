@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ date_str }}{% endblock %}
+{% block content %}
+
+<div class="day-header">
+  <div>
+    <a class="day-nav" href="{{ url_for('day_view', date_str=prev_date) }}">← 前一天</a>
+    <h1>{{ day.month }}月{{ day.day }}日 {{ weekday_label }}{% if is_today %}<span class="today-tag">今天</span>{% endif %}</h1>
+    <div class="stats">
+      <span>📌 {{ activity_count }} 项记录</span>
+      <span>⏱ 共 {{ total_minutes }} 分钟</span>
+    </div>
+  </div>
+  <a class="day-nav" href="{{ url_for('day_view', date_str=next_date) }}">后一天 →</a>
+</div>
+
+<div class="actions day-actions">
+  <a class="btn-share" href="{{ url_for('day_share_image', date_str=date_str, download=1) }}">📤 一键生成今日分享图</a>
+  <a class="btn-link" href="{{ url_for('day_share_image', date_str=date_str) }}" target="_blank">先预览</a>
+  <a class="btn-link" href="{{ url_for('moment_new', date=date_str) }}">+ 记录今天的动态</a>
+</div>
+
+{% if logs %}
+<section class="log-section">
+  <h2>📚🎬 书影进度</h2>
+  <ul class="log-list">
+    {% for log in logs %}
+    <li class="log-item">
+      {% if log.item_cover_url %}
+        <img class="entry-thumb" src="{{ cover_src(log.item_cover_url) }}" alt="{{ log.item_title }}">
+      {% endif %}
+      <div class="log-meta">
+        <a href="{{ url_for('item_detail', item_id=log.item_id) }}"><strong>{{ log.item_title }}</strong></a>
+        <span>⏱ {{ log.minutes_spent }} 分钟</span>
+        {% if log.progress_at is not none %}<span>进度：{{ log.progress_at | round(1) }} {{ log.item_unit_label }}</span>{% endif %}
+      </div>
+      {% if log.comment %}<p class="log-comment">{{ log.comment }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="log-section">
+  <h2>📝 今日动态</h2>
+  {% if not moments %}
+    <p class="empty">这一天还没有添加动态。</p>
+  {% else %}
+  <ul class="moment-list">
+    {% for m in moments %}
+    <li class="moment-item">
+      <div class="moment-meta">
+        <span class="moment-type">{{ moment_types[m.type].icon }} {{ moment_types[m.type].label }}</span>
+        {% if m.title %}<strong>{{ m.title }}</strong>{% endif %}
+        {% if m.minutes_spent %}<span>⏱ {{ m.minutes_spent }} 分钟</span>{% endif %}
+      </div>
+      {% if m.content %}<p class="log-comment">{{ m.content }}</p>{% endif %}
+      {% if m.image_path %}
+        <img class="moment-photo" src="{{ url_for('serve_data', filename=m.image_path) }}" alt="{{ m.title }}">
+      {% endif %}
+      <form method="post" action="{{ url_for('moment_delete', moment_id=m.id) }}"
+            onsubmit="return confirm('删除这条动态？');">
+        <button type="submit" class="btn-link-danger">删除</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{% if day_changelog %}
+<section class="log-section">
+  <h2>{{ changelog_type.icon }} {{ changelog_type.label }}</h2>
+  <ul class="moment-list">
+    {% for c in day_changelog %}
+    <li class="moment-item">
+      <div class="moment-meta">
+        <span class="moment-type">{{ changelog_type.icon }} {{ changelog_type.label }}</span>
+        <strong>{{ c.title }}</strong>
+      </div>
+      <p class="log-comment">{{ c.summary }}</p>
+      {% if c.image %}
+        <img class="moment-photo" src="{{ url_for('static', filename='changelog/' + c.image) }}" alt="{{ c.title }}">
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% endblock %}

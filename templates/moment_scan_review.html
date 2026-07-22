@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}确认识别结果{% endblock %}
+{% block content %}
+
+<h1>确认识别结果</h1>
+<p class="hint">检查一下 AI 识别的内容，改一改不准确的地方；不想要的取消勾选「保存这条」，最后点保存全部。</p>
+
+{% if errors %}
+<div class="warn-box">
+  {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+{% if entries %}
+<form class="form scan-form" method="post" action="{{ url_for('moment_scan_save') }}">
+  <input type="hidden" name="count" value="{{ entries|length }}">
+  {% for entry in entries %}
+  <div class="scan-entry">
+    <div class="scan-entry-preview">
+      <img src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="截图预览">
+    </div>
+    <div class="scan-entry-fields">
+      <input type="hidden" name="image_path_{{ loop.index0 }}" value="{{ entry.image_path }}">
+      <label class="inline-check">
+        <input type="checkbox" name="keep_{{ loop.index0 }}" checked>
+        保存这条
+      </label>
+      <div class="row">
+        <label>
+          类型
+          <select name="type_{{ loop.index0 }}">
+            {% for key, meta in moment_types.items() %}
+              <option value="{{ key }}" {{ 'selected' if entry.type == key }}>{{ meta.icon }} {{ meta.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          日期
+          <input type="date" name="log_date_{{ loop.index0 }}" value="{{ entry.log_date or today }}">
+        </label>
+      </div>
+      <label>
+        标题
+        <input type="text" name="title_{{ loop.index0 }}" value="{{ entry.title }}">
+      </label>
+      <label>
+        内容
+        <textarea name="content_{{ loop.index0 }}" rows="3">{{ entry.content }}</textarea>
+      </label>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="actions">
+    <button type="submit">保存全部</button>
+    <a class="btn-link" href="{{ url_for('moment_scan') }}">重新上传</a>
+  </div>
+</form>
+{% else %}
+  <p class="empty">没有识别出任何内容。</p>
+{% endif %}
+
+{% endblock %}

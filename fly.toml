@@ -1,0 +1,25 @@
+# app 名字会在 `fly launch` 时交互式确定并自动改写这里，先留一个占位符
+app = "shuying-tracker"
+primary_region = "hkg"
+
+[build]
+
+[env]
+  DATA_DIR = "/data"
+
+[[mounts]]
+  source = "shuying_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

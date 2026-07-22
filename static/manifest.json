@@ -1,0 +1,14 @@
+{
+  "name": "书影追踪",
+  "short_name": "书影追踪",
+  "description": "记录看过的书和剧、每日进度与动态",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf8f5",
+  "theme_color": "#b5654a",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

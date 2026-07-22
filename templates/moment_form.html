@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}记录动态{% endblock %}
+{% block content %}
+
+<h1>记录今天的动态</h1>
+
+<form class="form" method="post" enctype="multipart/form-data">
+  <label>
+    类型
+    <select name="type" required>
+      {% for key, meta in moment_types.items() %}
+        <option value="{{ key }}" {{ 'selected' if default_type == key }}>{{ meta.icon }} {{ meta.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    日期
+    <input type="date" name="log_date" value="{{ default_date }}" required>
+  </label>
+
+  <label>
+    标题（可选，如股票代码、运动类型）
+    <input type="text" name="title" placeholder="例如：贵州茅台 / 跑步 / 今日随笔">
+  </label>
+
+  <label>
+    内容 / 评论
+    <textarea name="content" rows="4" placeholder="写点什么：涨跌情况、时长距离、拍到了什么、当下的想法…"></textarea>
+  </label>
+
+  <div class="row">
+    <label>
+      用时（分钟，可选）
+      <input type="number" name="minutes_spent" min="0" value="0">
+    </label>
+    <label>
+      配图（可选）
+      <input type="file" name="image" accept="image/*">
+    </label>
+  </div>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    <a class="btn-link" href="{{ url_for('day_view', date_str=default_date) }}">取消</a>
+  </div>
+</form>
+
+{% endblock %}
