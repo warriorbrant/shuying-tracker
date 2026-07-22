@@ -378,4 +378,23 @@ CHANGELOG = [
         "lines_changed": 257,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "加了全站搜索",
+        "title_en": "Added site-wide search",
+        "summary": (
+            "导航栏新增「🔍 搜索」。能搜书/剧的标题、作者、总评，也能搜每日进度里的备注、"
+            "以及股票/运动/照片/想法这些动态的标题和内容。结果复用了首页动态卡片的样式，"
+            "同样支持滚动加载。"
+        ),
+        "summary_en": (
+            "Added a \"🔍 Search\" link in the nav bar. It searches book/show titles, "
+            "authors, and reviews, plus daily progress comments and the title/content of "
+            "stock/exercise/photo/thought moments. Results reuse the same card styling as "
+            "the homepage feed and support infinite scroll too."
+        ),
+        "image": "search-feature.png",
+        "lines_changed": 139,
+        "estimated": False,
+    },
 ]

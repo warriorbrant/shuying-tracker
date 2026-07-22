@@ -438,6 +438,7 @@ def safe_next(next_url, fallback):
 FEED_PAGE_SIZE = 20
 LOG_PAGE_SIZE = 20
 CHANGELOG_PAGE_DAYS = 5
+SEARCH_PAGE_SIZE = 20
 
 
 def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE):
@@ -625,6 +626,85 @@ def feed_more():
         changelog_type=CHANGELOG_TYPE,
     )
     return jsonify({"html": html, "has_more": has_more, "count": len(feed)})
+
+
+def run_search(conn, q):
+    like = f"%{q}%"
+    results = []
+
+    for row in conn.execute(
+        "SELECT * FROM items WHERE title LIKE ? OR creator LIKE ? OR review LIKE ? "
+        "ORDER BY created_at DESC",
+        (like, like, like),
+    ).fetchall():
+        entry = dict(row)
+        entry["kind"] = "item_match"
+        entry["date"] = entry["created_at"][:10]
+        results.append(entry)
+
+    for row in conn.execute(
+        "SELECT logs.*, items.title AS item_title, items.type AS item_type, "
+        "items.cover_url AS item_cover_url, items.unit_label AS item_unit_label "
+        "FROM logs JOIN items ON logs.item_id = items.id "
+        "WHERE logs.comment LIKE ? ORDER BY logs.log_date DESC",
+        (like,),
+    ).fetchall():
+        entry = dict(row)
+        entry["kind"] = "log"
+        entry["date"] = entry["log_date"]
+        results.append(entry)
+
+    for row in conn.execute(
+        "SELECT * FROM moments WHERE title LIKE ? OR content LIKE ? ORDER BY log_date DESC",
+        (like, like),
+    ).fetchall():
+        entry = dict(row)
+        entry["kind"] = "moment"
+        entry["date"] = entry["log_date"]
+        results.append(entry)
+
+    results.sort(key=lambda e: (e["date"], e.get("log_id") or e.get("id") or 0), reverse=True)
+    return results
+
+
+@app.route("/search")
+def search():
+    q = request.args.get("q", "").strip()
+    feed, has_more = [], False
+    if q:
+        conn = get_db()
+        all_results = run_search(conn, q)
+        conn.close()
+        feed = all_results[:SEARCH_PAGE_SIZE]
+        has_more = len(all_results) > SEARCH_PAGE_SIZE
+
+    return render_template(
+        "search.html",
+        query=q,
+        feed=feed,
+        has_more=has_more,
+        moment_types=MOMENT_TYPES,
+        changelog_type=CHANGELOG_TYPE,
+    )
+
+
+@app.route("/search/more")
+def search_more():
+    q = request.args.get("q", "").strip()
+    offset = to_int(request.args.get("offset"), 0) or 0
+    if not q:
+        return jsonify({"html": "", "has_more": False, "count": 0})
+
+    conn = get_db()
+    all_results = run_search(conn, q)
+    conn.close()
+
+    page = all_results[offset : offset + SEARCH_PAGE_SIZE]
+    has_more = len(all_results) > offset + SEARCH_PAGE_SIZE
+    html = render_template(
+        "_feed_items.html", feed=page, moment_types=MOMENT_TYPES, changelog_type=CHANGELOG_TYPE
+    )
+    return jsonify({"html": html, "has_more": has_more, "count": len(page)})
 
 
 @app.route("/item/new", methods=["GET", "POST"])

@@ -716,6 +716,25 @@ button {
   background: var(--accent-soft);
 }
 
+.search-form {
+  display: flex;
+  gap: 10px;
+  max-width: 480px;
+  margin: 20px 0 28px;
+}
+
+.search-form input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.search-form button {
+  flex-shrink: 0;
+}
+
 .changelog-day-header {
   display: flex;
   align-items: baseline;

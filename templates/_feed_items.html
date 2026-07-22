@@ -51,6 +51,17 @@
     {% if entry.image %}
       <img class="moment-photo" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
     {% endif %}
+
+  {% elif entry.kind == 'item_match' %}
+    {% if entry.cover_url %}
+      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+    {% endif %}
+    <div class="moment-meta">
+      <span class="moment-type">{{ '📚' if entry.type == 'book' else '🎬' }} {{ '书' if entry.type == 'book' else '剧' }}</span>
+      <a href="{{ url_for('item_detail', item_id=entry.id) }}"><strong>{{ entry.title }}</strong></a>
+      {% if entry.creator %}<span>{{ entry.creator }}</span>{% endif %}
+    </div>
+    {% if entry.review %}<p class="log-comment">{{ entry.review }}</p>{% endif %}
   {% endif %}
 </li>
 {% endfor %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}搜索{% endblock %}
+{% block content %}
+
+<h1>搜索</h1>
+<form class="search-form" method="get" action="{{ url_for('search') }}">
+  <input type="search" name="q" value="{{ query }}" placeholder="搜书名、作者、评论、想法…" autofocus>
+  <button type="submit">搜索</button>
+</form>
+
+{% if not query %}
+  <p class="empty">输入点什么开始搜索：书名、作者、每日感想、动态内容都能搜到。</p>
+{% elif not feed %}
+  <p class="empty">没有找到匹配「{{ query }}」的内容。</p>
+{% else %}
+<ul class="moment-list" id="search-list">
+  {% include "_feed_items.html" %}
+</ul>
+{% if has_more %}
+  <div id="search-sentinel" data-infinite-scroll
+       data-list-id="search-list" data-loading-id="search-loading"
+       data-url="{{ url_for('search_more') }}" data-offset="{{ feed|length }}"
+       data-params='{"q": "{{ query }}"}'></div>
+  <p id="search-loading" class="hint feed-loading">加载中…</p>
+{% endif %}
+{% endif %}
+
+{% endblock %}
