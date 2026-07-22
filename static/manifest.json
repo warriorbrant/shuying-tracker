@@ -1,6 +1,6 @@
 {
-  "name": "书影追踪",
-  "short_name": "书影追踪",
+  "name": "知行合一AI实验室",
+  "short_name": "知行合一",
   "description": "记录看过的书和剧、每日进度与动态",
   "start_url": "/",
   "scope": "/",

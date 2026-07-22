@@ -152,4 +152,16 @@ CHANGELOG = [
         "lines_changed": 40,
         "estimated": False,
     },
+    {
+        "date": "2026-07-22",
+        "title": "网站更名为「知行合一AI实验室」",
+        "summary": (
+            "网站从「书影追踪」改名为「知行合一AI实验室」——页面标题、导航栏、登录页、"
+            "PWA 图标和分享图水印都同步换了新名字。历史记录里提到旧名字的地方（比如项目起步那条）"
+            "保留不改，算是准确的历史记录。"
+        ),
+        "image": "rebrand.png",
+        "lines_changed": 25,
+        "estimated": False,
+    },
 ]

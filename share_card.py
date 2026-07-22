@@ -241,7 +241,7 @@ def build_share_card(item, current_progress, total_minutes, comment_text):
     draw.text(((CARD_W - tw) / 2, CARD_H - 120), footer_text, font=footer_font, fill=MUTED)
 
     watermark_font = _font(24)
-    watermark = f"书影追踪 · {date.today().isoformat()}"
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=watermark_font)
     tw = bbox[2] - bbox[0]
     draw.text(((CARD_W - tw) / 2, CARD_H - 70), watermark, font=watermark_font, fill=MUTED)
@@ -404,7 +404,7 @@ def build_day_share_card(day, logs, moments, moment_types):
         fill=MUTED,
     )
 
-    watermark = f"书影追踪 · {date.today().isoformat()}"
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
@@ -528,7 +528,7 @@ def build_changelog_share_card(entries, heading, heatmap=None):
     if heatmap:
         _draw_mini_heatmap(draw, pad, heatmap_top + 24, heatmap)
 
-    watermark = f"书影追踪 开发日志 · {date.today().isoformat()}"
+    watermark = f"知行合一AI实验室 开发日志 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
