@@ -1,6 +1,15 @@
 import os
 import sqlite3
+import time
 from pathlib import Path
+
+# Pin the process (and thus SQLite's `datetime('now','localtime')`, and every
+# `date.today()`/`datetime.now()` call) to the user's timezone, regardless of
+# what timezone the host server happens to run in (e.g. Railway defaults to
+# UTC/US time, which made "today" lag behind by most of a day).
+os.environ["TZ"] = "Asia/Shanghai"
+if hasattr(time, "tzset"):
+    time.tzset()
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", Path(__file__).parent))
 DB_PATH = Path(os.environ.get("TRACKER_DB_PATH", DATA_DIR / "tracker.db"))

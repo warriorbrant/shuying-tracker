@@ -442,4 +442,31 @@ CHANGELOG = [
         "lines_changed": 112,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "修复服务器时区导致的日期错位",
+        "title_en": "Fixed a server-timezone bug that misdated \"today\"",
+        "summary": (
+            "线上出现过热力图没显示 23 号、但更新日志里已经有 23 号记录的不一致。根因是 "
+            "Python 的 date.today() 和 SQLite 的 datetime('now','localtime') 都跟着服务器"
+            "所在时区走，Railway 的服务器在美区，比北京时间晚了大半天，导致服务器还以为是"
+            "22 号。修复方式是在应用启动时把进程时区强制固定成 Asia/Shanghai，这样不管部署"
+            "在哪个地区，「今天」都以北京时间为准。Docker 镜像里也加装了 tzdata，避免精简"
+            "镜像缺时区数据库导致设置不生效。"
+        ),
+        "summary_en": (
+            "Production showed an inconsistency where the heatmap hadn't picked up the "
+            "23rd yet, but the changelog already had entries dated the 23rd. Root cause: "
+            "both Python's date.today() and SQLite's datetime('now','localtime') follow "
+            "whatever timezone the server happens to be in — Railway's server is in the US, "
+            "many hours behind Beijing time, so the server still thought it was the 22nd. "
+            "Fixed by pinning the process timezone to Asia/Shanghai at startup, so \"today\" "
+            "is always Beijing time regardless of which region it's deployed in. Also "
+            "installed tzdata in the Docker image so the slim base image actually has the "
+            "timezone database available."
+        ),
+        "image": "timezone-fix.png",
+        "lines_changed": 10,
+        "estimated": False,
+    },
 ]
