@@ -1,6 +1,7 @@
 import os
 import secrets
 import uuid
+import zipfile
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -196,6 +197,32 @@ def cover_src(url):
 
 
 app.jinja_env.globals["cover_src"] = cover_src
+
+
+@app.route("/admin/migrate", methods=["POST"])
+def admin_migrate():
+    # One-time data-migration helper. Only active when ENABLE_MIGRATION is set
+    # on the deployment, and (like every other route) still requires being
+    # logged in whenever APP_PASSWORD is configured. Meant to be turned off
+    # again (unset ENABLE_MIGRATION) right after use.
+    if not os.environ.get("ENABLE_MIGRATION"):
+        return "migration disabled", 404
+
+    result = {}
+    db_file = request.files.get("db_file")
+    if db_file:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        db_file.save(DATA_DIR / "tracker.db")
+        result["db"] = "restored"
+
+    uploads_zip = request.files.get("uploads_zip")
+    if uploads_zip:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(uploads_zip) as zf:
+            zf.extractall(UPLOAD_DIR)
+        result["uploads"] = "restored"
+
+    return jsonify(result)
 
 
 def save_upload(file_storage):
