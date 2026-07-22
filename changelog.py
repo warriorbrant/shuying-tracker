@@ -140,4 +140,16 @@ CHANGELOG = [
         "lines_changed": 169,
         "estimated": False,
     },
+    {
+        "date": "2026-07-22",
+        "title": "更新日志分享图里也加上代码量热力图",
+        "summary": (
+            "「最近 10 条更新」「今天的更新」这两张一键分享图，之前只有标题和卡片列表，"
+            "现在顶部也加上了跟网页版一样的代码量热力图（图片里用 Pillow 手绘的小方块网格），"
+            "分享出去的图片信息更完整。"
+        ),
+        "image": "changelog-share-heatmap.png",
+        "lines_changed": 40,
+        "estimated": False,
+    },
 ]

@@ -415,7 +415,7 @@ def changelog_share_image():
         entries = sorted(CHANGELOG, key=lambda c: c["date"], reverse=True)[:10]
         heading = "最近 10 条更新"
 
-    buf = build_changelog_share_card(entries, heading)
+    buf = build_changelog_share_card(entries, heading, heatmap=build_changelog_heatmap())
 
     download = request.args.get("download")
     return send_file(

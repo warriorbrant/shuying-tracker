@@ -19,6 +19,14 @@ ACCENT_SOFT = (241, 227, 220)
 CARD_BG = (255, 255, 255)
 BORDER = (232, 226, 217)
 
+HEAT_COLORS = [
+    (235, 231, 224),  # level 0 — no activity
+    (240, 212, 200),  # level 1
+    (227, 169, 140),  # level 2
+    (207, 122, 84),  # level 3
+    ACCENT,  # level 4
+]
+
 FONT_BOLD_CANDIDATES = [
     "/System/Library/Fonts/STHeiti Medium.ttc",  # macOS (local dev)
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",  # Debian/Ubuntu fonts-noto-cjk
@@ -407,6 +415,28 @@ def build_day_share_card(day, logs, moments, moment_types):
     return buf
 
 
+def _draw_mini_heatmap(draw, x, y, heatmap):
+    cell = 10
+    gap = 2
+    step = cell + gap
+    month_font = _font(18)
+
+    for wi, week in enumerate(heatmap["weeks"]):
+        cx = x + wi * step
+        if week["month_label"]:
+            draw.text((cx, y - 20), week["month_label"], font=month_font, fill=MUTED)
+        for di, day in enumerate(week["days"]):
+            if day["level"] == -1:
+                continue
+            cy = y + di * step
+            color = HEAT_COLORS[max(0, min(4, day["level"]))]
+            draw.rounded_rectangle([cx, cy, cx + cell, cy + cell], radius=2, fill=color)
+
+    grid_width = len(heatmap["weeks"]) * step - gap
+    grid_height = 7 * step - gap
+    return grid_width, grid_height
+
+
 def _build_changelog_card(measure, col_w, e):
     entry_title_font = _font(28, bold=True)
     date_font = _font(22)
@@ -450,7 +480,7 @@ def _build_changelog_card(measure, col_w, e):
     return height, draw_fn
 
 
-def build_changelog_share_card(entries, heading):
+def build_changelog_share_card(entries, heading, heatmap=None):
     W = 1080
     pad = 48
     gap = 20
@@ -463,7 +493,9 @@ def build_changelog_share_card(entries, heading):
     empty_font = _font(30)
     footer_font = _font(24)
 
-    header_h = pad + 64 + 40 + 24
+    heatmap_top = pad + 64 + 40 + 30
+    heatmap_h = 34 + (7 * 12 - 2) + 20 if heatmap else 0
+    header_h = heatmap_top + heatmap_h
     footer_h = 70
 
     blocks = [_build_changelog_card(measure, col_w, e) for e in entries]
@@ -492,6 +524,9 @@ def build_changelog_share_card(entries, heading):
     draw.text((pad, pad), heading, font=title_font, fill=TEXT)
     count_text = f"共 {len(entries)} 条更新" if entries else "这段时间还没有更新记录"
     draw.text((pad, pad + 64), count_text, font=subtitle_font, fill=MUTED)
+
+    if heatmap:
+        _draw_mini_heatmap(draw, pad, heatmap_top + 24, heatmap)
 
     watermark = f"书影追踪 开发日志 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
