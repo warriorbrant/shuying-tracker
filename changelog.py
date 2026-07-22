@@ -312,4 +312,28 @@ CHANGELOG = [
         "lines_changed": 33,
         "estimated": False,
     },
+    {
+        "date": "2026-07-22",
+        "title": "网站正式上线，修好了 Railway 自动部署",
+        "title_en": "Site is live, and Railway auto-deploy is finally fixed",
+        "summary": (
+            "网站正式部署上线了，数据库和照片也从本地迁移过去了。中间卡了好一阵：push 代码后 "
+            "Railway 一直不会自动重新部署，Source 设置里显示「GitHub Repo not found」——"
+            "原因是 Railway 这个 GitHub App 从来没有真正装到 GitHub 账号上，只做过一次身份登录。"
+            "去 github.com/apps/railway-app 重新安装并勾选这个仓库，再断开重连一次 Source，"
+            "auto deploy 就正常了。这条本身就是用来验证修复是否生效的测试提交。"
+        ),
+        "summary_en": (
+            "The site is now live in production, with the database and photos migrated over "
+            "from local. Got stuck for a while first: pushing code never triggered a Railway "
+            "redeploy, and the Source settings showed \"GitHub Repo not found\" — turned out "
+            "the Railway GitHub App had never actually been installed on the GitHub account, "
+            "only an identity sign-in had happened. Reinstalling it at github.com/apps/"
+            "railway-app with this repo selected, then disconnecting/reconnecting the Source, "
+            "fixed auto-deploy. This entry itself is the test commit used to confirm the fix."
+        ),
+        "image": None,
+        "lines_changed": 12,
+        "estimated": False,
+    },
 ]
