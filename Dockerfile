@@ -14,4 +14,6 @@ COPY . .
 ENV DATA_DIR=/data
 EXPOSE 8080
 
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "-w", "2", "--timeout", "60", "app:app"]
+# $PORT is set dynamically by platforms like Railway; falls back to 8080
+# (matches fly.toml's internal_port) when unset, e.g. for local docker runs.
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8080} -w 2 --timeout 60 app:app"]

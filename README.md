@@ -38,7 +38,9 @@ python3 -m venv venv
 
 ## 部署
 
-已经准备好 `Dockerfile` / `fly.toml`，可以部署到 Fly.io（选了香港节点，兼顾国内访问速度和免备案）。部署步骤见项目内讨论记录，目前还未正式上线。
+用 `Dockerfile` 构建，部署到 [Railway](https://railway.app)（网页操作为主，从 GitHub 仓库直接连自动部署）。需要在 Railway 里手动加一个挂载到 `/data` 的持久化卷，以及设置 `APP_PASSWORD` / `SECRET_KEY` 环境变量。目前还未正式上线。
+
+（此前也评估过 Fly.io，配置文件 `fly.toml` 还留着，但新账号触发了风控验证，改走了更省事的 Railway。）
 
 ## 更新日志
 
