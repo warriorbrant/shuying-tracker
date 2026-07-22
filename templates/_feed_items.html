@@ -1,0 +1,56 @@
+{% for entry in feed %}
+<li class="moment-item">
+  {% if entry.kind == 'moment' %}
+    <div class="moment-meta">
+      <span class="moment-type">{{ moment_types[entry.type].icon }} {{ moment_types[entry.type].label }}</span>
+      {% if entry.title %}<strong>{{ entry.title }}</strong>{% endif %}
+      <a class="moment-date" href="{{ url_for('day_view', date_str=entry.date) }}">{{ entry.date }}</a>
+      {% if entry.minutes_spent %}<span>用时 {{ entry.minutes_spent }} 分钟</span>{% endif %}
+    </div>
+    {% if entry.content %}<p class="log-comment">{{ entry.content }}</p>{% endif %}
+    {% if entry.image_path %}
+      <img class="moment-photo" src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="{{ entry.title }}">
+    {% endif %}
+
+  {% elif entry.kind == 'log' %}
+    {% if entry.cover_url %}
+      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+    {% endif %}
+    <div class="moment-meta">
+      <span class="moment-type">{{ '📚' if entry.item_type == 'book' else '🎬' }} {{ '书' if entry.item_type == 'book' else '剧' }}</span>
+      <a href="{{ url_for('item_detail', item_id=entry.item_id) }}"><strong>{{ entry.title }}</strong></a>
+      <a class="moment-date" href="{{ url_for('day_view', date_str=entry.date) }}">{{ entry.date }}</a>
+      <span>用时 {{ entry.minutes_spent }} 分钟</span>
+    </div>
+    {% if entry.progress_at is not none and entry.total_units %}
+      <div class="progress-bar"><div class="progress-fill" style="width: {{ (entry.progress_at / entry.total_units * 100) | round }}%"></div></div>
+      <div class="progress-text">{{ entry.progress_at | round(1) }} / {{ entry.total_units }} {{ entry.unit_label }}</div>
+    {% elif entry.progress_at is not none %}
+      <div class="progress-text">进度：{{ entry.progress_at | round(1) }} {{ entry.unit_label }}</div>
+    {% endif %}
+    {% if entry.comment %}<p class="log-comment">{{ entry.comment }}</p>{% endif %}
+
+  {% elif entry.kind == 'item_new' %}
+    {% if entry.cover_url %}
+      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+    {% endif %}
+    <div class="moment-meta">
+      <span class="moment-type">{{ '📚' if entry.type == 'book' else '🎬' }} {{ '书' if entry.type == 'book' else '剧' }}</span>
+      <a href="{{ url_for('item_detail', item_id=entry.id) }}"><strong>{{ entry.title }}</strong></a>
+      <a class="moment-date" href="{{ url_for('day_view', date_str=entry.date) }}">{{ entry.date }}</a>
+    </div>
+    <p class="log-comment">加入了待看清单（{{ entry.status }}），还没有进度记录</p>
+
+  {% elif entry.kind == 'changelog' %}
+    <div class="moment-meta">
+      <span class="moment-type">{{ changelog_type.icon }} {{ changelog_type.label }}</span>
+      <strong>{{ entry.title }}</strong>
+      <a class="moment-date" href="{{ url_for('day_view', date_str=entry.date) }}">{{ entry.date }}</a>
+    </div>
+    <p class="log-comment">{{ entry.summary }}</p>
+    {% if entry.image %}
+      <img class="moment-photo" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
+    {% endif %}
+  {% endif %}
+</li>
+{% endfor %}

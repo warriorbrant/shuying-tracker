@@ -486,6 +486,12 @@ a.heat-day:hover {
 .hint-error { color: #c0453a; }
 .hint-ok { color: #4a8a5e; }
 
+.feed-loading {
+  text-align: center;
+  visibility: hidden;
+  margin: 16px 0 0;
+}
+
 /* form */
 .form {
   display: flex;

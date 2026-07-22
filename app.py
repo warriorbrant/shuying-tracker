@@ -431,7 +431,10 @@ def safe_next(next_url, fallback):
     return fallback
 
 
-def build_feed(conn, type_filter, status_filter, limit=60):
+FEED_PAGE_SIZE = 20
+
+
+def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE):
     show_items = type_filter == "" or type_filter in ("book", "show")
     show_moments = type_filter == "" or type_filter in MOMENT_TYPES
     show_changelog = type_filter == "" or type_filter == "update"
@@ -504,7 +507,9 @@ def build_feed(conn, type_filter, status_filter, limit=60):
         key=lambda e: (e["date"], e.get("log_id") or e.get("id") or e.get("_seq") or 0),
         reverse=True,
     )
-    return entries[:limit]
+    page = entries[offset : offset + limit]
+    has_more = len(entries) > offset + limit
+    return page, has_more
 
 
 @app.route("/changelog")
@@ -561,13 +566,14 @@ def index():
     status_filter = request.args.get("status", "")
 
     conn = get_db()
-    feed = build_feed(conn, type_filter, status_filter)
+    feed, has_more = build_feed(conn, type_filter, status_filter)
     heatmap = build_heatmap(conn)
     conn.close()
 
     return render_template(
         "index.html",
         feed=feed,
+        has_more=has_more,
         statuses=STATUSES,
         type_filter=type_filter,
         status_filter=status_filter,
@@ -576,6 +582,25 @@ def index():
         changelog_type=CHANGELOG_TYPE,
         today=date.today().isoformat(),
     )
+
+
+@app.route("/feed/more")
+def feed_more():
+    type_filter = request.args.get("type", "")
+    status_filter = request.args.get("status", "")
+    offset = to_int(request.args.get("offset"), 0) or 0
+
+    conn = get_db()
+    feed, has_more = build_feed(conn, type_filter, status_filter, offset=offset)
+    conn.close()
+
+    html = render_template(
+        "_feed_items.html",
+        feed=feed,
+        moment_types=MOMENT_TYPES,
+        changelog_type=CHANGELOG_TYPE,
+    )
+    return jsonify({"html": html, "has_more": has_more, "count": len(feed)})
 
 
 @app.route("/item/new", methods=["GET", "POST"])

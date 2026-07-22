@@ -336,4 +336,23 @@ CHANGELOG = [
         "lines_changed": 12,
         "estimated": False,
     },
+    {
+        "date": "2026-07-22",
+        "title": "首页改成瀑布流分页：一开始只加载 20 条",
+        "title_en": "Homepage feed is now paginated: loads 20 at a time",
+        "summary": (
+            "首页动态流原来一次性把所有记录都渲染出来。现在改成只加载最新 20 条，"
+            "往下滚动接近底部时用 IntersectionObserver 自动请求下一批 20 条并追加到列表末尾，"
+            "全部加载完才会停止监听。筛选条件（类型/状态）在翻页时也会保持一致。"
+        ),
+        "summary_en": (
+            "The homepage feed used to render every record at once. Now it only loads the "
+            "most recent 20, and an IntersectionObserver watching the bottom of the list "
+            "automatically fetches and appends the next 20 as you scroll down, stopping once "
+            "everything's loaded. Active type/status filters carry through to each page."
+        ),
+        "image": "infinite-scroll.png",
+        "lines_changed": 202,
+        "estimated": False,
+    },
 ]
