@@ -135,7 +135,7 @@ def inject_asset_version():
     return {"asset_version": version}
 
 
-PUBLIC_ENDPOINTS = {"login", "static", "changelog", "changelog_more", "changelog_share_image"}
+PUBLIC_ENDPOINTS = {"login", "static", "changelog", "changelog_more", "changelog_share_image", "index"}
 
 
 @app.before_request
@@ -590,6 +590,9 @@ def changelog_share_image():
 
 @app.route("/")
 def index():
+    if app_password() and not session.get("authed"):
+        return public_landing()
+
     type_filter = request.args.get("type", "")
     status_filter = request.args.get("status", "")
 
@@ -609,6 +612,24 @@ def index():
         moment_types=MOMENT_TYPES,
         changelog_type=CHANGELOG_TYPE,
         today=date.today().isoformat(),
+    )
+
+
+def public_landing():
+    lang = request.args.get("lang", "zh")
+    if lang not in CHANGELOG_STRINGS:
+        lang = "zh"
+    t = CHANGELOG_STRINGS[lang]
+    days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
+
+    return render_template(
+        "public_home.html",
+        days=days,
+        days_has_more=has_more,
+        heatmap=build_changelog_heatmap(lang=lang),
+        today=date.today().isoformat(),
+        lang=lang,
+        t=t,
     )
 
 

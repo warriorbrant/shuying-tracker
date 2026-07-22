@@ -309,6 +309,31 @@ a.heat-day:hover {
   color: var(--accent);
 }
 
+.login-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.public-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.public-banner p {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .login-wrap {
   min-height: 100vh;
   display: flex;

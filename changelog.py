@@ -419,4 +419,27 @@ CHANGELOG = [
         "lines_changed": 7,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "首页对未登录访客改成公开的更新日志 + 登录入口",
+        "title_en": "Homepage shows a public changelog + login prompt when signed out",
+        "summary": (
+            "之前部署到公网后，没登录访问首页会直接跳转到登录页。现在改成首页本身就能打开，"
+            "没登录时显示的是更新日志内容（热力图、按天分组、两张分享图）加一个登录按钮，"
+            "导航栏里「添加书」「记录动态」「搜索」这些需要登录的入口也会先隐藏，登录后自动"
+            "换回完整的个人动态首页。本地不设密码的时候还是跟以前一样直接显示全部内容，不受影响。"
+        ),
+        "summary_en": (
+            "Previously, an unauthenticated visit to the homepage on the public deployment "
+            "just redirected straight to the login page. Now the homepage itself always "
+            "loads: signed out, it shows the changelog content (heatmap, day groups, both "
+            "share images) plus a login button, and the nav links that need login (add "
+            "book, log a moment, search) are hidden until you sign in — after which it "
+            "switches back to the full personal feed. Local runs with no password configured "
+            "are unaffected and still show everything directly."
+        ),
+        "image": "public-homepage.png",
+        "lines_changed": 112,
+        "estimated": False,
+    },
 ]

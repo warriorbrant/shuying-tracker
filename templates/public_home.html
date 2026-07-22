@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ t.heading }}{% endblock %}
+{% block content %}
+
+<div class="public-banner">
+  <p>这是我个人的书影/生活追踪记录，完整内容登录后才能看到。这里是公开的开发更新日志。</p>
+  <a class="btn-share" href="{{ url_for('login', next='/') }}">登录</a>
+</div>
+
+<div class="changelog-header-row">
+  <h1>{{ t.heading }}</h1>
+  <a class="lang-switch" href="{{ url_for('index', lang=t.lang_code) }}">{{ t.lang_label }}</a>
+</div>
+<p class="hint">{{ t.hint }}</p>
+
+<section class="heatmap-card">
+  <div class="heatmap-months">
+    {% for week in heatmap.weeks %}<span class="heat-month">{{ week.month_label }}</span>{% endfor %}
+  </div>
+  <div class="heatmap">
+    {% for week in heatmap.weeks %}
+    <div class="heat-week">
+      {% for day in week.days %}
+        {% if day.level == -1 %}
+          <div class="heat-day future"></div>
+        {% else %}
+          <div class="heat-day level-{{ day.level }}" title="{{ day.date }}：{{ day.count }} · {{ day.lines }}"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="heatmap-summary">
+    {{ t.heatmap_summary.format(days=heatmap.total_days, updates=heatmap.total_updates, lines=heatmap.total_lines) }}
+  </div>
+</section>
+
+<p class="hint">{{ t.lines_hint }}</p>
+
+<div class="actions">
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='recent', lang=lang, download=1) }}">{{ t.share_recent }}</a>
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', lang=lang, download=1) }}">{{ t.share_today }}</a>
+</div>
+
+<div id="changelog-days">
+  {% include "_changelog_days.html" %}
+</div>
+{% if days_has_more %}
+  <div id="changelog-sentinel" data-infinite-scroll
+       data-list-id="changelog-days" data-loading-id="changelog-loading"
+       data-url="{{ url_for('changelog_more') }}" data-offset="{{ days|length }}"
+       data-params='{"lang": "{{ lang }}"}'></div>
+  <p id="changelog-loading" class="hint feed-loading">加载中…</p>
+{% endif %}
+
+{% endblock %}
