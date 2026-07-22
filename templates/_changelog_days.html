@@ -1,0 +1,24 @@
+{% for day in days %}
+<div class="changelog-day">
+  <div class="changelog-day-header">
+    <h2>{{ day.date }}{% if day.date == today %}<span class="today-tag">{{ t.today_tag }}</span>{% endif %}</h2>
+    <span class="changelog-day-total">{{ t.day_total.format(count=day.count, lines=day.total_lines) }}</span>
+  </div>
+  <ul class="changelog-list">
+    {% for entry in day.entries %}
+    <li class="changelog-entry">
+      <div class="changelog-body">
+        <div class="changelog-entry-head">
+          <h3>{{ entry.title }}</h3>
+          <span class="lines-badge">{{ t.lines_badge.format(lines=entry.lines_changed or 0) }}{% if entry.estimated %}{{ t.estimated_suffix }}{% endif %}</span>
+        </div>
+        <p>{{ entry.summary }}</p>
+        {% if entry.image %}
+          <img class="changelog-image" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endfor %}

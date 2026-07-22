@@ -407,12 +407,16 @@ def build_changelog_heatmap(weeks=HEATMAP_WEEKS, lang="zh"):
     }
 
 
-def group_changelog_by_day(entries, lang="zh"):
+def group_changelog_by_day(entries, lang="zh", offset=0, limit=None):
     by_date = {}
     for e in entries:
         by_date.setdefault(e["date"], []).append(e)
+    all_dates = sorted(by_date.keys(), reverse=True)
+    selected_dates = all_dates[offset : offset + limit] if limit is not None else all_dates[offset:]
+    has_more = limit is not None and len(all_dates) > offset + limit
+
     days = []
-    for d in sorted(by_date.keys(), reverse=True):
+    for d in selected_dates:
         day_entries = [localize_entry(e, lang) for e in reversed(by_date[d])]
         days.append(
             {
@@ -422,7 +426,7 @@ def group_changelog_by_day(entries, lang="zh"):
                 "total_lines": sum(e.get("lines_changed") or 0 for e in day_entries),
             }
         )
-    return days
+    return days, has_more
 
 
 def safe_next(next_url, fallback):
@@ -432,6 +436,8 @@ def safe_next(next_url, fallback):
 
 
 FEED_PAGE_SIZE = 20
+LOG_PAGE_SIZE = 20
+CHANGELOG_PAGE_DAYS = 5
 
 
 def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE):
@@ -504,7 +510,11 @@ def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE)
             )
 
     entries.sort(
-        key=lambda e: (e["date"], e.get("log_id") or e.get("id") or e.get("_seq") or 0),
+        key=lambda e: (
+            e["date"],
+            0 if e["kind"] == "changelog" else 1,  # non-changelog entries first within a day
+            e.get("log_id") or e.get("id") or e.get("_seq") or 0,
+        ),
         reverse=True,
     )
     page = entries[offset : offset + limit]
@@ -518,14 +528,28 @@ def changelog():
     if lang not in CHANGELOG_STRINGS:
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
+    days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
     return render_template(
         "changelog.html",
-        days=group_changelog_by_day(CHANGELOG, lang=lang),
+        days=days,
+        days_has_more=has_more,
         heatmap=build_changelog_heatmap(lang=lang),
         today=date.today().isoformat(),
         lang=lang,
         t=t,
     )
+
+
+@app.route("/changelog/more")
+def changelog_more():
+    lang = request.args.get("lang", "zh")
+    if lang not in CHANGELOG_STRINGS:
+        lang = "zh"
+    offset = to_int(request.args.get("offset"), 0) or 0
+
+    days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, offset=offset, limit=CHANGELOG_PAGE_DAYS)
+    html = render_template("_changelog_days.html", days=days, t=CHANGELOG_STRINGS[lang], today=date.today().isoformat())
+    return jsonify({"html": html, "has_more": has_more, "count": len(days)})
 
 
 @app.route("/changelog/share.png")
@@ -640,8 +664,12 @@ def item_detail(item_id):
         return "未找到该条目", 404
 
     logs = conn.execute(
-        "SELECT * FROM logs WHERE item_id = ? ORDER BY log_date DESC, id DESC", (item_id,)
+        "SELECT * FROM logs WHERE item_id = ? ORDER BY log_date DESC, id DESC LIMIT ?",
+        (item_id, LOG_PAGE_SIZE + 1),
     ).fetchall()
+    logs_has_more = len(logs) > LOG_PAGE_SIZE
+    logs = logs[:LOG_PAGE_SIZE]
+
     totals = conn.execute(
         "SELECT MAX(progress_at) AS current, COALESCE(SUM(minutes_spent), 0) AS total_minutes, COUNT(*) AS log_count "
         "FROM logs WHERE item_id = ?",
@@ -657,6 +685,7 @@ def item_detail(item_id):
         "item_detail.html",
         item=item,
         logs=logs,
+        logs_has_more=logs_has_more,
         current_progress=current,
         total_minutes=totals["total_minutes"],
         log_count=totals["log_count"],
@@ -664,6 +693,28 @@ def item_detail(item_id):
         today=date.today().isoformat(),
         statuses=STATUSES,
     )
+
+
+@app.route("/item/<int:item_id>/logs/more")
+def item_logs_more(item_id):
+    offset = to_int(request.args.get("offset"), 0) or 0
+    conn = get_db()
+    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+    if item is None:
+        conn.close()
+        return jsonify({"html": "", "has_more": False, "count": 0})
+
+    logs = conn.execute(
+        "SELECT * FROM logs WHERE item_id = ? ORDER BY log_date DESC, id DESC LIMIT ? OFFSET ?",
+        (item_id, LOG_PAGE_SIZE + 1, offset),
+    ).fetchall()
+    conn.close()
+
+    has_more = len(logs) > LOG_PAGE_SIZE
+    logs = logs[:LOG_PAGE_SIZE]
+
+    html = render_template("_log_items.html", logs=logs, item=item)
+    return jsonify({"html": html, "has_more": has_more, "count": len(logs)})
 
 
 @app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])

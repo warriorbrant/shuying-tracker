@@ -355,4 +355,27 @@ CHANGELOG = [
         "lines_changed": 202,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "滚动加载扩展到全站，首页排序也调整了",
+        "title_en": "Infinite scroll extended site-wide, homepage ordering tweaked",
+        "summary": (
+            "把首页那套滚动加载的逻辑抽成了一个通用的 static/infinite-scroll.js，"
+            "现在条目详情页的「历史记录」和更新日志页（按天分页）也用上了同一套机制，"
+            "不用再各写一份重复代码。同时改了首页排序规则：同一天内，网站更新会排在"
+            "书影/动态等其他内容之后，但整个当天的内容仍然排在前一天之前，不会打乱按天分组的顺序。"
+        ),
+        "summary_en": (
+            "Extracted the homepage's scroll-loading logic into a reusable "
+            "static/infinite-scroll.js. The item detail page's history list and the "
+            "changelog page (paginated by day) now use the same mechanism instead of each "
+            "having its own copy. Also tweaked homepage ordering: within the same day, site "
+            "update entries now sort after everything else (books/shows/moments), while the "
+            "whole day's content still comes before the previous day's, so day-grouping "
+            "stays intact."
+        ),
+        "image": "full-site-pagination.png",
+        "lines_changed": 257,
+        "estimated": False,
+    },
 ]

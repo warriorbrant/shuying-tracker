@@ -48,56 +48,12 @@
   {% include "_feed_items.html" %}
 </ul>
 {% if has_more %}
-  <div id="feed-sentinel" data-offset="{{ feed|length }}" data-type="{{ type_filter }}" data-status="{{ status_filter }}"></div>
+  <div id="feed-sentinel" data-infinite-scroll
+       data-list-id="feed-list" data-loading-id="feed-loading"
+       data-url="{{ url_for('feed_more') }}" data-offset="{{ feed|length }}"
+       data-params='{"type": "{{ type_filter }}", "status": "{{ status_filter }}"}'></div>
   <p id="feed-loading" class="hint feed-loading">加载中…</p>
 {% endif %}
 {% endif %}
 
-{% endblock %}
-
-{% block scripts %}
-{% if has_more %}
-<script>
-(function () {
-  const sentinel = document.getElementById('feed-sentinel');
-  const loadingLabel = document.getElementById('feed-loading');
-  const list = document.getElementById('feed-list');
-  if (!sentinel || !list) return;
-
-  let loading = false;
-
-  const observer = new IntersectionObserver((entries) => {
-    if (!entries[0].isIntersecting || loading) return;
-    loading = true;
-    loadingLabel.style.visibility = 'visible';
-
-    const params = new URLSearchParams({
-      offset: sentinel.dataset.offset,
-      type: sentinel.dataset.type,
-      status: sentinel.dataset.status,
-    });
-
-    fetch('/feed/more?' + params.toString())
-      .then((r) => r.json())
-      .then((data) => {
-        list.insertAdjacentHTML('beforeend', data.html);
-        sentinel.dataset.offset = parseInt(sentinel.dataset.offset, 10) + data.count;
-        loading = false;
-        loadingLabel.style.visibility = 'hidden';
-        if (!data.has_more) {
-          observer.disconnect();
-          sentinel.remove();
-          loadingLabel.remove();
-        }
-      })
-      .catch(() => {
-        loading = false;
-        loadingLabel.style.visibility = 'hidden';
-      });
-  }, { rootMargin: '300px' });
-
-  observer.observe(sentinel);
-})();
-</script>
-{% endif %}
 {% endblock %}

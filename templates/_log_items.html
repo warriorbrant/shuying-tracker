@@ -1,0 +1,14 @@
+{% for log in logs %}
+<li class="log-item">
+  <div class="log-meta">
+    <strong>{{ log.log_date }}</strong>
+    <span>⏱ {{ log.minutes_spent }} 分钟</span>
+    {% if log.progress_at is not none %}<span>进度：{{ log.progress_at | round(1) }} {{ item.unit_label }}</span>{% endif %}
+  </div>
+  {% if log.comment %}<p class="log-comment">{{ log.comment }}</p>{% endif %}
+  <form method="post" action="{{ url_for('log_delete', log_id=log.id) }}"
+        onsubmit="return confirm('删除这条记录？');">
+    <button type="submit" class="btn-link-danger">删除</button>
+  </form>
+</li>
+{% endfor %}

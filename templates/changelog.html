@@ -37,29 +37,15 @@
   <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', lang=lang, download=1) }}">{{ t.share_today }}</a>
 </div>
 
-{% for day in days %}
-<div class="changelog-day">
-  <div class="changelog-day-header">
-    <h2>{{ day.date }}{% if day.date == today %}<span class="today-tag">{{ t.today_tag }}</span>{% endif %}</h2>
-    <span class="changelog-day-total">{{ t.day_total.format(count=day.count, lines=day.total_lines) }}</span>
-  </div>
-  <ul class="changelog-list">
-    {% for entry in day.entries %}
-    <li class="changelog-entry">
-      <div class="changelog-body">
-        <div class="changelog-entry-head">
-          <h3>{{ entry.title }}</h3>
-          <span class="lines-badge">{{ t.lines_badge.format(lines=entry.lines_changed or 0) }}{% if entry.estimated %}{{ t.estimated_suffix }}{% endif %}</span>
-        </div>
-        <p>{{ entry.summary }}</p>
-        {% if entry.image %}
-          <img class="changelog-image" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
-        {% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
+<div id="changelog-days">
+  {% include "_changelog_days.html" %}
 </div>
-{% endfor %}
+{% if days_has_more %}
+  <div id="changelog-sentinel" data-infinite-scroll
+       data-list-id="changelog-days" data-loading-id="changelog-loading"
+       data-url="{{ url_for('changelog_more') }}" data-offset="{{ days|length }}"
+       data-params='{"lang": "{{ lang }}"}'></div>
+  <p id="changelog-loading" class="hint feed-loading">加载中…</p>
+{% endif %}
 
 {% endblock %}
