@@ -299,7 +299,7 @@ def group_changelog_by_day(entries):
         by_date.setdefault(e["date"], []).append(e)
     days = []
     for d in sorted(by_date.keys(), reverse=True):
-        day_entries = by_date[d]
+        day_entries = list(reversed(by_date[d]))
         days.append(
             {
                 "date": d,
@@ -406,13 +406,16 @@ def changelog():
 @app.route("/changelog/share.png")
 def changelog_share_image():
     range_ = request.args.get("range", "recent")
+    ordered = sorted(enumerate(CHANGELOG), key=lambda pair: (pair[1]["date"], pair[0]), reverse=True)
+    ordered = [c for _, c in ordered]
+
     if range_ == "today":
         today_str = date.today().isoformat()
-        entries = [c for c in CHANGELOG if c["date"] == today_str]
+        entries = [c for c in ordered if c["date"] == today_str]
         heading = f"{date.today().month}月{date.today().day}日的更新"
     else:
         range_ = "recent"
-        entries = sorted(CHANGELOG, key=lambda c: c["date"], reverse=True)[:10]
+        entries = ordered[:10]
         heading = "最近 10 条更新"
 
     buf = build_changelog_share_card(entries, heading, heatmap=build_changelog_heatmap())
