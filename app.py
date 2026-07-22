@@ -19,6 +19,7 @@ from flask import (
     session,
     url_for,
 )
+from PIL import Image, ImageOps
 
 from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
@@ -225,6 +226,10 @@ def admin_migrate():
     return jsonify(result)
 
 
+UPLOAD_MAX_DIMENSION = 1600
+UPLOAD_JPEG_QUALITY = 85
+
+
 def save_upload(file_storage):
     if not file_storage or not file_storage.filename:
         return ""
@@ -232,9 +237,31 @@ def save_upload(file_storage):
     if ext not in ALLOWED_IMAGE_EXT:
         return ""
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{uuid.uuid4().hex}{ext}"
-    file_storage.save(UPLOAD_DIR / filename)
-    return f"uploads/{filename}"
+
+    if ext == ".gif":
+        filename = f"{uuid.uuid4().hex}{ext}"
+        file_storage.save(UPLOAD_DIR / filename)
+        return f"uploads/{filename}"
+
+    try:
+        img = Image.open(file_storage.stream)
+        img = ImageOps.exif_transpose(img)
+        img.thumbnail((UPLOAD_MAX_DIMENSION, UPLOAD_MAX_DIMENSION), Image.LANCZOS)
+
+        has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+        if has_alpha:
+            filename = f"{uuid.uuid4().hex}.png"
+            img.save(UPLOAD_DIR / filename, format="PNG", optimize=True)
+        else:
+            filename = f"{uuid.uuid4().hex}.jpg"
+            img.convert("RGB").save(
+                UPLOAD_DIR / filename, format="JPEG", quality=UPLOAD_JPEG_QUALITY, optimize=True
+            )
+        return f"uploads/{filename}"
+    except Exception:
+        filename = f"{uuid.uuid4().hex}{ext}"
+        file_storage.save(UPLOAD_DIR / filename)
+        return f"uploads/{filename}"
 
 
 def to_int(value, default=None):

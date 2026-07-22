@@ -292,4 +292,24 @@ CHANGELOG = [
         "lines_changed": 271,
         "estimated": False,
     },
+    {
+        "date": "2026-07-22",
+        "title": "上传图片自动压缩",
+        "title_en": "Uploaded photos are now auto-compressed",
+        "summary": (
+            "手机拍的照片动辄几 MB，之前上传是原样存的。现在超过 1600px 的一律等比缩小，"
+            "转成压缩率更高的 JPEG（实测一张 10MB 的照片能压到 1MB 出头）；"
+            "带透明通道的 PNG 保留 PNG 格式不转 JPEG，GIF 不处理以免破坏动图。"
+        ),
+        "summary_en": (
+            "Phone photos are often several MB each, and uploads used to be stored as-is. "
+            "Now anything over 1600px gets scaled down proportionally and re-encoded as a "
+            "more efficient JPEG (a 10MB test photo came down to just over 1MB). PNGs with "
+            "real transparency stay PNG instead of being converted to JPEG, and GIFs are "
+            "left untouched so animations don't break."
+        ),
+        "image": None,
+        "lines_changed": 33,
+        "estimated": False,
+    },
 ]
