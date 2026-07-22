@@ -1,9 +1,12 @@
 {% extends "base.html" %}
-{% block title %}更新日志{% endblock %}
+{% block title %}{{ t.page_title }}{% endblock %}
 {% block content %}
 
-<h1>更新日志</h1>
-<p class="hint">记录这个网站从零搭建到现在的开发过程（截图是重新生成的当前效果，不是每次改动当时的原图）。</p>
+<div class="changelog-header-row">
+  <h1>{{ t.heading }}</h1>
+  <a class="lang-switch" href="{{ url_for('changelog', lang=t.lang_code) }}">{{ t.lang_label }}</a>
+</div>
+<p class="hint">{{ t.hint }}</p>
 
 <section class="heatmap-card">
   <div class="heatmap-months">
@@ -16,29 +19,29 @@
         {% if day.level == -1 %}
           <div class="heat-day future"></div>
         {% else %}
-          <div class="heat-day level-{{ day.level }}" title="{{ day.date }}：{{ day.count }} 次更新 · {{ day.lines }} 行代码"></div>
+          <div class="heat-day level-{{ day.level }}" title="{{ day.date }}：{{ day.count }} · {{ day.lines }}"></div>
         {% endif %}
       {% endfor %}
     </div>
     {% endfor %}
   </div>
   <div class="heatmap-summary">
-    过去一年 {{ heatmap.total_days }} 天有更新，共 {{ heatmap.total_updates }} 次迭代，累计约 {{ heatmap.total_lines }} 行代码
+    {{ t.heatmap_summary.format(days=heatmap.total_days, updates=heatmap.total_updates, lines=heatmap.total_lines) }}
   </div>
 </section>
 
-<p class="hint">代码量：本次会话开始前的历史记录（标了「估算」）是回顾整理出来的大致数字；从这次开始的每一条都是改动时精确统计的。</p>
+<p class="hint">{{ t.lines_hint }}</p>
 
 <div class="actions">
-  <a class="btn-share" href="{{ url_for('changelog_share_image', range='recent', download=1) }}">📤 最近 10 条更新分享图</a>
-  <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', download=1) }}">📤 今天的更新分享图</a>
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='recent', lang=lang, download=1) }}">{{ t.share_recent }}</a>
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', lang=lang, download=1) }}">{{ t.share_today }}</a>
 </div>
 
 {% for day in days %}
 <div class="changelog-day">
   <div class="changelog-day-header">
-    <h2>{{ day.date }}{% if day.date == today %}<span class="today-tag">今天</span>{% endif %}</h2>
-    <span class="changelog-day-total">共 {{ day.count }} 次更新 · 当日约 {{ day.total_lines }} 行代码</span>
+    <h2>{{ day.date }}{% if day.date == today %}<span class="today-tag">{{ t.today_tag }}</span>{% endif %}</h2>
+    <span class="changelog-day-total">{{ t.day_total.format(count=day.count, lines=day.total_lines) }}</span>
   </div>
   <ul class="changelog-list">
     {% for entry in day.entries %}
@@ -46,7 +49,7 @@
       <div class="changelog-body">
         <div class="changelog-entry-head">
           <h3>{{ entry.title }}</h3>
-          <span class="lines-badge">+{{ entry.lines_changed or 0 }} 行{% if entry.estimated %}（估算）{% endif %}</span>
+          <span class="lines-badge">{{ t.lines_badge.format(lines=entry.lines_changed or 0) }}{% if entry.estimated %}{{ t.estimated_suffix }}{% endif %}</span>
         </div>
         <p>{{ entry.summary }}</p>
         {% if entry.image %}

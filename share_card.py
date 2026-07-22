@@ -437,6 +437,13 @@ def _draw_mini_heatmap(draw, x, y, heatmap):
     return grid_width, grid_height
 
 
+CHANGELOG_DEFAULT_STRINGS = {
+    "empty": "这段时间还没有更新记录",
+    "count_label": "共 {count} 条更新",
+    "watermark": "知行合一AI实验室 开发日志",
+}
+
+
 def _build_changelog_card(measure, col_w, e):
     entry_title_font = _font(28, bold=True)
     date_font = _font(22)
@@ -480,7 +487,8 @@ def _build_changelog_card(measure, col_w, e):
     return height, draw_fn
 
 
-def build_changelog_share_card(entries, heading, heatmap=None):
+def build_changelog_share_card(entries, heading, heatmap=None, t=None):
+    t = {**CHANGELOG_DEFAULT_STRINGS, **(t or {})}
     W = 1080
     pad = 48
     gap = 20
@@ -504,7 +512,7 @@ def build_changelog_share_card(entries, heading, heatmap=None):
         H = header_h + 90 + footer_h
         card = Image.new("RGB", (W, H), BG)
         draw = ImageDraw.Draw(card)
-        draw.text((pad, header_h), "这段时间还没有更新记录", font=empty_font, fill=MUTED)
+        draw.text((pad, header_h), t["empty"], font=empty_font, fill=MUTED)
     else:
         col_heights = [0] * columns
         placements = []
@@ -522,13 +530,13 @@ def build_changelog_share_card(entries, heading, heatmap=None):
             draw_fn(card, draw, x, y)
 
     draw.text((pad, pad), heading, font=title_font, fill=TEXT)
-    count_text = f"共 {len(entries)} 条更新" if entries else "这段时间还没有更新记录"
+    count_text = t["count_label"].format(count=len(entries)) if entries else t["empty"]
     draw.text((pad, pad + 64), count_text, font=subtitle_font, fill=MUTED)
 
     if heatmap:
         _draw_mini_heatmap(draw, pad, heatmap_top + 24, heatmap)
 
-    watermark = f"知行合一AI实验室 开发日志 · {date.today().isoformat()}"
+    watermark = f"{t['watermark']} · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)

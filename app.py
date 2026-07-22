@@ -50,6 +50,66 @@ MOMENT_TYPES = {
 # changelog entries.
 CHANGELOG_TYPE = {"label": "网站更新", "icon": "🛠️"}
 
+# i18n for the changelog page only (per user request — rest of the site stays Chinese-only).
+CHANGELOG_STRINGS = {
+    "zh": {
+        "page_title": "更新日志",
+        "heading": "更新日志",
+        "hint": "记录这个网站从零搭建到现在的开发过程（截图是重新生成的当前效果，不是每次改动当时的原图）。",
+        "heatmap_summary": "过去一年 {days} 天有更新，共 {updates} 次迭代，累计约 {lines} 行代码",
+        "lines_hint": "代码量：本次会话开始前的历史记录（标了「估算」）是回顾整理出来的大致数字；从这次开始的每一条都是改动时精确统计的。",
+        "share_recent": "📤 最近 10 条更新分享图",
+        "share_today": "📤 今天的更新分享图",
+        "day_total": "共 {count} 次更新 · 当日约 {lines} 行代码",
+        "today_tag": "今天",
+        "lines_badge": "+{lines} 行",
+        "estimated_suffix": "（估算）",
+        "empty": "这段时间还没有更新记录",
+        "count_label": "共 {count} 条更新",
+        "recent_heading": "最近 10 条更新",
+        "today_heading": "{month}月{day}日的更新",
+        "watermark": "知行合一AI实验室 开发日志",
+        "lang_label": "EN",
+        "lang_code": "en",
+        "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+    },
+    "en": {
+        "page_title": "Changelog",
+        "heading": "Changelog",
+        "hint": (
+            "A record of this site's development from scratch to now (screenshots are "
+            "freshly regenerated to reflect the current UI, not the original at the time "
+            "of each change)."
+        ),
+        "heatmap_summary": "{days} active days in the past year, {updates} updates, ~{lines} lines of code changed",
+        "lines_hint": (
+            'Code volume: entries from before this session (marked "estimated") are rough '
+            "figures reconstructed in hindsight; every entry from this one onward is "
+            "measured precisely at the time of the change."
+        ),
+        "share_recent": "📤 Share: last 10 updates",
+        "share_today": "📤 Share: today's updates",
+        "day_total": "{count} updates · ~{lines} lines that day",
+        "today_tag": "Today",
+        "lines_badge": "+{lines} lines",
+        "estimated_suffix": " (estimated)",
+        "empty": "No updates in this range yet",
+        "count_label": "{count} updates",
+        "recent_heading": "Last 10 Updates",
+        "today_heading": "Updates on {month}/{day}",
+        "watermark": "Unity of Knowledge and Action AI Lab — Dev Log",
+        "lang_label": "中文",
+        "lang_code": "zh",
+        "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    },
+}
+
+
+def localize_entry(e, lang):
+    if lang == "en":
+        return {**e, "title": e.get("title_en") or e["title"], "summary": e.get("summary_en") or e["summary"]}
+    return e
+
 UPLOAD_DIR = DATA_DIR / "uploads"
 ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 
@@ -244,7 +304,7 @@ def code_heat_level(lines, has_entries):
     return 4
 
 
-def build_changelog_heatmap(weeks=HEATMAP_WEEKS):
+def build_changelog_heatmap(weeks=HEATMAP_WEEKS, lang="zh"):
     today = date.today()
     dow_sunday_first = (today.weekday() + 1) % 7
     grid_end = today + timedelta(days=6 - dow_sunday_first)
@@ -280,7 +340,7 @@ def build_changelog_heatmap(weeks=HEATMAP_WEEKS):
         month_num = cursor.month
         month_label = ""
         if month_num != last_month:
-            month_label = f"{month_num}月"
+            month_label = CHANGELOG_STRINGS[lang]["months"][month_num - 1]
             last_month = month_num
         weeks_data.append({"month_label": month_label, "days": days})
         cursor += timedelta(days=7)
@@ -293,13 +353,13 @@ def build_changelog_heatmap(weeks=HEATMAP_WEEKS):
     }
 
 
-def group_changelog_by_day(entries):
+def group_changelog_by_day(entries, lang="zh"):
     by_date = {}
     for e in entries:
         by_date.setdefault(e["date"], []).append(e)
     days = []
     for d in sorted(by_date.keys(), reverse=True):
-        day_entries = list(reversed(by_date[d]))
+        day_entries = [localize_entry(e, lang) for e in reversed(by_date[d])]
         days.append(
             {
                 "date": d,
@@ -395,37 +455,49 @@ def build_feed(conn, type_filter, status_filter, limit=60):
 
 @app.route("/changelog")
 def changelog():
+    lang = request.args.get("lang", "zh")
+    if lang not in CHANGELOG_STRINGS:
+        lang = "zh"
+    t = CHANGELOG_STRINGS[lang]
     return render_template(
         "changelog.html",
-        days=group_changelog_by_day(CHANGELOG),
-        heatmap=build_changelog_heatmap(),
+        days=group_changelog_by_day(CHANGELOG, lang=lang),
+        heatmap=build_changelog_heatmap(lang=lang),
         today=date.today().isoformat(),
+        lang=lang,
+        t=t,
     )
 
 
 @app.route("/changelog/share.png")
 def changelog_share_image():
+    lang = request.args.get("lang", "zh")
+    if lang not in CHANGELOG_STRINGS:
+        lang = "zh"
+    t = CHANGELOG_STRINGS[lang]
+
     range_ = request.args.get("range", "recent")
     ordered = sorted(enumerate(CHANGELOG), key=lambda pair: (pair[1]["date"], pair[0]), reverse=True)
-    ordered = [c for _, c in ordered]
+    ordered = [localize_entry(c, lang) for _, c in ordered]
 
     if range_ == "today":
-        today_str = date.today().isoformat()
+        today = date.today()
+        today_str = today.isoformat()
         entries = [c for c in ordered if c["date"] == today_str]
-        heading = f"{date.today().month}月{date.today().day}日的更新"
+        heading = t["today_heading"].format(month=today.month, day=today.day)
     else:
         range_ = "recent"
         entries = ordered[:10]
-        heading = "最近 10 条更新"
+        heading = t["recent_heading"]
 
-    buf = build_changelog_share_card(entries, heading, heatmap=build_changelog_heatmap())
+    buf = build_changelog_share_card(entries, heading, heatmap=build_changelog_heatmap(lang=lang), t=t)
 
     download = request.args.get("download")
     return send_file(
         buf,
         mimetype="image/png",
         as_attachment=bool(download),
-        download_name=f"changelog-{range_}.png" if download else None,
+        download_name=f"changelog-{range_}-{lang}.png" if download else None,
     )
 
 
