@@ -583,4 +583,31 @@ CHANGELOG = [
         "lines_changed": 0,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "服务器迁到新加坡机房，开启 CDN 缓存",
+        "title_en": "Moved the server to Singapore, turned on CDN caching",
+        "summary": (
+            "上一条实测数据显示，剩下的延迟主要来自服务器所在地区，于是把 Railway 的部署"
+            "区域从美西迁到了新加坡（Railway 原生支持带 Volume 的服务迁移区域，会自动搬运"
+            "数据，迁移过程中确认了书影条目、代码量统计等数据完好无损）。同时开启了 Railway "
+            "的边缘 CDN 缓存：默认模式下只有主动设置了 Cache-Control 的响应才会被缓存，登录"
+            "态的动态页面因为带 Set-Cookie 天然被排除在外，实测静态资源（CSS/JS、豆瓣封面、"
+            "上传的照片）已经能命中边缘缓存（x-cache: HIT），个人数据不受影响。"
+        ),
+        "summary_en": (
+            "The previous measurement showed the remaining latency was mostly the server's "
+            "region, so migrated the Railway deployment from US West to Singapore (Railway "
+            "natively supports migrating volume-backed services between regions, moving the "
+            "data automatically — verified afterward that items, logs, and the code-volume "
+            "stats were all intact). Also turned on Railway's edge CDN caching: by default it "
+            "only caches responses that explicitly set Cache-Control, and authenticated pages "
+            "are naturally excluded since they carry a Set-Cookie header. Confirmed static "
+            "assets (CSS/JS, cached Douban covers, uploaded photos) now hit the edge cache "
+            "(x-cache: HIT) with no change to private/dynamic content."
+        ),
+        "image": None,
+        "lines_changed": 0,
+        "estimated": False,
+    },
 ]
