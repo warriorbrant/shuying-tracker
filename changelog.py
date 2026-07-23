@@ -531,4 +531,29 @@ CHANGELOG = [
         "lines_changed": 125,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "性能优化：缓存豆瓣封面、开启压缩",
+        "title_en": "Performance: cache Douban covers, enable compression",
+        "summary": (
+            "四项优化：① 豆瓣封面图代理之前每次都要重新跨太平洋抓一遍，现在抓过一次就存到"
+            "本地磁盘，实测第二次访问从 3.3 秒降到 0.13 秒；② 全站开启了 gzip/brotli 压缩，"
+            "页面体积明显变小；③ 静态资源（CSS、图标）加了 30 天的浏览器缓存；④ 分享卡片"
+            "生成用到的字体文件之前每次画字都要重新加载，现在缓存住了。服务器所在地区带来的"
+            "基础网络延迟没动，这个之后有需要再考虑迁移机房解决。"
+        ),
+        "summary_en": (
+            "Four optimizations: (1) the Douban cover-image proxy used to re-fetch across "
+            "the Pacific on every request — now it's cached to local disk after the first "
+            "fetch, cutting a repeat load from 3.3s to 0.13s in testing; (2) enabled gzip/"
+            "brotli compression site-wide, noticeably shrinking page size; (3) static assets "
+            "(CSS, icons) now get a 30-day browser cache; (4) the fonts used for generating "
+            "share cards used to reload from disk on every single text draw — now cached. "
+            "The baseline network latency from the server's region is untouched by any of "
+            "this — that would need an actual region migration if it's ever worth doing."
+        ),
+        "image": "performance.png",
+        "lines_changed": 35,
+        "estimated": False,
+    },
 ]

@@ -1,3 +1,5 @@
+import hashlib
+import mimetypes
 import os
 import secrets
 import uuid
@@ -19,6 +21,7 @@ from flask import (
     session,
     url_for,
 )
+from flask_compress import Compress
 from PIL import Image, ImageOps
 
 from ai_scan import ScanError, analyze_screenshot, is_configured
@@ -31,8 +34,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024  # 12MB upload limit
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 60 * 60 * 24 * 30  # 30 days for static files
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 app.permanent_session_lifetime = timedelta(days=30)
+Compress(app)
 
 init_db()  # runs on import too, so it also works under gunicorn (not just `python app.py`)
 
@@ -173,11 +178,21 @@ def serve_data(filename):
     return send_from_directory(DATA_DIR, filename)
 
 
+COVER_CACHE_DIR = DATA_DIR / "cover_cache"
+
+
 @app.route("/cover-proxy")
 def cover_proxy():
     url = request.args.get("url", "")
     if not url or "doubanio.com" not in url:
         return "", 404
+
+    cache_key = hashlib.sha256(url.encode()).hexdigest()
+    COVER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cached = next(COVER_CACHE_DIR.glob(f"{cache_key}.*"), None)
+    if cached:
+        return send_file(cached, mimetype=mimetypes.guess_type(cached.name)[0] or "image/jpeg", max_age=86400)
+
     try:
         resp = requests.get(
             url,
@@ -187,11 +202,13 @@ def cover_proxy():
         resp.raise_for_status()
     except requests.RequestException:
         return "", 502
-    return Response(
-        resp.content,
-        mimetype=resp.headers.get("Content-Type", "image/jpeg"),
-        headers={"Cache-Control": "public, max-age=86400"},
-    )
+
+    content_type = resp.headers.get("Content-Type", "image/jpeg")
+    ext = mimetypes.guess_extension(content_type) or ".jpg"
+    cache_path = COVER_CACHE_DIR / f"{cache_key}{ext}"
+    cache_path.write_bytes(resp.content)
+
+    return send_file(cache_path, mimetype=content_type, max_age=86400)
 
 
 def cover_src(url):

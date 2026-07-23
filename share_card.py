@@ -1,5 +1,6 @@
 import io
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 
 import requests
@@ -44,6 +45,7 @@ FONT_REGULAR_CANDIDATES = [
 ]
 
 
+@lru_cache(maxsize=None)
 def _font(size, bold=False):
     paths = FONT_BOLD_CANDIDATES if bold else FONT_REGULAR_CANDIDATES
     for path in paths:
