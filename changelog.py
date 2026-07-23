@@ -469,4 +469,24 @@ CHANGELOG = [
         "lines_changed": 10,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "公开首页加了开发流程示意图",
+        "title_en": "Added a dev-workflow diagram to the public homepage",
+        "summary": (
+            "未登录访客看到的首页顶部加了一个小示意图：跟 Claude 对话提需求 → Claude Code "
+            "写代码 → 推送到 GitHub → Railway 自动部署 → 网站更新上线，直观展示这个网站全程"
+            "怎么做出来的，旁边带了 GitHub 仓库链接。手机窄屏下会自动从横排切成竖排。"
+        ),
+        "summary_en": (
+            "Added a small diagram near the top of the public (signed-out) homepage: "
+            "chat with Claude about what to build → Claude Code writes it → push to GitHub "
+            "→ Railway auto-deploys → the site updates, with a link to the GitHub repo "
+            "alongside it. Switches from a horizontal row to a stacked column automatically "
+            "on narrow phone screens."
+        ),
+        "image": "dev-pipeline.png",
+        "lines_changed": 99,
+        "estimated": False,
+    },
 ]
