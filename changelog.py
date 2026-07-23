@@ -509,4 +509,26 @@ CHANGELOG = [
         "lines_changed": 6,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "加了传统开发流程对比图",
+        "title_en": "Added a traditional-workflow comparison diagram",
+        "summary": (
+            "在 AI 开发流程示意图下面，加了一版对比：传统开发模式（写需求文档 → 工程师"
+            "手写代码 → 写测试跑测试 → Code Review → 手动构建部署 → 上线），图标做成灰度"
+            "区分两种模式，两边都标了大致耗时——AI 模式几分钟到几小时，传统模式通常数天"
+            "到数周，一眼看出差别。"
+        ),
+        "summary_en": (
+            "Added a comparison below the AI workflow diagram: the traditional development "
+            "process (write a spec → an engineer hand-writes the code → write and run tests "
+            "→ code review → manual build/deploy → launch), with grayscale icons to visually "
+            "set it apart from the AI flow. Both are labeled with a rough timeframe — minutes "
+            "to hours for the AI mode, typically days to weeks for the traditional one — so "
+            "the difference is obvious at a glance."
+        ),
+        "image": "pipeline-comparison.png",
+        "lines_changed": 125,
+        "estimated": False,
+    },
 ]

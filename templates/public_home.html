@@ -9,32 +9,74 @@
 
 <section class="pipeline-card">
   <h2 class="pipeline-title">这个网站是怎么做出来的</h2>
-  <div class="pipeline">
-    <div class="pipeline-step">
-      <span class="pipeline-icon">💬</span>
-      <div class="pipeline-label">跟 Claude<br>对话提需求</div>
+
+  <div class="pipeline-group">
+    <div class="pipeline-group-label">🤖 AI 开发模式（这个网站的实际流程）</div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <span class="pipeline-icon">💬</span>
+        <div class="pipeline-label">跟 Claude<br>对话提需求</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon">🤖</span>
+        <div class="pipeline-label">Claude Code<br>写代码</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon">🐙</span>
+        <div class="pipeline-label">推送到<br>GitHub</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon">🚂</span>
+        <div class="pipeline-label">Railway<br>自动部署</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon">✅</span>
+        <div class="pipeline-label">网站更新<br>上线</div>
+      </div>
     </div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step">
-      <span class="pipeline-icon">🤖</span>
-      <div class="pipeline-label">Claude Code<br>写代码</div>
-    </div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step">
-      <span class="pipeline-icon">🐙</span>
-      <div class="pipeline-label">推送到<br>GitHub</div>
-    </div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step">
-      <span class="pipeline-icon">🚂</span>
-      <div class="pipeline-label">Railway<br>自动部署</div>
-    </div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step">
-      <span class="pipeline-icon">✅</span>
-      <div class="pipeline-label">网站更新<br>上线</div>
-    </div>
+    <div class="pipeline-duration pipeline-duration-fast">⏱ 一个想法到上线：几分钟到几小时</div>
   </div>
+
+  <div class="pipeline-group pipeline-group-traditional">
+    <div class="pipeline-group-label">🧑‍💻 传统开发模式（对比）</div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">📋</span>
+        <div class="pipeline-label">写需求<br>文档</div>
+      </div>
+      <div class="pipeline-arrow pipeline-arrow-muted">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">🧑‍💻</span>
+        <div class="pipeline-label">工程师<br>手写代码</div>
+      </div>
+      <div class="pipeline-arrow pipeline-arrow-muted">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">🧪</span>
+        <div class="pipeline-label">写测试<br>跑测试</div>
+      </div>
+      <div class="pipeline-arrow pipeline-arrow-muted">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">👀</span>
+        <div class="pipeline-label">Code<br>Review</div>
+      </div>
+      <div class="pipeline-arrow pipeline-arrow-muted">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">🛠️</span>
+        <div class="pipeline-label">手动构建<br>部署</div>
+      </div>
+      <div class="pipeline-arrow pipeline-arrow-muted">→</div>
+      <div class="pipeline-step">
+        <span class="pipeline-icon pipeline-icon-muted">✅</span>
+        <div class="pipeline-label">上线</div>
+      </div>
+    </div>
+    <div class="pipeline-duration">⏱ 同样一个想法到上线：通常数天到数周</div>
+  </div>
+
   <p class="hint">全程不用手写一行代码，我只负责提需求和验收；每次改动的细节都记录在下面的更新日志里。<a href="https://github.com/warriorbrant/shuying-tracker" target="_blank" rel="noopener">源代码在 GitHub →</a></p>
 </section>
 

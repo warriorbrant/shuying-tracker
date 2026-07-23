@@ -393,6 +393,43 @@ a.heat-day:hover {
   margin-left: 6px;
 }
 
+.pipeline-group {
+  margin-bottom: 20px;
+}
+
+.pipeline-group-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.pipeline-group-traditional {
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+.pipeline-duration {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pipeline-duration-fast {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.pipeline-icon-muted {
+  background: #ece7df;
+  filter: grayscale(60%);
+  opacity: 0.85;
+}
+
+.pipeline-arrow-muted {
+  color: var(--muted);
+}
+
 @media (max-width: 640px) {
   .pipeline {
     flex-direction: column;
