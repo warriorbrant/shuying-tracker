@@ -556,4 +556,31 @@ CHANGELOG = [
         "lines_changed": 35,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "实测了一下性能优化的效果",
+        "title_en": "Measured the actual impact of the performance work",
+        "summary": (
+            "把上次做的性能优化实测了一遍，写个真实数字：本地首页压缩前 67.9KB，开 gzip 后 "
+            "9.1KB，体积降了约 87%，本地响应都在 20-30ms。豆瓣封面代理缓存的效果之前测过，"
+            "同一张图第二次访问从 3.3 秒降到 0.13 秒。线上（Railway）从这次测试所在的网络环境"
+            "访问首页大概 0.9-1.1 秒，这个数字主要是服务器地区带来的基础网络延迟，跟你实际"
+            "从国内访问的体验不完全一样，仅供参考——这也是当时决定暂不迁移机房、先做应用层"
+            "优化的原因。"
+        ),
+        "summary_en": (
+            "Actually measured last session's performance work instead of just claiming it "
+            "helps: locally, the homepage is 67.9KB uncompressed vs 9.1KB with gzip (~87% "
+            "smaller), with local responses at 20-30ms. The Douban cover-proxy cache had "
+            "already been measured: 3.3s down to 0.13s for a repeat load of the same image. "
+            "Hitting the live Railway deployment from this testing environment, the homepage "
+            "takes roughly 0.9-1.1s — that's mostly baseline network latency from the "
+            "server's region, and won't exactly match what the user sees from mainland China "
+            "— for reference only. This is also why the region-migration option was deferred "
+            "in favor of application-level fixes for now."
+        ),
+        "image": None,
+        "lines_changed": 0,
+        "estimated": False,
+    },
 ]
