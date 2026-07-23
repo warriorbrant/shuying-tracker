@@ -489,4 +489,24 @@ CHANGELOG = [
         "lines_changed": 99,
         "estimated": False,
     },
+    {
+        "date": "2026-07-23",
+        "title": "更新定位文案：从「书影/生活追踪」到「个人AI应用实验室」",
+        "title_en": "Updated positioning copy: from a tracker to a personal AI app lab",
+        "summary": (
+            "网站已经不只是一个书影/生活追踪工具了，改了公开首页横幅、README、PWA "
+            "描述里的措辞，把它说清楚：这是一个用 AI 从零搭建的个人应用实验室，"
+            "书影/生活追踪是目前跑在里面的第一个功能，以后会陆续加新的实验性功能进来。"
+        ),
+        "summary_en": (
+            "The site has grown past being just a book/show/life tracker. Updated the "
+            "wording on the public homepage banner, README, and PWA description to say so: "
+            "this is a personal AI app lab built from scratch with AI, and the book/show/"
+            "life tracker is just the first feature running in it — more experimental "
+            "features to come."
+        ),
+        "image": None,
+        "lines_changed": 6,
+        "estimated": False,
+    },
 ]

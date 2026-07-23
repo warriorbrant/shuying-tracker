@@ -1,7 +1,7 @@
 {
   "name": "知行合一AI实验室",
   "short_name": "知行合一",
-  "description": "记录看过的书和剧、每日进度与动态",
+  "description": "个人 AI 应用实验室，记录看过的书和剧、每日进度与动态",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
