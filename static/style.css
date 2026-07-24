@@ -106,6 +106,15 @@ a.heat-day:hover {
 .heat-day.level-3 { background: #cf7a54; }
 .heat-day.level-4 { background: var(--accent); }
 
+@media (max-width: 600px) {
+  /* month labels ("12月" etc.) can't be shrunk to fit a single week-column's
+     width without becoming illegible, so they're dropped on narrow screens
+     instead of overflowing; the summary line below still has the date range. */
+  .heatmap-months { display: none; }
+  .heatmap, .heat-week { gap: 1px; }
+  .heat-day { width: 4px; height: 4px; border-radius: 1px; }
+}
+
 .heatmap-summary {
   margin-top: 10px;
   font-size: 0.8rem;
@@ -1036,7 +1045,6 @@ button {
   border-radius: var(--radius);
   padding: 20px 24px;
   margin-bottom: 24px;
-  overflow-x: auto;
 }
 
 .architecture-card h2 {
@@ -1046,8 +1054,9 @@ button {
 
 .arch-diagram {
   display: block;
-  min-width: 760px;
   width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
   height: auto;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
 }

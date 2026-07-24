@@ -661,4 +661,33 @@ CHANGELOG = [
         "lines_changed": 95,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "修复热力图和架构图在手机上显示不全的问题",
+        "title_en": "Fixed the heatmap and architecture diagram overflowing on mobile",
+        "summary": (
+            "热力图和架构图在手机上只能显示一半、要向右滑才能看完。架构图直接重画成单列纵向"
+            "布局，靠 SVG 的 viewBox 整体缩放，不再需要横向滚动。热力图的问题更细：月份标签"
+            "（「12月」这种）是每周一个固定宽度的格子，字号再怎么缩小，中文加数字也塞不进"
+            "一周格子的宽度，导致整行溢出——干脆在小屏幕上直接隐藏月份标签，格子本身缩小到 "
+            "4px，正好能塞进一屏。这次没法用手机实机测，改用无头 Chrome + iframe 撑出一个真实 "
+            "375px 视口分别测了两处，确认没有溢出之后才提交。"
+        ),
+        "summary_en": (
+            "The heatmap and architecture diagram only showed half on mobile, requiring a "
+            "sideways swipe to see the rest. Redrew the architecture diagram as a single "
+            "vertical column that scales as a whole via the SVG viewBox, so it no longer needs "
+            "horizontal scrolling. The heatmap's issue was subtler: month labels like \"12月\" "
+            "sit in a fixed-width cell matching one week's column, and no matter how small the "
+            "font gets, Chinese characters plus digits can't fit into a single week-column's "
+            "width, causing the row to overflow — so the labels are just hidden on small "
+            "screens, and the day cells themselves shrink to 4px to fit in one screen width. "
+            "Couldn't test on a real phone this time, so used headless Chrome with an iframe to "
+            "get a genuine 375px viewport and confirmed no overflow in either spot before "
+            "committing."
+        ),
+        "image": None,
+        "lines_changed": 57,
+        "estimated": False,
+    },
 ]
