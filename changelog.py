@@ -1026,4 +1026,30 @@ CHANGELOG = [
         "lines_changed": 4,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "分享图链接加上版本号，避开已经卡住的旧缓存",
+        "title_en": "Share links now carry a version param to dodge already-stuck caches",
+        "summary": (
+            "上一条修完 CDN 长期缓存的问题后，用带随机参数的网址测过源站确实是好的、参考"
+            "书目封面也正常，但小说页上那个固定的分享链接（没有参数）在修复上线前就已经被"
+            "缓存住了，`max_age=0` 只能防止以后的请求被长期缓存，改不了这一个已经缓存了的"
+            "网址——不重新生成一个新网址的话，还是会一直卡在那次旧快照上，得等最多 30 天。"
+            "干脆给「一键生成分享图」和「先预览」的链接都加上一个时间戳参数，每次打开小说"
+            "页拿到的都是一个全新网址，直接绕开旧缓存，不用等它过期。"
+        ),
+        "summary_en": (
+            "After fixing the long-lived CDN caching, verified with a cache-busted URL that "
+            "the origin was correct and reference covers loaded fine — but the plain share "
+            "link on the novel page (no query params) had already been cached before that fix "
+            "shipped. max_age=0 only stops new long-lived caching going forward; it can't "
+            "un-cache a URL that's already cached, so without a new URL it would keep serving "
+            "that stale snapshot for up to 30 days. Added a timestamp query param to both the "
+            "share and preview links, so every page load gets a brand-new URL that bypasses "
+            "the stuck cache entirely instead of waiting it out."
+        ),
+        "image": None,
+        "lines_changed": 8,
+        "estimated": False,
+    },
 ]

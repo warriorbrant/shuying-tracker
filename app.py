@@ -1369,9 +1369,15 @@ def novel_detail(novel_id):
         (novel_id,),
     ).fetchall()
     conn.close()
+    # cache-busting timestamp so a stale CDN-cached response for this URL never gets
+    # stuck being served long-term (max_age=0 on the route itself only prevents new
+    # long-lived caching going forward, not an already-cached copy of the bare URL).
+    share_ts = int(time.time())
+    share_url = url_for("novel_share_image", novel_id=novel_id, download=1, v=share_ts)
+    preview_url = url_for("novel_share_image", novel_id=novel_id, v=share_ts)
     return render_template(
         "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos,
-        references=references, share_url=url_for("novel_share_image", novel_id=novel_id, download=1),
+        references=references, share_url=share_url, preview_url=preview_url,
     )
 
 

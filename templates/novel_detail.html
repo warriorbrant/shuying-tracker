@@ -17,7 +17,7 @@
 
     <div class="actions">
       <a class="btn-share" href="{{ share_url }}">📤 一键生成分享图</a>
-      <a class="btn-link" href="{{ url_for('novel_share_image', novel_id=novel.id) }}" target="_blank">先预览</a>
+      <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
       {% if not auth_enabled or session.authed %}
         <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">编辑小说</a>
       {% endif %}
