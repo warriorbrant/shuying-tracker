@@ -830,4 +830,27 @@ CHANGELOG = [
         "lines_changed": 13,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "人物角色可以编辑/替换概念图，章节里自动同步",
+        "title_en": "Characters can now be edited/replaced, chapters sync automatically",
+        "summary": (
+            "之前人物角色只能新建和删除，没法改。加了一个编辑页，可以改名字、简介，或者"
+            "换一张新的概念图（不上传就保持原图）。因为章节里的人物是通过角色 ID 关联查出来"
+            "的，不是复制一份数据存死，所以换完图/改完名之后，所有引用了这个角色的章节——"
+            "不管是章节顶部的名单还是正文里出场时的立绘——下次打开都会自动显示最新的样子，"
+            "不用一章一章去重新设置。"
+        ),
+        "summary_en": (
+            "Characters could previously only be created or deleted, not edited. Added an edit "
+            "page: change the name, description, or swap in a new concept art image (leave it "
+            "blank to keep the current one). Since chapters reference characters by ID and look "
+            "them up live rather than storing a copy, every chapter referencing that character — "
+            "including the inline standee reveal in the text — automatically shows the latest "
+            "version the next time it's opened, with nothing to update per chapter."
+        ),
+        "image": None,
+        "lines_changed": 81,
+        "estimated": False,
+    },
 ]

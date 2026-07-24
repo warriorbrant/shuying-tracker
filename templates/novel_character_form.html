@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}编辑角色{% endblock %}
+{% block content %}
+
+<h1>编辑角色 · {{ novel.title }}</h1>
+<p class="hint">替换图片或改名后，所有已经关联这个角色的章节会自动同步显示最新的样子，不用逐章重新设置。</p>
+
+<div class="character-card" style="max-width:220px;">
+  {% if character.image_path %}
+    <img src="{{ url_for('serve_novel_media', filename=character.image_path) }}" alt="{{ character.name }}">
+  {% else %}
+    <div class="novel-card-cover-placeholder">🧑</div>
+  {% endif %}
+</div>
+
+<form class="form" method="post" enctype="multipart/form-data">
+  <label>
+    角色名
+    <input type="text" name="name" required value="{{ character.name }}">
+  </label>
+  <label>
+    角色简介（可选）
+    <textarea name="description" rows="2">{{ character.description }}</textarea>
+  </label>
+  <label>
+    替换概念图（可选，留空保持原图）
+    <input type="file" name="image_file" accept="image/*">
+  </label>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">取消</a>
+  </div>
+</form>
+
+{% endblock %}

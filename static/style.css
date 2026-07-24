@@ -1202,6 +1202,14 @@ button {
   color: var(--muted);
 }
 
+.character-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
 .video-card {
   background: var(--card-bg);
   border: 1px solid var(--border);

@@ -1619,6 +1619,36 @@ def novel_character_new(novel_id):
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
+@app.route("/novel/<int:novel_id>/character/<int:character_id>/edit", methods=["GET", "POST"])
+def novel_character_edit(novel_id, character_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    character = conn.execute(
+        "SELECT * FROM novel_characters WHERE id = ? AND novel_id = ?", (character_id, novel_id)
+    ).fetchone()
+    if novel is None or character is None:
+        conn.close()
+        return "未找到该角色", 404
+
+    if request.method == "POST":
+        image_path = save_novel_image(request.files.get("image_file")) or character["image_path"]
+        conn.execute(
+            "UPDATE novel_characters SET name=?, description=?, image_path=? WHERE id=?",
+            (
+                request.form.get("name", "").strip(),
+                request.form.get("description", "").strip(),
+                image_path,
+                character_id,
+            ),
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    conn.close()
+    return render_template("novel_character_form.html", novel=novel, character=character)
+
+
 @app.route("/novel/<int:novel_id>/character/<int:character_id>/delete", methods=["POST"])
 def novel_character_delete(novel_id, character_id):
     conn = get_db()
