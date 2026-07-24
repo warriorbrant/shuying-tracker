@@ -637,4 +637,28 @@ CHANGELOG = [
         "lines_changed": 339,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "首页加了一张详细的技术架构图",
+        "title_en": "Added a detailed architecture diagram to the homepage",
+        "summary": (
+            "在公开首页的开发流程图下面，加了一张手绘的技术架构图（SVG）：浏览器 → Railway "
+            "边缘 CDN（缓存命中直接返回，未命中才打到源站）→ 源站容器（Railway 新加坡，"
+            "gunicorn 单进程多线程）→ Flask 应用内部（路由鉴权、Jinja2 渲染、压缩、请求耗时"
+            "统计）→ 再往下分两支：持久化存储（Volume 里的 SQLite 数据库、上传照片、豆瓣封面"
+            "缓存）和外部服务（豆瓣抓取、Claude API）。图下面配了一段文字补充细节。"
+        ),
+        "summary_en": (
+            "Added a hand-drawn SVG architecture diagram below the dev-pipeline diagram on the "
+            "public homepage: browser → Railway edge CDN (cache hit returns directly, miss goes "
+            "to origin) → origin container (Railway Singapore, gunicorn single process/multi-"
+            "thread) → inside the Flask app (routing/auth, Jinja2 rendering, compression, "
+            "request-latency instrumentation) → branching down into persistent storage (SQLite "
+            "DB, uploaded photos, Douban cover cache, all on the Volume) and external services "
+            "(Douban scraping, Claude API). A paragraph below the diagram fills in more detail."
+        ),
+        "image": None,
+        "lines_changed": 95,
+        "estimated": False,
+    },
 ]

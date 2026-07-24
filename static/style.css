@@ -1029,3 +1029,25 @@ button {
   font-weight: 600;
   font-size: 0.78rem;
 }
+
+.architecture-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.architecture-card h2 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.arch-diagram {
+  display: block;
+  min-width: 760px;
+  width: 100%;
+  height: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
