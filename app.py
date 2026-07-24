@@ -34,7 +34,12 @@ from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
 from db import DATA_DIR, get_db, init_db
 from douban import DoubanFetchError, fetch_douban_info
-from share_card import build_changelog_share_card, build_day_share_card, build_share_card
+from share_card import (
+    build_changelog_share_card,
+    build_day_share_card,
+    build_novel_share_card,
+    build_share_card,
+)
 
 load_dotenv()
 
@@ -170,7 +175,7 @@ def inject_asset_version():
 
 PUBLIC_ENDPOINTS = {
     "login", "static", "changelog", "changelog_more", "changelog_share_image", "index",
-    "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read",
+    "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read", "novel_share_image",
 }
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
@@ -1363,7 +1368,39 @@ def novel_detail(novel_id):
     conn.close()
     return render_template(
         "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos,
-        references=references,
+        references=references, share_url=url_for("novel_share_image", novel_id=novel_id, download=1),
+    )
+
+
+@app.route("/novel/<int:novel_id>/share.png")
+def novel_share_image(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+    chapters = conn.execute(
+        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        (novel_id,),
+    ).fetchall()
+    characters = conn.execute(
+        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    ).fetchall()
+    references = conn.execute(
+        "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
+        "WHERE nr.novel_id = ? ORDER BY i.title ASC",
+        (novel_id,),
+    ).fetchall()
+    conn.close()
+
+    buf = build_novel_share_card(dict(novel), chapters, characters, references)
+
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"{novel['title']}-分享卡片.png" if download else None,
     )
 
 

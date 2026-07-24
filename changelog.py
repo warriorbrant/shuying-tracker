@@ -923,4 +923,32 @@ CHANGELOG = [
         "lines_changed": 86,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "小说主页加了一键分享图，含封面/简介/人物/章节/书目",
+        "title_en": "Added a one-click share image for novels",
+        "summary": (
+            "小说详情页加了「一键生成分享图」，跟书影条目的分享卡片是同一套 Pillow 生成"
+            "逻辑：封面、书名、状态、简介在最上面，往下依次是人物立绘（浮在柔和底色上，"
+            "跟章节里的展示风格一致）、章节目录（两列，章节多了自动截断显示「还有 N 章」）、"
+            "参考书目封面。内容一多卡片就跟着变长，不是固定尺寸。做的时候发现一个 bug："
+            "透明背景的人物立绘直接转 RGB 会把透明的地方涂成黑色，改成了用图片自己的透明"
+            "通道合成到底色上再画，封面图也做了同样的兼容。"
+        ),
+        "summary_en": (
+            "Added a one-click share image to the novel detail page, using the same Pillow-"
+            "based card generation as the book/show share cards. Cover, title, status, and "
+            "summary sit at the top, followed by character standees (floating on a soft "
+            "backdrop, matching the in-chapter style), a two-column chapter list (truncated "
+            "with a \"+N more\" note once there are a lot), and reference-book covers. The card "
+            "grows to fit the content instead of being a fixed size. Hit a bug along the way: "
+            "naively converting a transparent-background character PNG to RGB painted the "
+            "transparent areas black — fixed by compositing using the image's own alpha "
+            "channel onto the background color instead, and applied the same fix to the cover "
+            "image path."
+        ),
+        "image": None,
+        "lines_changed": 304,
+        "estimated": False,
+    },
 ]

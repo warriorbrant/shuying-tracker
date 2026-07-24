@@ -105,6 +105,50 @@ def _load_changelog_image(filename):
         return None
 
 
+def _load_novel_media(filename):
+    """Loads a novel-media file preserving its alpha channel (character concept
+    art is often uploaded as transparent-background PNG); callers are responsible
+    for compositing onto a background before use."""
+    if not filename:
+        return None
+    try:
+        img = Image.open(DATA_DIR / "novel_media" / filename)
+        img.load()
+        return img
+    except Exception:
+        return None
+
+
+def _contain_paste(base, img, box, radius=14, bg=None):
+    """Like _rounded_paste but fits the whole image inside the box (may letterbox)
+    instead of cropping — used for character standees/book covers, where cropping
+    could cut off the subject. Composites transparent-background images (e.g. a
+    character cutout) using their own alpha channel, instead of showing black."""
+    x0, y0, x1, y1 = box
+    w, h = x1 - x0, y1 - y0
+    if bg is None:
+        bg = (241, 227, 220)
+    tile = Image.new("RGB", (w, h), bg)
+    src_ratio = img.width / img.height
+    dst_ratio = w / h
+    if src_ratio > dst_ratio:
+        new_w = w
+        new_h = int(w / src_ratio)
+    else:
+        new_h = h
+        new_w = int(h * src_ratio)
+    resized = img.resize((max(1, new_w), max(1, new_h)))
+    paste_pos = ((w - new_w) // 2, (h - new_h) // 2)
+    if resized.mode in ("RGBA", "LA"):
+        resized = resized.convert("RGBA")
+        tile.paste(resized, paste_pos, resized)
+    else:
+        tile.paste(resized.convert("RGB"), paste_pos)
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, w, h], radius=radius, fill=255)
+    base.paste(tile, (x0, y0), mask)
+
+
 def _measure_draw():
     return ImageDraw.Draw(Image.new("RGB", (10, 10)))
 
@@ -112,6 +156,11 @@ def _measure_draw():
 def _rounded_paste(base, img, box, radius=18):
     x0, y0, x1, y1 = box
     w, h = x1 - x0, y1 - y0
+    if img.mode in ("RGBA", "LA", "P"):
+        rgba = img.convert("RGBA")
+        flat = Image.new("RGB", rgba.size, BG)
+        flat.paste(rgba, (0, 0), rgba)
+        img = flat
     img = _cover_fit(img, w, h)
     mask = Image.new("L", (w, h), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, w, h], radius=radius, fill=255)
@@ -539,6 +588,216 @@ def build_changelog_share_card(entries, heading, heatmap=None, t=None):
         _draw_mini_heatmap(draw, pad, heatmap_top + 24, heatmap)
 
     watermark = f"{t['watermark']} · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
+NOVEL_MAX_CHARACTERS = 8
+NOVEL_MAX_CHAPTERS = 12
+NOVEL_MAX_REFERENCES = 6
+SECTION_HEADING_H = 66  # height consumed by _section_heading before section content starts
+
+
+def _section_heading(draw, text, x, y, w):
+    font = _font(32, bold=True)
+    draw.text((x, y), text, font=font, fill=TEXT)
+    line_y = y + 44
+    draw.line([(x, line_y), (x + w, line_y)], fill=BORDER, width=2)
+    return line_y + 22
+
+
+def _build_novel_header(measure, w, novel):
+    pad = 0
+    cover_w, cover_h = 260, 347
+    title_font = _font(46, bold=True)
+    status_font = _font(26)
+    summary_font = _font(28)
+
+    title_lines = _wrap(measure, novel["title"], title_font, w - 120)[:2]
+    summary_lines = _wrap(measure, novel["summary"], summary_font, w - 160)[:5] if novel["summary"] else []
+
+    h = cover_h + 26
+    h += len(title_lines) * 58 + 10
+    h += 64
+    if summary_lines:
+        h += len(summary_lines) * 40 + 10
+
+    def draw_fn(card, draw, x0, y0):
+        y = y0
+        cover_x = x0 + (w - cover_w) // 2
+        cover_img = _load_novel_media(novel["cover_image"])
+        if cover_img:
+            _rounded_paste(card, cover_img, (cover_x, y, cover_x + cover_w, y + cover_h), radius=20)
+        else:
+            draw.rounded_rectangle([cover_x, y, cover_x + cover_w, y + cover_h], radius=20, fill=ACCENT_SOFT)
+            label_font = _font(80)
+            bbox = draw.textbbox((0, 0), "小说", font=label_font)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            draw.text(
+                (cover_x + (cover_w - tw) / 2, y + (cover_h - th) / 2 - bbox[1]),
+                "小说", font=label_font, fill=ACCENT,
+            )
+        y += cover_h + 26
+
+        for line in title_lines:
+            bbox = draw.textbbox((0, 0), line, font=title_font)
+            tw = bbox[2] - bbox[0]
+            draw.text((x0 + (w - tw) / 2, y), line, font=title_font, fill=TEXT)
+            y += 58
+        y += 10
+
+        status_text = f"  {novel['status']}  "
+        bbox = draw.textbbox((0, 0), status_text, font=status_font)
+        pill_w, pill_h = bbox[2] - bbox[0] + 20, bbox[3] - bbox[1] + 24
+        pill_x = x0 + (w - pill_w) / 2
+        draw.rounded_rectangle([pill_x, y, pill_x + pill_w, y + pill_h], radius=pill_h // 2, fill=ACCENT_SOFT)
+        draw.text((pill_x + 10, y + 10), status_text, font=status_font, fill=ACCENT)
+        y += pill_h + 24
+
+        if summary_lines:
+            for line in summary_lines:
+                bbox = draw.textbbox((0, 0), line, font=summary_font)
+                tw = bbox[2] - bbox[0]
+                draw.text((x0 + (w - tw) / 2, y), line, font=summary_font, fill=MUTED)
+                y += 40
+
+    return h, draw_fn
+
+
+def _build_character_row(measure, w, characters):
+    shown = characters[:NOVEL_MAX_CHARACTERS]
+    extra = len(characters) - len(shown)
+    tile_w, tile_h, name_h, gap = 150, 190, 34, 20
+    per_row = max(1, (w + gap) // (tile_w + gap))
+    rows = -(-len(shown) // per_row) if shown else 0
+    h = SECTION_HEADING_H + rows * (tile_h + name_h + gap)
+    if extra > 0:
+        h += 36
+
+    def draw_fn(card, draw, x0, y0):
+        y = _section_heading(draw, "人物角色", x0, y0, w)
+        name_font = _font(22)
+        for i, ch in enumerate(shown):
+            col, row = i % per_row, i // per_row
+            tx = x0 + col * (tile_w + gap)
+            ty = y + row * (tile_h + name_h + gap)
+            img = _load_novel_media(ch["image_path"])
+            if img:
+                _contain_paste(card, img, (tx, ty, tx + tile_w, ty + tile_h))
+            else:
+                draw.rounded_rectangle([tx, ty, tx + tile_w, ty + tile_h], radius=14, fill=ACCENT_SOFT)
+            name_lines = _wrap(measure, ch["name"], name_font, tile_w)[:1]
+            if name_lines:
+                bbox = draw.textbbox((0, 0), name_lines[0], font=name_font)
+                tw = bbox[2] - bbox[0]
+                draw.text((tx + (tile_w - tw) / 2, ty + tile_h + 8), name_lines[0], font=name_font, fill=TEXT)
+        if extra > 0:
+            extra_y = y + rows * (tile_h + name_h + gap)
+            draw.text((x0, extra_y), f"还有 {extra} 位角色…", font=_font(24), fill=MUTED)
+
+    return h, draw_fn
+
+
+def _build_chapter_list(measure, w, chapters):
+    shown = chapters[:NOVEL_MAX_CHAPTERS]
+    extra = len(chapters) - len(shown)
+    columns = 2
+    col_w = (w - 30) // columns
+    row_h = 42
+    rows = -(-len(shown) // columns) if shown else 0
+    h = SECTION_HEADING_H + rows * row_h
+    if extra > 0:
+        h += 36
+
+    def draw_fn(card, draw, x0, y0):
+        y = _section_heading(draw, f"章节目录（共 {len(chapters)} 章）", x0, y0, w)
+        item_font = _font(26)
+        for i, c in enumerate(shown):
+            col, row = i % columns, i // columns
+            tx = x0 + col * (col_w + 30)
+            ty = y + row * row_h
+            label = f"第{c['chapter_no']}章 · {c['title']}"
+            line = _wrap(measure, label, item_font, col_w)[:1]
+            text = (line[0] + "…") if line and len(line[0]) < len(label) else label
+            draw.text((tx, ty), text, font=item_font, fill=TEXT)
+        if extra > 0:
+            extra_y = y + rows * row_h
+            draw.text((x0, extra_y), f"还有 {extra} 章…", font=_font(24), fill=MUTED)
+
+    return h, draw_fn
+
+
+def _build_reference_row(measure, w, references):
+    shown = references[:NOVEL_MAX_REFERENCES]
+    extra = len(references) - len(shown)
+    tile_w, tile_h, name_h, gap = 140, 187, 34, 20
+    per_row = max(1, (w + gap) // (tile_w + gap))
+    rows = -(-len(shown) // per_row) if shown else 0
+    h = SECTION_HEADING_H + rows * (tile_h + name_h + gap)
+    if extra > 0:
+        h += 36
+
+    def draw_fn(card, draw, x0, y0):
+        y = _section_heading(draw, "参考书目", x0, y0, w)
+        name_font = _font(20)
+        for i, ref in enumerate(shown):
+            col, row = i % per_row, i // per_row
+            tx = x0 + col * (tile_w + gap)
+            ty = y + row * (tile_h + name_h + gap)
+            img = _fetch_cover(ref["cover_url"])
+            if img:
+                _rounded_paste(card, img, (tx, ty, tx + tile_w, ty + tile_h), radius=10)
+            else:
+                draw.rounded_rectangle([tx, ty, tx + tile_w, ty + tile_h], radius=10, fill=ACCENT_SOFT)
+            name_lines = _wrap(measure, ref["title"], name_font, tile_w)[:1]
+            if name_lines:
+                bbox = draw.textbbox((0, 0), name_lines[0], font=name_font)
+                tw = bbox[2] - bbox[0]
+                draw.text((tx + (tile_w - tw) / 2, ty + tile_h + 8), name_lines[0], font=name_font, fill=MUTED)
+        if extra > 0:
+            extra_y = y + rows * (tile_h + name_h + gap)
+            draw.text((x0, extra_y), f"还有 {extra} 本…", font=_font(24), fill=MUTED)
+
+    return h, draw_fn
+
+
+def build_novel_share_card(novel, chapters, characters, references):
+    W = 1080
+    pad = 64
+    section_gap = 40
+    content_w = W - pad * 2
+    measure = _measure_draw()
+
+    sections = []
+    header_h, header_draw = _build_novel_header(measure, content_w, novel)
+    sections.append((header_h, header_draw))
+
+    if characters:
+        sections.append(_build_character_row(measure, content_w, characters))
+    if chapters:
+        sections.append(_build_chapter_list(measure, content_w, chapters))
+    if references:
+        sections.append(_build_reference_row(measure, content_w, references))
+
+    footer_h = 70
+    H = pad + sum(h for h, _ in sections) + section_gap * (len(sections) - 1) + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    y = pad
+    for h, draw_fn in sections:
+        draw_fn(card, draw, pad, y)
+        y += h + section_gap
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
