@@ -9,7 +9,7 @@
 
 <article class="chapter-reader">
   <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
-  <div class="chapter-body">
+  <div class="chapter-body" id="chapterBody">
     {% for block in blocks %}
       {% if block.type == 'text' %}
         <p>{{ block.text }}</p>
@@ -103,4 +103,13 @@
 })();
 </script>
 {% endif %}
+<script>
+(function () {
+  var body = document.getElementById('chapterBody');
+  if (!body) return;
+  ['copy', 'cut', 'contextmenu'].forEach(function (evt) {
+    body.addEventListener(evt, function (e) { e.preventDefault(); });
+  });
+})();
+</script>
 {% endblock %}

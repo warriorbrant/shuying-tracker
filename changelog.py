@@ -853,4 +853,26 @@ CHANGELOG = [
         "lines_changed": 81,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "章节正文加了禁止选中/复制/右键",
+        "title_en": "Chapter text now blocks selection/copy/right-click",
+        "summary": (
+            "小说正文加了 user-select: none，鼠标没法拖选文字；同时拦截了 copy / cut / "
+            "contextmenu 事件，Ctrl+C 和右键菜单里的复制也不起作用了。说清楚一下：这只是"
+            "挡住顺手复制，不是真正的防护——查看网页源码、浏览器开发者工具、直接请求页面"
+            "拿 HTML、截图 OCR 这些办法都能绕过去，技术上没有办法百分百阻止别人拿到文本。"
+        ),
+        "summary_en": (
+            "Chapter text now has user-select: none, so mouse drag-selection doesn't work; also "
+            "intercepts copy/cut/contextmenu events, so Ctrl+C and the right-click menu's copy "
+            "option no longer do anything. Worth being upfront: this only blocks casual "
+            "copy-pasting, not a determined attempt — view-source, browser devtools, fetching "
+            "the page's HTML directly, or screenshot+OCR all bypass it. There's no way to "
+            "technically prevent someone from getting the text once it's in their browser."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

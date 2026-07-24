@@ -1323,6 +1323,11 @@ button {
   font-size: 1rem;
 }
 
+.chapter-body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .character-reveal {
   display: flex;
   justify-content: center;
