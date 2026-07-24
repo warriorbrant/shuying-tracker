@@ -110,6 +110,16 @@ CREATE TABLE IF NOT EXISTS novel_references (
     item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
     PRIMARY KEY (novel_id, item_id)
 );
+
+-- Indexes on the foreign keys / date columns that every list query filters on.
+-- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
+-- as chapters/logs grow (a novel already has dozens of chapters).
+CREATE INDEX IF NOT EXISTS idx_logs_item_id ON logs(item_id);
+CREATE INDEX IF NOT EXISTS idx_logs_log_date ON logs(log_date);
+CREATE INDEX IF NOT EXISTS idx_moments_log_date ON moments(log_date);
+CREATE INDEX IF NOT EXISTS idx_novel_chapters_novel_id ON novel_chapters(novel_id);
+CREATE INDEX IF NOT EXISTS idx_novel_characters_novel_id ON novel_characters(novel_id);
+CREATE INDEX IF NOT EXISTS idx_novel_videos_novel_id ON novel_videos(novel_id);
 """
 
 

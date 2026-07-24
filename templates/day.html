@@ -27,7 +27,7 @@
     {% for log in logs %}
     <li class="log-item">
       {% if log.item_cover_url %}
-        <img class="entry-thumb" src="{{ cover_src(log.item_cover_url) }}" alt="{{ log.item_title }}">
+        <img loading="lazy" class="entry-thumb" src="{{ cover_src(log.item_cover_url) }}" alt="{{ log.item_title }}">
       {% endif %}
       <div class="log-meta">
         <a href="{{ url_for('item_detail', item_id=log.item_id) }}"><strong>{{ log.item_title }}</strong></a>
@@ -56,7 +56,7 @@
       </div>
       {% if m.content %}<p class="log-comment">{{ m.content }}</p>{% endif %}
       {% if m.image_path %}
-        <img class="moment-photo" src="{{ url_for('serve_data', filename=m.image_path) }}" alt="{{ m.title }}">
+        <img loading="lazy" class="moment-photo" src="{{ url_for('serve_data', filename=m.image_path) }}" alt="{{ m.title }}">
       {% endif %}
       <form method="post" action="{{ url_for('moment_delete', moment_id=m.id) }}"
             onsubmit="return confirm('删除这条动态？');">
@@ -80,7 +80,7 @@
       </div>
       <p class="log-comment">{{ c.summary }}</p>
       {% if c.image %}
-        <img class="moment-photo" src="{{ url_for('static', filename='changelog/' + c.image) }}" alt="{{ c.title }}">
+        <img loading="lazy" class="moment-photo" src="{{ url_for('static', filename='changelog/' + c.image) }}" alt="{{ c.title }}">
       {% endif %}
     </li>
     {% endfor %}

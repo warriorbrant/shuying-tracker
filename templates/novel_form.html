@@ -77,7 +77,7 @@
     {% for ch in characters %}
     <div class="character-card">
       {% if ch.image_path %}
-        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
       {% else %}
         <div class="novel-card-cover-placeholder">🧑</div>
       {% endif %}
@@ -188,7 +188,7 @@ document.getElementById('videoSourceType').addEventListener('change', function()
     <div class="novel-card">
       <div class="novel-card-cover">
         {% if ref.cover_url %}
-          <img src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
+          <img loading="lazy" src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
         {% else %}
           <div class="novel-card-cover-placeholder">📗</div>
         {% endif %}
@@ -214,7 +214,7 @@ document.getElementById('videoSourceType').addEventListener('change', function()
       <label class="picker-item">
         <input type="checkbox" name="item_ids" value="{{ b.id }}" {{ 'checked' if b.id in referenced_ids }}>
         {% if b.cover_url %}
-          <img src="{{ cover_src(b.cover_url) }}" alt="{{ b.title }}">
+          <img loading="lazy" src="{{ cover_src(b.cover_url) }}" alt="{{ b.title }}">
         {% else %}
           <span class="picker-video-icon">📗</span>
         {% endif %}

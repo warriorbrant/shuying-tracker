@@ -1079,4 +1079,38 @@ CHANGELOG = [
         "lines_changed": 1,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "性能优化：让图片走 CDN 缓存、图片懒加载、数据库加索引",
+        "title_en": "Perf pass: CDN-cache images, lazy-load them, add DB indexes",
+        "summary": (
+            "又做了一轮性能优化，这次先测再改。拆解时序发现服务器处理只占 ~0.18 秒，大头是"
+            "到新加坡的网络往返；但意外发现所有图片（书封面、人物立绘、豆瓣封面）的 x-cache "
+            "都是 DYNAMIC——明明设了缓存头却没被 CDN 缓存，每张图都一路回源新加坡。对比发现"
+            "根因：Flask 的 send_file 给图片加了 Content-Disposition 和 Accept-Ranges 两个头，"
+            "Railway 的 CDN 就因此不缓存了（被压缩的 CSS 没这俩头，所以能缓存）。加了个 "
+            "after_request 钩子，把内联图片/视频的 Content-Disposition 去掉（图片再去掉 "
+            "Accept-Ranges，视频保留以便拖动进度），分享图下载的 attachment 不受影响。这样图片"
+            "就能被离用户近的边缘节点缓存了。另外给所有 <img> 加了 loading=lazy（首屏外的图"
+            "延迟加载），给数据库外键和日期列补了索引（数据量涨了不至于劣化）。"
+        ),
+        "summary_en": (
+            "Another performance pass, measure-first this time. Breaking down the timing showed "
+            "server processing is only ~0.18s — the bulk is network round-trips to Singapore — "
+            "but I found that every image (book covers, character art, Douban covers) had "
+            "x-cache: DYNAMIC: despite proper cache headers the CDN wasn't caching them, so each "
+            "image round-tripped to the origin. Root cause: Flask's send_file adds "
+            "Content-Disposition and Accept-Ranges to image responses, and Railway's CDN skips "
+            "caching when those are present (the gzip-compressed CSS has neither, which is why it "
+            "cached). Added an after_request hook that strips Content-Disposition from inline "
+            "images/videos (and Accept-Ranges from images; videos keep it for seeking), leaving "
+            "share-card attachment downloads untouched — so images now cache at the edge node "
+            "near the viewer. Also added loading=lazy to every <img> (defers off-screen loads) "
+            "and indexes on the DB foreign-key/date columns (keeps lookups from degrading as "
+            "chapters/logs grow)."
+        ),
+        "image": None,
+        "lines_changed": 73,
+        "estimated": False,
+    },
 ]

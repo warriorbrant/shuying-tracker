@@ -9,12 +9,12 @@
     </div>
     {% if entry.content %}<p class="log-comment">{{ entry.content }}</p>{% endif %}
     {% if entry.image_path %}
-      <img class="moment-photo" src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="{{ entry.title }}">
+      <img loading="lazy" class="moment-photo" src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="{{ entry.title }}">
     {% endif %}
 
   {% elif entry.kind == 'log' %}
     {% if entry.cover_url %}
-      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+      <img loading="lazy" class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
     {% endif %}
     <div class="moment-meta">
       <span class="moment-type">{{ '📚' if entry.item_type == 'book' else '🎬' }} {{ '书' if entry.item_type == 'book' else '剧' }}</span>
@@ -32,7 +32,7 @@
 
   {% elif entry.kind == 'item_new' %}
     {% if entry.cover_url %}
-      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+      <img loading="lazy" class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
     {% endif %}
     <div class="moment-meta">
       <span class="moment-type">{{ '📚' if entry.type == 'book' else '🎬' }} {{ '书' if entry.type == 'book' else '剧' }}</span>
@@ -49,12 +49,12 @@
     </div>
     <p class="log-comment">{{ entry.summary }}</p>
     {% if entry.image %}
-      <img class="moment-photo" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
+      <img loading="lazy" class="moment-photo" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
     {% endif %}
 
   {% elif entry.kind == 'item_match' %}
     {% if entry.cover_url %}
-      <img class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
+      <img loading="lazy" class="entry-thumb" src="{{ cover_src(entry.cover_url) }}" alt="{{ entry.title }}">
     {% endif %}
     <div class="moment-meta">
       <span class="moment-type">{{ '📚' if entry.type == 'book' else '🎬' }} {{ '书' if entry.type == 'book' else '剧' }}</span>

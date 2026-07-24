@@ -16,7 +16,7 @@
   <a class="novel-card" href="{{ url_for('novel_detail', novel_id=novel.id) }}">
     <div class="novel-card-cover">
       {% if novel.cover_image %}
-        <img src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
+        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
       {% else %}
         <div class="novel-card-cover-placeholder">📖</div>
       {% endif %}

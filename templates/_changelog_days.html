@@ -14,7 +14,7 @@
         </div>
         <p>{{ entry.summary }}</p>
         {% if entry.image %}
-          <img class="changelog-image" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
+          <img loading="lazy" class="changelog-image" src="{{ url_for('static', filename='changelog/' + entry.image) }}" alt="{{ entry.title }}">
         {% endif %}
       </div>
     </li>

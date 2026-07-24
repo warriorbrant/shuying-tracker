@@ -18,7 +18,7 @@
         <div class="character-reveal">
           <div class="character-standee">
             {% if ch.image_path %}
-              <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+              <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
             {% endif %}
             <span class="character-standee-name">{{ ch.name }}</span>
           </div>
@@ -32,7 +32,7 @@
     {% for ch in unmatched_characters %}
     <div class="character-card">
       {% if ch.image_path %}
-        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
       {% endif %}
       <h3>{{ ch.name }}</h3>
     </div>

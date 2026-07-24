@@ -5,7 +5,7 @@
 <div class="detail-header">
   <div class="cover large">
     {% if novel.cover_image %}
-      <img src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
+      <img loading="lazy" src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
     {% else %}
       <div class="cover-placeholder">📖</div>
     {% endif %}
@@ -45,7 +45,7 @@
     {% for ch in characters %}
     <div class="character-card">
       {% if ch.image_path %}
-        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
       {% else %}
         <div class="novel-card-cover-placeholder">🧑</div>
       {% endif %}
@@ -92,7 +92,7 @@
     <{{ tag }} class="novel-card" {% if ref.douban_url %}href="{{ ref.douban_url }}" target="_blank" rel="noopener"{% endif %}>
       <div class="novel-card-cover">
         {% if ref.cover_url %}
-          <img src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
+          <img loading="lazy" src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
         {% else %}
           <div class="novel-card-cover-placeholder">📗</div>
         {% endif %}

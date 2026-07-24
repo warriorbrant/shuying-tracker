@@ -17,7 +17,7 @@
   {% for entry in entries %}
   <div class="scan-entry">
     <div class="scan-entry-preview">
-      <img src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="截图预览">
+      <img loading="lazy" src="{{ url_for('serve_data', filename=entry.image_path) }}" alt="截图预览">
     </div>
     <div class="scan-entry-fields">
       <input type="hidden" name="image_path_{{ loop.index0 }}" value="{{ entry.image_path }}">

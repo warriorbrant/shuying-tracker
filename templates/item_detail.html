@@ -5,7 +5,7 @@
 <div class="detail-header">
   <div class="cover large">
     {% if item.cover_url %}
-      <img src="{{ cover_src(item.cover_url) }}" alt="{{ item.title }}">
+      <img loading="lazy" src="{{ cover_src(item.cover_url) }}" alt="{{ item.title }}">
     {% else %}
       <div class="cover-placeholder">{{ '📚' if item.type == 'book' else '🎬' }}</div>
     {% endif %}

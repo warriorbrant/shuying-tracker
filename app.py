@@ -197,6 +197,23 @@ def record_metrics(response):
     return response
 
 
+@app.after_request
+def make_inline_media_cacheable(response):
+    # send_file adds Content-Disposition and Accept-Ranges to image/video responses,
+    # and Railway's edge CDN then refuses to cache them (x-cache: DYNAMIC) — so every
+    # cover/photo round-tripped all the way to the Singapore origin instead of being
+    # served from a nearby edge node. Strip those headers for *inline* media so the
+    # edge caches them. Attachment downloads (share-card PNGs) keep their disposition,
+    # and videos keep Accept-Ranges so seeking still works.
+    cd = response.headers.get("Content-Disposition", "")
+    top_type = (response.mimetype or "").split("/")[0]
+    if cd.startswith("inline") and top_type in ("image", "video"):
+        del response.headers["Content-Disposition"]
+        if top_type == "image":
+            response.headers.pop("Accept-Ranges", None)
+    return response
+
+
 @app.before_request
 def require_login():
     if not app_password():
