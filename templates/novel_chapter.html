@@ -8,9 +8,9 @@
 </div>
 
 {% if characters %}
-<div class="character-stage">
+<div class="character-stage" id="characterStage">
   {% for ch in characters %}
-  <div class="character-standee">
+  <div class="character-standee" style="--standee-delay: {{ (loop.index0 * 0.12) | round(2) }}s">
     {% if ch.image_path %}
       <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
     {% endif %}
@@ -66,4 +66,26 @@
 <p class="hint"><a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=chapter.id) }}">编辑这一章</a></p>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+{% if characters %}
+<script>
+(function () {
+  var stage = document.getElementById('characterStage');
+  if (!stage || !('IntersectionObserver' in window)) return;
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  stage.querySelectorAll('.character-standee').forEach(function (el) {
+    observer.observe(el);
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}

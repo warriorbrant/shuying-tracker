@@ -743,4 +743,29 @@ CHANGELOG = [
         "lines_changed": 256,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "立绘显示完整、放大，出场时轻微动画登场",
+        "title_en": "Standees show uncropped, bigger, with a subtle entrance animation",
+        "summary": (
+            "人物立绘之前用 object-fit: cover 会把图裁掉一截，改成 contain 之后完整显示（人物"
+            "卡片、章节勾选列表里的缩略图也一起改了）；章节里的立绘尺寸也放大了不少（220px→"
+            "340px，手机上 160px→230px）。加了一点互动感但没有做得太花：滚动到人物出场的地方时"
+            "会有一个轻微的淡入+上浮动画，一个个错开登场，不是那种刷屏的特效，纯 CSS + 一个"
+            "IntersectionObserver，尊重了系统的减弱动效设置。"
+        ),
+        "summary_en": (
+            "Character standees previously used object-fit: cover, which cropped part of the "
+            "image — switched to contain so the full image always shows (also fixed the "
+            "character cards and the chapter picker thumbnails). Standee size in the chapter "
+            "reader got noticeably bigger too (220px to 340px, 160px to 230px on mobile). Added "
+            "a touch of interactivity without overdoing it: when you scroll to where a character "
+            "appears, they fade and rise into view with a slight stagger between characters — "
+            "no flashy effects, just CSS plus one IntersectionObserver, and it respects "
+            "prefers-reduced-motion."
+        ),
+        "image": None,
+        "lines_changed": 53,
+        "estimated": False,
+    },
 ]
