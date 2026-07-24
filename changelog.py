@@ -720,4 +720,27 @@ CHANGELOG = [
         "lines_changed": 988,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "小说章节可以挑选出场人物和视频，人物做成立绘展示",
+        "title_en": "Chapters can pick characters/videos, characters shown as standees",
+        "summary": (
+            "写章节的时候可以从已经上传的人物角色和视频里勾选，不用每章重新上传——加了两张"
+            "关联表记录每章的出场人物和本章视频。打开章节页时，勾选的人物不再是一张张方图，"
+            "而是做成「立绘」的样子浮在页面上：假设上传的是透明背景的图，不加相框和背景，"
+            "配一层柔和的渐变底色和阴影，名字用小圆角标签贴在下面，视频则放在正文下面。"
+        ),
+        "summary_en": (
+            "Writing a chapter now lets you pick from already-uploaded characters and videos "
+            "instead of re-uploading per chapter — added two join tables tracking which "
+            "characters/videos belong to which chapter. On the chapter page, picked characters "
+            "no longer show as boxed photos but as floating standees: assuming a transparent-"
+            "background upload, there's no frame or card background, just a soft gradient "
+            "backdrop and drop shadow, with the name on a small pill tag underneath. Videos sit "
+            "below the chapter text."
+        ),
+        "image": None,
+        "lines_changed": 256,
+        "estimated": False,
+    },
 ]

@@ -91,6 +91,18 @@ CREATE TABLE IF NOT EXISTS novel_videos (
     duration_seconds INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
+
+CREATE TABLE IF NOT EXISTS novel_chapter_characters (
+    chapter_id INTEGER NOT NULL REFERENCES novel_chapters(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES novel_characters(id) ON DELETE CASCADE,
+    PRIMARY KEY (chapter_id, character_id)
+);
+
+CREATE TABLE IF NOT EXISTS novel_chapter_videos (
+    chapter_id INTEGER NOT NULL REFERENCES novel_chapters(id) ON DELETE CASCADE,
+    video_id INTEGER NOT NULL REFERENCES novel_videos(id) ON DELETE CASCADE,
+    PRIMARY KEY (chapter_id, video_id)
+);
 """
 
 

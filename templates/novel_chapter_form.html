@@ -15,6 +15,42 @@
     <textarea name="content" rows="20">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
+  <label>本章出场人物（从已上传的人物里挑，不用重新上传）</label>
+  {% if all_characters %}
+  <div class="picker-grid">
+    {% for ch in all_characters %}
+    <label class="picker-item">
+      <input type="checkbox" name="character_ids" value="{{ ch.id }}" {{ 'checked' if ch.id in selected_character_ids }}>
+      {% if ch.image_path %}
+        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+      {% endif %}
+      <span>{{ ch.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="hint">还没有人物角色，先在小说编辑页加几个。</p>
+  {% endif %}
+
+  <label>本章视频（从已上传/已添加的视频里挑）</label>
+  {% if all_videos %}
+  <div class="picker-grid">
+    {% for v in all_videos %}
+    <label class="picker-item">
+      <input type="checkbox" name="video_ids" value="{{ v.id }}" {{ 'checked' if v.id in selected_video_ids }}>
+      {% if v.source_type == 'upload' and v.thumbnail_path %}
+        <img src="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}" alt="{{ v.title }}">
+      {% else %}
+        <span class="picker-video-icon">🎬</span>
+      {% endif %}
+      <span>{{ v.title or ('视频 #' ~ v.id) }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="hint">还没有视频，先在小说编辑页加几个。</p>
+  {% endif %}
+
   <div class="actions">
     <button type="submit">保存</button>
     <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">取消</a>

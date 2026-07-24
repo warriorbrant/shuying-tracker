@@ -7,10 +7,49 @@
   <a class="lang-switch" href="{{ url_for('novel_detail', novel_id=novel.id) }}">目录</a>
 </div>
 
+{% if characters %}
+<div class="character-stage">
+  {% for ch in characters %}
+  <div class="character-standee">
+    {% if ch.image_path %}
+      <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+    {% endif %}
+    <span class="character-standee-name">{{ ch.name }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <article class="chapter-reader">
   <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
   <div class="chapter-body">{{ chapter.content }}</div>
 </article>
+
+{% if videos %}
+<section class="log-section">
+  <h2>本章视频</h2>
+  <div class="video-grid">
+    {% for v in videos %}
+    <div class="video-card">
+      {% if v.title %}<h3>{{ v.title }}</h3>{% endif %}
+      {% if v.source_type == 'upload' %}
+        <video controls preload="none"
+          {% if v.thumbnail_path %}poster="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}"{% endif %}>
+          <source src="{{ url_for('serve_novel_media', filename=v.video_path) }}" type="video/mp4">
+        </video>
+      {% else %}
+        {% set embed = parse_video_embed(v.video_url) %}
+        {% if embed %}
+          <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        {% else %}
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+        {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 <div class="chapter-nav">
   {% if prev_chapter %}

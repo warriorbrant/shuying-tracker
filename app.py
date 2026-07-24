@@ -429,6 +429,15 @@ def to_float(value, default=None):
         return default
 
 
+def to_int_list(values):
+    result = []
+    for v in values:
+        n = to_int(v)
+        if n is not None:
+            result.append(n)
+    return result
+
+
 def heat_level(minutes, has_entries):
     if not has_entries:
         return 0
@@ -1364,6 +1373,18 @@ def novel_chapter_read(novel_id, chapter_id):
         "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
+    characters = conn.execute(
+        "SELECT nc.* FROM novel_characters nc "
+        "JOIN novel_chapter_characters ncc ON ncc.character_id = nc.id "
+        "WHERE ncc.chapter_id = ? ORDER BY nc.sort_order ASC, nc.id ASC",
+        (chapter_id,),
+    ).fetchall()
+    videos = conn.execute(
+        "SELECT nv.* FROM novel_videos nv "
+        "JOIN novel_chapter_videos ncv ON ncv.video_id = nv.id "
+        "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
+        (chapter_id,),
+    ).fetchall()
     conn.close()
 
     ids = [c["id"] for c in chapters]
@@ -1373,6 +1394,7 @@ def novel_chapter_read(novel_id, chapter_id):
 
     return render_template(
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
+        characters=characters, videos=videos,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
     )
 
@@ -1450,6 +1472,19 @@ def novel_delete(novel_id):
     return redirect(url_for("novels_list"))
 
 
+def set_chapter_links(conn, chapter_id, character_ids, video_ids):
+    conn.execute("DELETE FROM novel_chapter_characters WHERE chapter_id = ?", (chapter_id,))
+    conn.executemany(
+        "INSERT INTO novel_chapter_characters (chapter_id, character_id) VALUES (?, ?)",
+        [(chapter_id, cid) for cid in character_ids],
+    )
+    conn.execute("DELETE FROM novel_chapter_videos WHERE chapter_id = ?", (chapter_id,))
+    conn.executemany(
+        "INSERT INTO novel_chapter_videos (chapter_id, video_id) VALUES (?, ?)",
+        [(chapter_id, vid) for vid in video_ids],
+    )
+
+
 @app.route("/novel/<int:novel_id>/chapter/new", methods=["GET", "POST"])
 def novel_chapter_new(novel_id):
     conn = get_db()
@@ -1466,13 +1501,28 @@ def novel_chapter_new(novel_id):
             "INSERT INTO novel_chapters (novel_id, chapter_no, title, content) VALUES (?, ?, ?, ?)",
             (novel_id, next_no, request.form["title"].strip(), request.form.get("content", "")),
         )
+        chapter_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+        set_chapter_links(
+            conn, chapter_id,
+            to_int_list(request.form.getlist("character_ids")),
+            to_int_list(request.form.getlist("video_ids")),
+        )
         conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
         conn.commit()
         conn.close()
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
+    characters = conn.execute(
+        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    ).fetchall()
+    videos = conn.execute(
+        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
+    ).fetchall()
     conn.close()
-    return render_template("novel_chapter_form.html", novel=novel, chapter=None)
+    return render_template(
+        "novel_chapter_form.html", novel=novel, chapter=None,
+        all_characters=characters, all_videos=videos, selected_character_ids=set(), selected_video_ids=set(),
+    )
 
 
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/edit", methods=["GET", "POST"])
@@ -1491,13 +1541,36 @@ def novel_chapter_edit(novel_id, chapter_id):
             "UPDATE novel_chapters SET title=?, content=?, updated_at=datetime('now','localtime') WHERE id=?",
             (request.form["title"].strip(), request.form.get("content", ""), chapter_id),
         )
+        set_chapter_links(
+            conn, chapter_id,
+            to_int_list(request.form.getlist("character_ids")),
+            to_int_list(request.form.getlist("video_ids")),
+        )
         conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
         conn.commit()
         conn.close()
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
+    characters = conn.execute(
+        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    ).fetchall()
+    videos = conn.execute(
+        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
+    ).fetchall()
+    selected_character_ids = {
+        row["character_id"] for row in
+        conn.execute("SELECT character_id FROM novel_chapter_characters WHERE chapter_id = ?", (chapter_id,))
+    }
+    selected_video_ids = {
+        row["video_id"] for row in
+        conn.execute("SELECT video_id FROM novel_chapter_videos WHERE chapter_id = ?", (chapter_id,))
+    }
     conn.close()
-    return render_template("novel_chapter_form.html", novel=novel, chapter=chapter)
+    return render_template(
+        "novel_chapter_form.html", novel=novel, chapter=chapter,
+        all_characters=characters, all_videos=videos,
+        selected_character_ids=selected_character_ids, selected_video_ids=selected_video_ids,
+    )
 
 
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/delete", methods=["POST"])
