@@ -750,6 +750,7 @@ def changelog_share_image():
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"changelog-{range_}-{lang}.png" if download else None,
+        max_age=0,
     )
 
 
@@ -1108,6 +1109,7 @@ def item_share_image(item_id):
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"{item['title']}-分享卡片.png" if download else None,
+        max_age=0,
     )
 
 
@@ -1188,6 +1190,7 @@ def day_share_image(date_str):
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"{date_str}-每日分享.png" if download else None,
+        max_age=0,
     )
 
 
@@ -1401,6 +1404,7 @@ def novel_share_image(novel_id):
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"{novel['title']}-分享卡片.png" if download else None,
+        max_age=0,
     )
 
 

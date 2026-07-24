@@ -999,4 +999,31 @@ CHANGELOG = [
         "lines_changed": 4,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "修复：所有分享图被 CDN 缓存 30 天，改完看不到最新效果",
+        "title_en": "Fixed: all share images were CDN-cached for 30 days",
+        "summary": (
+            "上一条修复部署上线后，线上截图还是老样子——查了下响应头，`cache-control: "
+            "public, max-age=2592000`，CDN 缓存命中，压根没打到源站。根因是之前给静态"
+            "文件设置的 30 天缓存（`SEND_FILE_MAX_AGE_DEFAULT`）是全局默认值，`send_file()` "
+            "没单独指定的话，连这种每次都应该重新生成的动态分享图也套用了同一个 30 天缓存，"
+            "小说、条目、每日、更新日志这四个分享图接口全都中招。给这四处都显式加了 "
+            "`max_age=0`，改完之后分享图不再被 CDN 长期缓存，每次都是当前最新内容。"
+        ),
+        "summary_en": (
+            "Deployed the previous fix but production still showed the old image — checked "
+            "the response headers and found `cache-control: public, max-age=2592000`, an edge "
+            "cache hit that never reached the origin. Root cause: the 30-day cache set for "
+            "static files (`SEND_FILE_MAX_AGE_DEFAULT`) is a global default, and every "
+            "`send_file()` call that doesn't override it — including these dynamically "
+            "generated share images that should regenerate every time — inherited the same "
+            "30-day cache. All four share-image endpoints (novel, item, day, changelog) had "
+            "this. Added an explicit `max_age=0` to each, so they're no longer cached long-"
+            "term at the edge and always reflect current content."
+        ),
+        "image": None,
+        "lines_changed": 4,
+        "estimated": False,
+    },
 ]
