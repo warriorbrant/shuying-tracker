@@ -978,4 +978,25 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "修复：分享图简介每行末尾多了个缺字方块",
+        "title_en": "Fixed: a tofu box appeared at the end of every summary line",
+        "summary": (
+            "上一条修复上线后线上实测，简介每一行末尾都多了个小方块「□」——因为文本是"
+            "Windows 风格换行符（\\r\\n），只按 \\n 切分的话，每段末尾会剩一个 \\r，字体没有"
+            "这个控制字符的字形，就画成了缺字方块。改成先把 \\r\\n 和单独的 \\r 都统一换成 "
+            "\\n 再切分，用真实数据在线上重新核对过，方块没了。"
+        ),
+        "summary_en": (
+            "Tested the previous fix against production and found a tofu box at the end of "
+            "every summary line — the text uses Windows-style line endings (\\r\\n), and "
+            "splitting on \\n alone leaves a trailing \\r on each segment, which has no glyph "
+            "in the font. Normalized \\r\\n and lone \\r to \\n before splitting; re-verified "
+            "against the real production data and the boxes are gone."
+        ),
+        "image": None,
+        "lines_changed": 4,
+        "estimated": False,
+    },
 ]

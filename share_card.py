@@ -59,8 +59,10 @@ def _font(size, bold=False):
 def _wrap(draw, text, font, max_width):
     # PIL's textlength() can't measure a string containing a newline, so wrap each
     # user-entered line (textareas allow line breaks) separately, keeping the breaks.
+    # Normalize CRLF/CR first — a stray trailing \r has no glyph and renders as a
+    # tofu box, and browsers commonly submit textarea content with \r\n.
     lines = []
-    for paragraph in text.split("\n"):
+    for paragraph in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         if not paragraph:
             lines.append("")
             continue
