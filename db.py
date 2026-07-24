@@ -103,6 +103,15 @@ CREATE TABLE IF NOT EXISTS novel_chapter_videos (
     video_id INTEGER NOT NULL REFERENCES novel_videos(id) ON DELETE CASCADE,
     PRIMARY KEY (chapter_id, video_id)
 );
+
+CREATE TABLE IF NOT EXISTS novel_references (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    cover_url TEXT DEFAULT '',
+    douban_url TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
 """
 
 

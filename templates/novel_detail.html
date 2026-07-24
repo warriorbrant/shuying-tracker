@@ -81,4 +81,26 @@
 </section>
 {% endif %}
 
+{% if references %}
+<section class="log-section">
+  <h2>参考书目</h2>
+  <div class="novel-grid">
+    {% for ref in references %}
+    <a class="novel-card" href="{{ ref.douban_url }}" target="_blank" rel="noopener">
+      <div class="novel-card-cover">
+        {% if ref.cover_url %}
+          <img src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
+        {% else %}
+          <div class="novel-card-cover-placeholder">📗</div>
+        {% endif %}
+      </div>
+      <div class="novel-card-body">
+        <h3>{{ ref.title }}</h3>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 {% endblock %}

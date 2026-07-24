@@ -180,6 +180,84 @@ document.getElementById('videoSourceType').addEventListener('change', function()
 });
 </script>
 
+<section class="log-section">
+  <h2>参考书目</h2>
+  {% if references %}
+  <div class="novel-grid">
+    {% for ref in references %}
+    <div class="novel-card">
+      <a href="{{ ref.douban_url }}" target="_blank" rel="noopener" class="novel-card-cover">
+        {% if ref.cover_url %}
+          <img src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
+        {% else %}
+          <div class="novel-card-cover-placeholder">📗</div>
+        {% endif %}
+      </a>
+      <div class="novel-card-body">
+        <h3>{{ ref.title }}</h3>
+        {% if ref.douban_url %}<a class="btn-link" href="{{ ref.douban_url }}" target="_blank" rel="noopener">豆瓣 →</a>{% endif %}
+        <form method="post" action="{{ url_for('novel_reference_delete', novel_id=novel.id, reference_id=ref.id) }}"
+              onsubmit="return confirm('确定删除这条参考书目吗？');">
+          <button type="submit" class="btn-danger-sm">删除</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form class="form" method="post" action="{{ url_for('novel_reference_new', novel_id=novel.id) }}" id="referenceForm">
+    <label>
+      粘贴豆瓣链接自动填充
+      <div class="row">
+        <input type="url" id="refDoubanUrl" placeholder="https://book.douban.com/subject/xxxxx/">
+        <button type="button" id="refDoubanFetchBtn">自动填充</button>
+      </div>
+    </label>
+    <p id="refDoubanStatus" class="hint"></p>
+    <label>
+      书名
+      <input type="text" name="title" id="refTitle" required>
+    </label>
+    <input type="hidden" name="cover_url" id="refCoverUrl">
+    <input type="hidden" name="douban_url" id="refDoubanLink">
+    <div class="actions">
+      <button type="submit">添加到参考书目</button>
+    </div>
+  </form>
+</section>
+
+<script>
+document.getElementById('refDoubanFetchBtn').addEventListener('click', async () => {
+  const url = document.getElementById('refDoubanUrl').value.trim();
+  const status = document.getElementById('refDoubanStatus');
+  if (!url) {
+    status.textContent = '请先粘贴豆瓣链接';
+    status.className = 'hint hint-error';
+    return;
+  }
+  status.textContent = '正在抓取…';
+  status.className = 'hint';
+  try {
+    const res = await fetch('/douban/fetch?url=' + encodeURIComponent(url));
+    const data = await res.json();
+    if (!res.ok) {
+      status.textContent = data.error || '抓取失败，请手动填写书名';
+      status.className = 'hint hint-error';
+      return;
+    }
+    document.getElementById('refTitle').value = data.title || '';
+    document.getElementById('refCoverUrl').value = data.cover_url || '';
+    document.getElementById('refDoubanLink').value = url;
+    status.textContent = '已自动填充，可以直接提交';
+    status.className = 'hint hint-ok';
+  } catch (err) {
+    status.textContent = '抓取失败，请检查网络或手动填写书名';
+    status.className = 'hint hint-error';
+  }
+});
+</script>
+
 {% endif %}
 
 {% endblock %}

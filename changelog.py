@@ -875,4 +875,24 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "小说主页加了参考书目，粘贴豆瓣链接自动填充",
+        "title_en": "Added a reference bibliography, auto-filled from a Douban link",
+        "summary": (
+            "小说详情页加了「参考书目」板块，只存三个字段：书名、封面、豆瓣链接，点封面/书名"
+            "直接跳到豆瓣。加书的时候复用了原来「添加书」表单那套逻辑——粘贴豆瓣链接点"
+            "「自动填充」，直接调已有的抓取接口把书名和封面填好，不用再重新走一遍手动录入。"
+        ),
+        "summary_en": (
+            "Added a \"reference bibliography\" section to the novel detail page — just three "
+            "fields: title, cover, and Douban link, clicking the cover or title jumps straight "
+            "to Douban. Adding a book reuses the same auto-fill flow as the existing \"add book\" "
+            "form: paste a Douban link, click fetch, and the existing scraping endpoint fills in "
+            "the title and cover instead of typing everything by hand."
+        ),
+        "image": None,
+        "lines_changed": 150,
+        "estimated": False,
+    },
 ]

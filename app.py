@@ -1353,9 +1353,13 @@ def novel_detail(novel_id):
     videos = conn.execute(
         "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
     ).fetchall()
+    references = conn.execute(
+        "SELECT * FROM novel_references WHERE novel_id = ? ORDER BY id ASC", (novel_id,)
+    ).fetchall()
     conn.close()
     return render_template(
-        "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos
+        "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos,
+        references=references,
     )
 
 
@@ -1475,10 +1479,14 @@ def novel_edit(novel_id):
     videos = conn.execute(
         "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
     ).fetchall()
+    references = conn.execute(
+        "SELECT * FROM novel_references WHERE novel_id = ? ORDER BY id ASC", (novel_id,)
+    ).fetchall()
     conn.close()
     return render_template(
         "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
-        chapters=chapters, characters=characters, videos=videos, error=request.args.get("error"),
+        chapters=chapters, characters=characters, videos=videos, references=references,
+        error=request.args.get("error"),
     )
 
 
@@ -1730,6 +1738,37 @@ def novel_video_new(novel_id):
 def novel_video_delete(novel_id, video_id):
     conn = get_db()
     conn.execute("DELETE FROM novel_videos WHERE id = ? AND novel_id = ?", (video_id, novel_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/reference/new", methods=["POST"])
+def novel_reference_new(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+
+    title = request.form.get("title", "").strip()
+    if not title:
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="参考书目需要填写书名"))
+
+    conn.execute(
+        "INSERT INTO novel_references (novel_id, title, cover_url, douban_url) VALUES (?, ?, ?, ?)",
+        (novel_id, title, request.form.get("cover_url", "").strip(), request.form.get("douban_url", "").strip()),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/reference/<int:reference_id>/delete", methods=["POST"])
+def novel_reference_delete(novel_id, reference_id):
+    conn = get_db()
+    conn.execute("DELETE FROM novel_references WHERE id = ? AND novel_id = ?", (reference_id, novel_id))
     conn.commit()
     conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
