@@ -176,6 +176,7 @@ def inject_asset_version():
 PUBLIC_ENDPOINTS = {
     "login", "static", "changelog", "changelog_more", "changelog_share_image", "index",
     "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read", "novel_share_image",
+    "cover_proxy",
 }
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.

@@ -1052,4 +1052,31 @@ CHANGELOG = [
         "lines_changed": 8,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "修复：未登录时参考书目封面显示不出来",
+        "title_en": "Fixed: reference book covers didn't load when logged out",
+        "summary": (
+            "这次是真找错方向了——问题根本不在分享图，是小说详情页本身：参考书目的豆瓣"
+            "封面走 /cover-proxy 这个防盗链代理路由，但这个路由没被加进「公开路由」名单，"
+            "没登录时访问会被直接 302 跳转到登录页而不是返回图片，所以封面显示不出来；"
+            "登录之后能绕开这个跳转，看起来就正常了。跟手机/电脑、跟发不发新版本都没关系，"
+            "纯粹是登录状态的问题——小说封面和人物立绘走的是另一个本来就公开的路由，没受"
+            "影响，只有参考书目这一处会坏。把 cover_proxy 加进公开路由名单就好了。"
+        ),
+        "summary_en": (
+            "Was chasing the wrong thing — this had nothing to do with the share image, it was "
+            "the novel detail page itself: reference book covers go through the /cover-proxy "
+            "anti-hotlink route, which was never added to the public-routes allowlist. Logged-"
+            "out requests got redirected straight to the login page instead of the image, so "
+            "the cover never rendered; logged in, the redirect never fires and it looks fine. "
+            "Had nothing to do with device or deploys — purely login state. The novel's own "
+            "cover and character standees use a different route that was already public, so "
+            "only reference-book covers were affected. Added cover_proxy to the public "
+            "endpoints list."
+        ),
+        "image": None,
+        "lines_changed": 1,
+        "estimated": False,
+    },
 ]
