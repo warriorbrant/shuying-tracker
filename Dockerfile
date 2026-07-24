@@ -3,6 +3,7 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-noto-cjk \
     tzdata \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -20,4 +21,6 @@ EXPOSE 8080
 # Single worker process with threads (not multiple -w processes) so the
 # in-memory /admin/metrics stats are shared across all requests instead of
 # being split across isolated worker processes.
-CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8080} -w 1 --threads 4 --timeout 60 app:app"]
+# Timeout is 300s (not the default 30-60s) because novel video uploads run
+# ffmpeg compression synchronously inside the request.
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8080} -w 1 --threads 4 --timeout 300 app:app"]

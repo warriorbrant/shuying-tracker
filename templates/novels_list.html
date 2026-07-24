@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}小说{% endblock %}
+{% block content %}
+
+<div class="changelog-header-row">
+  <h1>小说</h1>
+  {% if not auth_enabled or session.authed %}
+    <a class="btn-link" href="{{ url_for('novel_new') }}">+ 新建小说</a>
+  {% endif %}
+</div>
+<p class="hint">不需要登录也能看，角色概念图和 AI 生成的相关视频都放在小说详情页里。</p>
+
+{% if novels %}
+<div class="novel-grid">
+  {% for novel in novels %}
+  <a class="novel-card" href="{{ url_for('novel_detail', novel_id=novel.id) }}">
+    <div class="novel-card-cover">
+      {% if novel.cover_image %}
+        <img src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
+      {% else %}
+        <div class="novel-card-cover-placeholder">📖</div>
+      {% endif %}
+    </div>
+    <div class="novel-card-body">
+      <h3>{{ novel.title }}</h3>
+      <span class="lines-badge">{{ novel.status }}</span>
+      {% if novel.summary %}<p>{{ novel.summary }}</p>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="hint">还没有小说，{% if not auth_enabled or session.authed %}<a href="{{ url_for('novel_new') }}">写第一篇</a>{% else %}敬请期待{% endif %}。</p>
+{% endif %}
+
+{% endblock %}

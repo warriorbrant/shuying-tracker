@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ chapter.title }} - {{ novel.title }}{% endblock %}
+{% block content %}
+
+<div class="changelog-header-row">
+  <h1>{{ novel.title }}</h1>
+  <a class="lang-switch" href="{{ url_for('novel_detail', novel_id=novel.id) }}">目录</a>
+</div>
+
+<article class="chapter-reader">
+  <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
+  <div class="chapter-body">{{ chapter.content }}</div>
+</article>
+
+<div class="chapter-nav">
+  {% if prev_chapter %}
+    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=prev_chapter.id) }}">← 上一章</a>
+  {% else %}
+    <span></span>
+  {% endif %}
+  {% if next_chapter %}
+    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) }}">下一章 →</a>
+  {% endif %}
+</div>
+
+{% if not auth_enabled or session.authed %}
+<p class="hint"><a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=chapter.id) }}">编辑这一章</a></p>
+{% endif %}
+
+{% endblock %}

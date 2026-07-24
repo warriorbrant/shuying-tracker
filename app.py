@@ -1,7 +1,10 @@
 import hashlib
 import mimetypes
 import os
+import re
 import secrets
+import subprocess
+import tempfile
 import time
 import uuid
 import zipfile
@@ -36,7 +39,7 @@ from share_card import build_changelog_share_card, build_day_share_card, build_s
 load_dotenv()
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024  # 12MB upload limit
+app.config["MAX_CONTENT_LENGTH"] = 300 * 1024 * 1024  # 300MB (raw video uploads get compressed down after)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 60 * 60 * 24 * 30  # 30 days for static files
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 app.permanent_session_lifetime = timedelta(days=30)
@@ -138,6 +141,13 @@ def localize_entry(e, lang):
 UPLOAD_DIR = DATA_DIR / "uploads"
 ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 
+# Novel character art + videos are public (viewable without login), unlike the
+# rest of /data/uploads — kept in a separate directory with its own public
+# serving route so login-gated photo uploads never become accidentally public.
+NOVEL_MEDIA_DIR = DATA_DIR / "novel_media"
+ALLOWED_VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".avi", ".mkv"}
+MAX_VIDEO_SECONDS = 5 * 60
+
 
 def app_password():
     return os.environ.get("APP_PASSWORD") or ""
@@ -158,7 +168,10 @@ def inject_asset_version():
     return {"asset_version": version}
 
 
-PUBLIC_ENDPOINTS = {"login", "static", "changelog", "changelog_more", "changelog_share_image", "index"}
+PUBLIC_ENDPOINTS = {
+    "login", "static", "changelog", "changelog_more", "changelog_share_image", "index",
+    "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read",
+}
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
 METRICS_EXCLUDED_ENDPOINTS = {"admin_metrics_data"}
@@ -211,6 +224,11 @@ def logout():
 @app.route("/data/<path:filename>")
 def serve_data(filename):
     return send_from_directory(DATA_DIR, filename)
+
+
+@app.route("/novel-media/<path:filename>")
+def serve_novel_media(filename):
+    return send_from_directory(NOVEL_MEDIA_DIR, filename)
 
 
 COVER_CACHE_DIR = DATA_DIR / "cover_cache"
@@ -295,18 +313,19 @@ UPLOAD_MAX_DIMENSION = 1600
 UPLOAD_JPEG_QUALITY = 85
 
 
-def save_upload(file_storage):
+def save_image_to(file_storage, target_dir):
+    """Resize/re-encode an uploaded image into target_dir; returns the bare filename or ''."""
     if not file_storage or not file_storage.filename:
         return ""
     ext = Path(file_storage.filename).suffix.lower()
     if ext not in ALLOWED_IMAGE_EXT:
         return ""
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    target_dir.mkdir(parents=True, exist_ok=True)
 
     if ext == ".gif":
         filename = f"{uuid.uuid4().hex}{ext}"
-        file_storage.save(UPLOAD_DIR / filename)
-        return f"uploads/{filename}"
+        file_storage.save(target_dir / filename)
+        return filename
 
     try:
         img = Image.open(file_storage.stream)
@@ -316,17 +335,84 @@ def save_upload(file_storage):
         has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
         if has_alpha:
             filename = f"{uuid.uuid4().hex}.png"
-            img.save(UPLOAD_DIR / filename, format="PNG", optimize=True)
+            img.save(target_dir / filename, format="PNG", optimize=True)
         else:
             filename = f"{uuid.uuid4().hex}.jpg"
             img.convert("RGB").save(
-                UPLOAD_DIR / filename, format="JPEG", quality=UPLOAD_JPEG_QUALITY, optimize=True
+                target_dir / filename, format="JPEG", quality=UPLOAD_JPEG_QUALITY, optimize=True
             )
-        return f"uploads/{filename}"
+        return filename
     except Exception:
         filename = f"{uuid.uuid4().hex}{ext}"
-        file_storage.save(UPLOAD_DIR / filename)
-        return f"uploads/{filename}"
+        file_storage.save(target_dir / filename)
+        return filename
+
+
+def save_upload(file_storage):
+    filename = save_image_to(file_storage, UPLOAD_DIR)
+    return f"uploads/{filename}" if filename else ""
+
+
+def save_novel_image(file_storage):
+    return save_image_to(file_storage, NOVEL_MEDIA_DIR)
+
+
+def probe_video_duration(path):
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+            capture_output=True, text=True, timeout=30,
+        )
+        return float(result.stdout.strip())
+    except (subprocess.SubprocessError, ValueError, OSError):
+        return None
+
+
+def compress_video(src_path, dest_path):
+    try:
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", str(src_path),
+                "-vf", "scale='min(1280,iw)':-2",
+                "-vcodec", "libx264", "-preset", "veryfast", "-crf", "27",
+                "-acodec", "aac", "-b:a", "128k",
+                "-movflags", "+faststart",
+                str(dest_path),
+            ],
+            capture_output=True, timeout=280,
+        )
+    except (subprocess.SubprocessError, OSError):
+        pass
+    return dest_path.exists()
+
+
+def make_video_thumbnail(video_path, thumb_path):
+    try:
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", str(video_path), "-ss", "00:00:01", "-vframes", "1",
+                "-vf", "scale=480:-2", str(thumb_path),
+            ],
+            capture_output=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError):
+        pass
+    return thumb_path.exists()
+
+
+def parse_video_embed(url):
+    if not url:
+        return None
+    m = re.search(r"(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/))([\w-]{11})", url)
+    if m:
+        return {"provider": "youtube", "embed_url": f"https://www.youtube-nocookie.com/embed/{m.group(1)}"}
+    m = re.search(r"bilibili\.com/video/(BV\w+)", url)
+    if m:
+        return {"provider": "bilibili", "embed_url": f"https://player.bilibili.com/player.html?bvid={m.group(1)}&autoplay=0"}
+    return None
+
+
+app.jinja_env.globals["parse_video_embed"] = parse_video_embed
 
 
 def to_int(value, default=None):
@@ -1228,6 +1314,303 @@ def log_delete(log_id):
     if item_id:
         return redirect(url_for("item_detail", item_id=item_id))
     return redirect(url_for("index"))
+
+
+NOVEL_STATUSES = ["连载中", "已完结", "暂停"]
+
+
+@app.route("/novels")
+def novels_list():
+    conn = get_db()
+    novels = conn.execute("SELECT * FROM novels ORDER BY updated_at DESC").fetchall()
+    conn.close()
+    return render_template("novels_list.html", novels=novels)
+
+
+@app.route("/novel/<int:novel_id>")
+def novel_detail(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+    chapters = conn.execute(
+        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        (novel_id,),
+    ).fetchall()
+    characters = conn.execute(
+        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    ).fetchall()
+    videos = conn.execute(
+        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
+    ).fetchall()
+    conn.close()
+    return render_template(
+        "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos
+    )
+
+
+@app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>")
+def novel_chapter_read(novel_id, chapter_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    chapter = conn.execute(
+        "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
+    ).fetchone()
+    if novel is None or chapter is None:
+        conn.close()
+        return "未找到该章节", 404
+    chapters = conn.execute(
+        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        (novel_id,),
+    ).fetchall()
+    conn.close()
+
+    ids = [c["id"] for c in chapters]
+    idx = ids.index(chapter_id)
+    prev_chapter = chapters[idx - 1] if idx > 0 else None
+    next_chapter = chapters[idx + 1] if idx < len(chapters) - 1 else None
+
+    return render_template(
+        "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
+        prev_chapter=prev_chapter, next_chapter=next_chapter,
+    )
+
+
+@app.route("/novel/new", methods=["GET", "POST"])
+def novel_new():
+    if request.method == "POST":
+        cover_path = save_novel_image(request.files.get("cover_file"))
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO novels (title, summary, status, cover_image) VALUES (?, ?, ?, ?)",
+            (
+                request.form["title"].strip(),
+                request.form.get("summary", "").strip(),
+                request.form.get("status", "连载中"),
+                cover_path,
+            ),
+        )
+        conn.commit()
+        novel_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    return render_template("novel_form.html", novel=None, statuses=NOVEL_STATUSES)
+
+
+@app.route("/novel/<int:novel_id>/edit", methods=["GET", "POST"])
+def novel_edit(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+
+    if request.method == "POST":
+        cover_path = save_novel_image(request.files.get("cover_file")) or novel["cover_image"]
+        conn.execute(
+            "UPDATE novels SET title=?, summary=?, status=?, cover_image=?, updated_at=datetime('now','localtime') "
+            "WHERE id=?",
+            (
+                request.form["title"].strip(),
+                request.form.get("summary", "").strip(),
+                request.form.get("status", "连载中"),
+                cover_path,
+                novel_id,
+            ),
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    chapters = conn.execute(
+        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        (novel_id,),
+    ).fetchall()
+    characters = conn.execute(
+        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    ).fetchall()
+    videos = conn.execute(
+        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
+    ).fetchall()
+    conn.close()
+    return render_template(
+        "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
+        chapters=chapters, characters=characters, videos=videos, error=request.args.get("error"),
+    )
+
+
+@app.route("/novel/<int:novel_id>/delete", methods=["POST"])
+def novel_delete(novel_id):
+    conn = get_db()
+    conn.execute("DELETE FROM novels WHERE id = ?", (novel_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novels_list"))
+
+
+@app.route("/novel/<int:novel_id>/chapter/new", methods=["GET", "POST"])
+def novel_chapter_new(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+
+    if request.method == "POST":
+        next_no = conn.execute(
+            "SELECT COALESCE(MAX(chapter_no), 0) + 1 AS n FROM novel_chapters WHERE novel_id = ?", (novel_id,)
+        ).fetchone()["n"]
+        conn.execute(
+            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content) VALUES (?, ?, ?, ?)",
+            (novel_id, next_no, request.form["title"].strip(), request.form.get("content", "")),
+        )
+        conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    conn.close()
+    return render_template("novel_chapter_form.html", novel=novel, chapter=None)
+
+
+@app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/edit", methods=["GET", "POST"])
+def novel_chapter_edit(novel_id, chapter_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    chapter = conn.execute(
+        "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
+    ).fetchone()
+    if novel is None or chapter is None:
+        conn.close()
+        return "未找到该章节", 404
+
+    if request.method == "POST":
+        conn.execute(
+            "UPDATE novel_chapters SET title=?, content=?, updated_at=datetime('now','localtime') WHERE id=?",
+            (request.form["title"].strip(), request.form.get("content", ""), chapter_id),
+        )
+        conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    conn.close()
+    return render_template("novel_chapter_form.html", novel=novel, chapter=chapter)
+
+
+@app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/delete", methods=["POST"])
+def novel_chapter_delete(novel_id, chapter_id):
+    conn = get_db()
+    conn.execute("DELETE FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/character/new", methods=["POST"])
+def novel_character_new(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+
+    image_path = save_novel_image(request.files.get("image_file"))
+    conn.execute(
+        "INSERT INTO novel_characters (novel_id, name, description, image_path) VALUES (?, ?, ?, ?)",
+        (novel_id, request.form.get("name", "").strip(), request.form.get("description", "").strip(), image_path),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/character/<int:character_id>/delete", methods=["POST"])
+def novel_character_delete(novel_id, character_id):
+    conn = get_db()
+    conn.execute("DELETE FROM novel_characters WHERE id = ? AND novel_id = ?", (character_id, novel_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/video/new", methods=["POST"])
+def novel_video_new(novel_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        conn.close()
+        return "未找到该小说", 404
+
+    title = request.form.get("title", "").strip()
+    source_type = request.form.get("source_type", "upload")
+
+    if source_type == "link":
+        video_url = request.form.get("video_url", "").strip()
+        conn.close()
+        if not video_url:
+            return redirect(url_for("novel_edit", novel_id=novel_id, error="请填写视频链接"))
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO novel_videos (novel_id, title, source_type, video_url) VALUES (?, ?, 'link', ?)",
+            (novel_id, title, video_url),
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for("novel_edit", novel_id=novel_id))
+
+    conn.close()
+    file_storage = request.files.get("video_file")
+    if not file_storage or not file_storage.filename:
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="请选择要上传的视频文件"))
+
+    ext = Path(file_storage.filename).suffix.lower()
+    if ext not in ALLOWED_VIDEO_EXT:
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="不支持的视频格式"))
+
+    NOVEL_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(suffix=ext, dir=NOVEL_MEDIA_DIR)
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    file_storage.save(tmp_path)
+
+    duration = probe_video_duration(tmp_path)
+    if duration is None:
+        tmp_path.unlink(missing_ok=True)
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="无法解析视频文件"))
+    if duration > MAX_VIDEO_SECONDS:
+        tmp_path.unlink(missing_ok=True)
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="视频超过 5 分钟限制"))
+
+    uid = uuid.uuid4().hex
+    out_path = NOVEL_MEDIA_DIR / f"{uid}.mp4"
+    thumb_path = NOVEL_MEDIA_DIR / f"{uid}.jpg"
+    ok = compress_video(tmp_path, out_path)
+    tmp_path.unlink(missing_ok=True)
+    if not ok:
+        return redirect(url_for("novel_edit", novel_id=novel_id, error="视频处理失败"))
+    has_thumb = make_video_thumbnail(out_path, thumb_path)
+
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO novel_videos (novel_id, title, source_type, video_path, thumbnail_path, duration_seconds) "
+        "VALUES (?, ?, 'upload', ?, ?, ?)",
+        (novel_id, title, out_path.name, thumb_path.name if has_thumb else "", int(duration)),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/video/<int:video_id>/delete", methods=["POST"])
+def novel_video_delete(novel_id, video_id):
+    conn = get_db()
+    conn.execute("DELETE FROM novel_videos WHERE id = ? AND novel_id = ?", (video_id, novel_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
 if __name__ == "__main__":

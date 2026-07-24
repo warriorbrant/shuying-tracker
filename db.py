@@ -49,6 +49,48 @@ CREATE TABLE IF NOT EXISTS moments (
     minutes_spent INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
+
+CREATE TABLE IF NOT EXISTS novels (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    summary TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT '连载中',
+    cover_image TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS novel_chapters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    chapter_no INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS novel_characters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    image_path TEXT DEFAULT '',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS novel_videos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    title TEXT DEFAULT '',
+    source_type TEXT NOT NULL CHECK(source_type IN ('upload', 'link')),
+    video_path TEXT DEFAULT '',
+    video_url TEXT DEFAULT '',
+    thumbnail_path TEXT DEFAULT '',
+    duration_seconds INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
 """
 
 

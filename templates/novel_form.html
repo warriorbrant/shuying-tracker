@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑小说' if novel else '新建小说' }}{% endblock %}
+{% block content %}
+
+<h1>{{ '编辑小说' if novel else '新建小说' }}</h1>
+
+{% if error %}<p class="hint hint-error">{{ error }}</p>{% endif %}
+
+<form class="form" method="post" enctype="multipart/form-data">
+  <label>
+    书名
+    <input type="text" name="title" required value="{{ novel.title if novel else '' }}">
+  </label>
+
+  <label>
+    简介
+    <textarea name="summary" rows="3">{{ novel.summary if novel else '' }}</textarea>
+  </label>
+
+  <div class="row">
+    <label>
+      状态
+      <select name="status">
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if (novel.status if novel else '连载中') == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      封面图片（可选）
+      <input type="file" name="cover_file" accept="image/*">
+    </label>
+  </div>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    {% if novel %}
+      <a class="btn-link" href="{{ url_for('novel_detail', novel_id=novel.id) }}">查看小说页</a>
+      <form method="post" action="{{ url_for('novel_delete', novel_id=novel.id) }}"
+            onsubmit="return confirm('确定删除《{{ novel.title }}》及其所有章节、人物、视频吗？此操作不可撤销。');">
+        <button type="submit" class="btn-danger">删除小说</button>
+      </form>
+    {% else %}
+      <a class="btn-link" href="{{ url_for('novels_list') }}">取消</a>
+    {% endif %}
+  </div>
+</form>
+
+{% if novel %}
+
+<section class="log-section">
+  <div class="changelog-header-row">
+    <h2>章节（共 {{ chapters|length }} 章）</h2>
+    <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">+ 新增章节</a>
+  </div>
+  {% if chapters %}
+  <ul class="chapter-list">
+    {% for c in chapters %}
+    <li>
+      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">第 {{ c.chapter_no }} 章 · {{ c.title }}</a>
+      <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
+            onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
+        <button type="submit" class="btn-danger-sm">删除</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="hint">还没有章节。</p>
+  {% endif %}
+</section>
+
+<section class="log-section">
+  <h2>人物角色</h2>
+  {% if characters %}
+  <div class="character-grid">
+    {% for ch in characters %}
+    <div class="character-card">
+      {% if ch.image_path %}
+        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+      {% else %}
+        <div class="novel-card-cover-placeholder">🧑</div>
+      {% endif %}
+      <h3>{{ ch.name }}</h3>
+      {% if ch.description %}<p>{{ ch.description }}</p>{% endif %}
+      <form method="post" action="{{ url_for('novel_character_delete', novel_id=novel.id, character_id=ch.id) }}"
+            onsubmit="return confirm('确定删除这个角色吗？');">
+        <button type="submit" class="btn-danger-sm">删除</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form class="form" method="post" action="{{ url_for('novel_character_new', novel_id=novel.id) }}" enctype="multipart/form-data">
+    <div class="row">
+      <label>
+        角色名
+        <input type="text" name="name" required>
+      </label>
+      <label>
+        概念图（可选，AI 生成或自己画的都行）
+        <input type="file" name="image_file" accept="image/*">
+      </label>
+    </div>
+    <label>
+      角色简介（可选）
+      <textarea name="description" rows="2"></textarea>
+    </label>
+    <div class="actions">
+      <button type="submit">添加角色</button>
+    </div>
+  </form>
+</section>
+
+<section class="log-section">
+  <h2>相关视频</h2>
+  {% if videos %}
+  <div class="video-grid">
+    {% for v in videos %}
+    <div class="video-card">
+      {% if v.title %}<h3>{{ v.title }}</h3>{% endif %}
+      {% if v.source_type == 'upload' %}
+        <video controls preload="none"
+          {% if v.thumbnail_path %}poster="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}"{% endif %}>
+          <source src="{{ url_for('serve_novel_media', filename=v.video_path) }}" type="video/mp4">
+        </video>
+        <p class="hint">时长约 {{ v.duration_seconds }} 秒</p>
+      {% else %}
+        {% set embed = parse_video_embed(v.video_url) %}
+        {% if embed %}
+          <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        {% else %}
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+        {% endif %}
+      {% endif %}
+      <form method="post" action="{{ url_for('novel_video_delete', novel_id=novel.id, video_id=v.id) }}"
+            onsubmit="return confirm('确定删除这个视频吗？');">
+        <button type="submit" class="btn-danger-sm">删除</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form class="form" method="post" action="{{ url_for('novel_video_new', novel_id=novel.id) }}" enctype="multipart/form-data" id="videoForm">
+    <label>
+      视频标题（可选）
+      <input type="text" name="title">
+    </label>
+    <label>
+      来源
+      <select name="source_type" id="videoSourceType">
+        <option value="upload">上传文件（最长 5 分钟，会自动压缩）</option>
+        <option value="link">粘贴链接（B站 / YouTube）</option>
+      </select>
+    </label>
+    <label id="videoFileLabel">
+      视频文件
+      <input type="file" name="video_file" accept="video/*">
+    </label>
+    <label id="videoUrlLabel" style="display:none;">
+      视频链接
+      <input type="url" name="video_url" placeholder="https://www.bilibili.com/video/BV... 或 https://youtu.be/...">
+    </label>
+    <div class="actions">
+      <button type="submit">添加视频</button>
+    </div>
+  </form>
+</section>
+
+<script>
+document.getElementById('videoSourceType').addEventListener('change', function() {
+  const isLink = this.value === 'link';
+  document.getElementById('videoFileLabel').style.display = isLink ? 'none' : '';
+  document.getElementById('videoUrlLabel').style.display = isLink ? '' : 'none';
+});
+</script>
+
+{% endif %}
+
+{% endblock %}

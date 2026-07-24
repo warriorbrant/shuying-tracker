@@ -690,4 +690,34 @@ CHANGELOG = [
         "lines_changed": 57,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "上线小说功能：章节、人物概念图、AI 视频，全部公开可看",
+        "title_en": "Launched a novel-writing feature: chapters, character art, AI videos — all public",
+        "summary": (
+            "加了一个写小说的功能，登录后可以在网站里直接写、按章节管理；每部小说旁边能放"
+            "人物角色的概念图（自己用 AI 工具生成好之后上传），还能放根据文字做的 AI 视频——"
+            "支持直接上传视频文件（限时 5 分钟，上传后用 ffmpeg 自动压缩、生成封面帧），也支持"
+            "粘贴 B 站/YouTube 链接直接嵌入播放。跟网站其余部分不同，这部分内容不需要登录就能"
+            "看，只有创作（写章节、加角色、加视频）还是要登录。为了不把私人照片目录也顺带公开，"
+            "小说的媒体文件单独存了一个目录、走一个专门的公开路由。视频压缩这一步比较吃 CPU，"
+            "顺带把 gunicorn 的超时时间从 60 秒调到了 300 秒，不然大文件压缩到一半请求就被杀了。"
+        ),
+        "summary_en": (
+            "Added a novel-writing feature: chapters can be written and managed directly on the "
+            "site once logged in. Each novel can show character concept art (generated "
+            "externally with AI tools, then uploaded) and AI-generated videos based on the "
+            "text — either upload a video file directly (5-minute cap, auto-compressed with "
+            "ffmpeg and given a poster frame) or paste a Bilibili/YouTube link for inline "
+            "embedding. Unlike the rest of the site, this content is viewable without logging "
+            "in — only authoring (writing chapters, adding characters/videos) still requires "
+            "login. To avoid accidentally making the private photo directory public too, novel "
+            "media lives in its own directory behind a dedicated public route. Video "
+            "compression is CPU-heavy, so gunicorn's timeout went from 60s to 300s — otherwise "
+            "the request got killed mid-compression on larger files."
+        ),
+        "image": None,
+        "lines_changed": 988,
+        "estimated": False,
+    },
 ]

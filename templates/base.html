@@ -24,6 +24,7 @@
         <a href="{{ url_for('search') }}">🔍 搜索</a>
         <a href="{{ url_for('admin_metrics_page') }}">📊 性能指标</a>
       {% endif %}
+      <a href="{{ url_for('novels_list') }}">📖 小说</a>
       <a href="{{ url_for('changelog') }}">更新日志</a>
       {% if auth_enabled and session.authed %}
       <form class="logout-form" method="post" action="{{ url_for('logout') }}">

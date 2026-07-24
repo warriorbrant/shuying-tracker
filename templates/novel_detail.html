@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ novel.title }}{% endblock %}
+{% block content %}
+
+<div class="detail-header">
+  <div class="cover large">
+    {% if novel.cover_image %}
+      <img src="{{ url_for('serve_novel_media', filename=novel.cover_image) }}" alt="{{ novel.title }}">
+    {% else %}
+      <div class="cover-placeholder">📖</div>
+    {% endif %}
+  </div>
+  <div class="detail-info">
+    <h1>{{ novel.title }}</h1>
+    <span class="lines-badge">{{ novel.status }}</span>
+    {% if novel.summary %}<p class="review">{{ novel.summary }}</p>{% endif %}
+
+    {% if not auth_enabled or session.authed %}
+    <div class="actions">
+      <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">编辑小说</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<section class="log-section">
+  <h2>目录（共 {{ chapters|length }} 章）</h2>
+  {% if chapters %}
+  <ul class="chapter-list">
+    {% for c in chapters %}
+    <li><a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">第 {{ c.chapter_no }} 章 · {{ c.title }}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="hint">还没有章节。</p>
+  {% endif %}
+</section>
+
+{% if characters %}
+<section class="log-section">
+  <h2>人物角色</h2>
+  <div class="character-grid">
+    {% for ch in characters %}
+    <div class="character-card">
+      {% if ch.image_path %}
+        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+      {% else %}
+        <div class="novel-card-cover-placeholder">🧑</div>
+      {% endif %}
+      <h3>{{ ch.name }}</h3>
+      {% if ch.description %}<p>{{ ch.description }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if videos %}
+<section class="log-section">
+  <h2>相关视频</h2>
+  <div class="video-grid">
+    {% for v in videos %}
+    <div class="video-card">
+      {% if v.title %}<h3>{{ v.title }}</h3>{% endif %}
+      {% if v.source_type == 'upload' %}
+        <video controls preload="none"
+          {% if v.thumbnail_path %}poster="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}"{% endif %}>
+          <source src="{{ url_for('serve_novel_media', filename=v.video_path) }}" type="video/mp4">
+        </video>
+      {% else %}
+        {% set embed = parse_video_embed(v.video_url) %}
+        {% if embed %}
+          <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        {% else %}
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+        {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
