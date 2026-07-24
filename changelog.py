@@ -951,4 +951,31 @@ CHANGELOG = [
         "lines_changed": 304,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "修复：小说简介换行会导致分享图 500 报错",
+        "title_en": "Fixed: a line break in the summary crashed the share image",
+        "summary": (
+            "线上报错了：生成小说分享图时如果简介是多行的（textarea 允许换行，你的真实"
+            "小说简介就是三行），PIL 的 textlength() 一遇到带换行符的字符串就直接报错，"
+            "500。这个文字换行函数是分享卡片功能共用的，之前条目的总评/感想只要写了多行"
+            "也会中同样的招，只是刚好还没人这么写过。修法是按换行符先把文本切成段，每段"
+            "单独换行，而不是把整段文字（含换行符）一起丢给 PIL 量长度——这样用户自己"
+            "打的换行也会保留，不是简单粗暴地拼掉。"
+        ),
+        "summary_en": (
+            "Production error: generating a novel's share image crashed with a 500 whenever "
+            "the summary had a line break (textareas allow them, and the real novel's summary "
+            "is three lines). PIL's textlength() throws on any string containing a newline. "
+            "This text-wrapping helper is shared by every share card, so a multi-line book "
+            "review or comment would have hit the exact same crash — it just hadn't happened "
+            "to occur yet. Fixed by splitting the text on newlines first and wrapping each "
+            "line separately, instead of feeding PIL the whole string (newlines included) at "
+            "once — this also means the user's own line breaks are preserved rather than "
+            "silently collapsed."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

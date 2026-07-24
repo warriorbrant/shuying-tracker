@@ -57,17 +57,23 @@ def _font(size, bold=False):
 
 
 def _wrap(draw, text, font, max_width):
+    # PIL's textlength() can't measure a string containing a newline, so wrap each
+    # user-entered line (textareas allow line breaks) separately, keeping the breaks.
     lines = []
-    current = ""
-    for ch in text:
-        trial = current + ch
-        if draw.textlength(trial, font=font) > max_width and current:
+    for paragraph in text.split("\n"):
+        if not paragraph:
+            lines.append("")
+            continue
+        current = ""
+        for ch in paragraph:
+            trial = current + ch
+            if draw.textlength(trial, font=font) > max_width and current:
+                lines.append(current)
+                current = ch
+            else:
+                current = trial
+        if current:
             lines.append(current)
-            current = ch
-        else:
-            current = trial
-    if current:
-        lines.append(current)
     return lines
 
 
