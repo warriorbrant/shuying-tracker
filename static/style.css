@@ -1323,12 +1323,12 @@ button {
   align-items: center;
   gap: 10px;
   opacity: 0;
-  transform: translateY(22px) scale(0.97);
+  transform: translateY(28px) scale(0.96);
 }
 
 .character-standee.is-visible {
-  animation: standee-enter 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-  animation-delay: var(--standee-delay, 0s);
+  animation: standee-enter 0.75s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  animation-delay: var(--standee-delay, 0.3s);
 }
 
 @keyframes standee-enter {

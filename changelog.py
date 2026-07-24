@@ -768,4 +768,27 @@ CHANGELOG = [
         "lines_changed": 53,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "修复：立绘出场动画因为没有延迟，播放太快看不出来",
+        "title_en": "Fixed: standee entrance animation had no delay, too fast to notice",
+        "summary": (
+            "上一条加的立绘出场动画，因为人物区块通常在章节页顶部、一打开就在屏幕里，"
+            "IntersectionObserver 几乎瞬间触发，动画在页面刚渲染出来的时候就播完了，跟页面"
+            "加载混在一起，基本看不出来是个动画。加了 0.3 秒的起始延迟（多角色再依次错开"
+            "0.15 秒），让页面先完整显示一下，再开始淡入+上浮，这样才是真的能看到的动画。"
+        ),
+        "summary_en": (
+            "The entrance animation added last commit was too fast to notice in practice — "
+            "since the character section usually sits at the top of the chapter page, it's "
+            "already in view the instant the page loads, so the IntersectionObserver fired "
+            "almost immediately and the animation finished before the page had even settled, "
+            "blending into the initial page load. Added a 0.3s base delay (plus 0.15s stagger "
+            "per extra character) so the page renders fully first, then the standee fades and "
+            "rises — now it actually reads as an animation."
+        ),
+        "image": None,
+        "lines_changed": 4,
+        "estimated": False,
+    },
 ]

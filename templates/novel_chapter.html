@@ -10,7 +10,7 @@
 {% if characters %}
 <div class="character-stage" id="characterStage">
   {% for ch in characters %}
-  <div class="character-standee" style="--standee-delay: {{ (loop.index0 * 0.12) | round(2) }}s">
+  <div class="character-standee" style="--standee-delay: {{ (0.3 + loop.index0 * 0.15) | round(2) }}s">
     {% if ch.image_path %}
       <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
     {% endif %}
