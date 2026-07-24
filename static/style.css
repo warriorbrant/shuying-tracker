@@ -940,3 +940,92 @@ button {
   border: 1px solid var(--border);
   display: block;
 }
+
+.metrics-summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.metrics-summary-card h2 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+}
+
+.metrics-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.metrics-summary-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metrics-summary-row strong {
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+.metrics-summary-row span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.metrics-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.metrics-card h2 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.metric-row:last-child { border-bottom: none; }
+
+.status-breakdown {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.metrics-table th, .metrics-table td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.metrics-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+}

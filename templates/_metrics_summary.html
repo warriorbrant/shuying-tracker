@@ -1,0 +1,10 @@
+<section class="metrics-summary-card">
+  <h2>{{ t.metrics_heading }}</h2>
+  <div class="metrics-summary-row">
+    <div><strong>{{ "%.2f"|format(metrics_summary.tps) }}</strong><span>{{ t.metrics_qps }}</span></div>
+    <div><strong>{{ "%.1f"|format(metrics_summary.avg_ms) }} ms</strong><span>{{ t.metrics_avg }}</span></div>
+    <div><strong>{{ "%.1f"|format(metrics_summary.p95_ms) }} ms</strong><span>{{ t.metrics_p95 }}</span></div>
+    <div><strong>{{ uptime_human }}</strong><span>{{ t.metrics_uptime }}</span></div>
+  </div>
+  <p class="hint">{{ t.metrics_hint }}</p>
+</section>

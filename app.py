@@ -2,6 +2,7 @@ import hashlib
 import mimetypes
 import os
 import secrets
+import time
 import uuid
 import zipfile
 from datetime import date, timedelta
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 from flask import (
     Flask,
     Response,
+    g,
     jsonify,
     redirect,
     render_template,
@@ -24,6 +26,7 @@ from flask import (
 from flask_compress import Compress
 from PIL import Image, ImageOps
 
+import metrics
 from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
 from db import DATA_DIR, get_db, init_db
@@ -79,6 +82,12 @@ CHANGELOG_STRINGS = {
         "lang_label": "EN",
         "lang_code": "en",
         "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+        "metrics_heading": "站点实时概况",
+        "metrics_qps": "QPS（近1分钟）",
+        "metrics_avg": "平均响应",
+        "metrics_p95": "P95",
+        "metrics_uptime": "运行时长",
+        "metrics_hint": "只统计打到源站的请求，命中 CDN 边缘缓存的静态资源不计入；数据存在内存里，服务重启会清零。",
     },
     "en": {
         "page_title": "Changelog",
@@ -108,6 +117,15 @@ CHANGELOG_STRINGS = {
         "lang_label": "中文",
         "lang_code": "zh",
         "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "metrics_heading": "Live Site Stats",
+        "metrics_qps": "QPS (last 1 min)",
+        "metrics_avg": "Avg latency",
+        "metrics_p95": "P95",
+        "metrics_uptime": "Uptime",
+        "metrics_hint": (
+            "Only counts requests that reach the origin server; static assets served from the "
+            "CDN edge cache aren't included. Kept in memory only — resets on each restart."
+        ),
     },
 }
 
@@ -141,6 +159,23 @@ def inject_asset_version():
 
 
 PUBLIC_ENDPOINTS = {"login", "static", "changelog", "changelog_more", "changelog_share_image", "index"}
+
+# Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
+METRICS_EXCLUDED_ENDPOINTS = {"admin_metrics_data"}
+
+
+@app.before_request
+def start_timer():
+    g.request_start = time.time()
+
+
+@app.after_request
+def record_metrics(response):
+    start = getattr(g, "request_start", None)
+    if start is not None and request.endpoint not in METRICS_EXCLUDED_ENDPOINTS:
+        duration_ms = (time.time() - start) * 1000
+        metrics.record(request.endpoint, response.status_code, duration_ms)
+    return response
 
 
 @app.before_request
@@ -244,6 +279,16 @@ def admin_migrate():
         result["uploads"] = "restored"
 
     return jsonify(result)
+
+
+@app.route("/admin/metrics")
+def admin_metrics_page():
+    return render_template("admin_metrics.html")
+
+
+@app.route("/admin/metrics/data")
+def admin_metrics_data():
+    return jsonify({"last_60s": metrics.get_stats(60), "last_5m": metrics.get_stats(300)})
 
 
 UPLOAD_MAX_DIMENSION = 1600
@@ -550,6 +595,7 @@ def changelog():
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
     days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
+    metrics_summary = metrics.get_stats(60)
     return render_template(
         "changelog.html",
         days=days,
@@ -558,6 +604,8 @@ def changelog():
         today=date.today().isoformat(),
         lang=lang,
         t=t,
+        metrics_summary=metrics_summary,
+        uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
     )
 
 
@@ -638,6 +686,7 @@ def public_landing():
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
     days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
+    metrics_summary = metrics.get_stats(60)
 
     return render_template(
         "public_home.html",
@@ -647,6 +696,8 @@ def public_landing():
         today=date.today().isoformat(),
         lang=lang,
         t=t,
+        metrics_summary=metrics_summary,
+        uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
     )
 
 

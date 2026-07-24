@@ -610,4 +610,31 @@ CHANGELOG = [
         "lines_changed": 0,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "加了性能指标：延迟和 QPS",
+        "title_en": "Added performance metrics: latency and QPS",
+        "summary": (
+            "给网站接了一套轻量的请求耗时统计：每个请求进出都记一笔，存在内存里的一个环形"
+            "缓冲区（不落盘，服务重启就清零）。登录后能看私密的 /admin/metrics 页面，有最近 "
+            "60 秒和 5 分钟的 QPS、平均延迟、P50/P95/P99，以及按接口拆分的请求量和状态码"
+            "分布，每 3 秒自动刷新。更新日志页面也加了一个精简版的公开统计卡片。因为线上用 "
+            "gunicorn 起了多个 worker 进程，内存数据不共享，顺带把部署配置从多进程改成单"
+            "进程多线程，这样统计到的才是全站真实数据，不是随机分到某个 worker 上的一部分。"
+        ),
+        "summary_en": (
+            "Added lightweight request-timing instrumentation: every request records its "
+            "duration into an in-memory ring buffer (no disk writes, resets on restart). "
+            "Logged-in users get a private /admin/metrics page showing QPS, avg latency, and "
+            "P50/P95/P99 over the last 60s and 5 minutes, plus a per-endpoint breakdown and "
+            "status-code counts, auto-refreshing every 3 seconds. The changelog page also got "
+            "a smaller public summary card. Since production ran gunicorn with multiple worker "
+            "processes, the in-memory stats weren't shared between them — switched the deploy "
+            "config to a single process with threads instead, so the numbers reflect the whole "
+            "site rather than whichever worker happened to handle a request."
+        ),
+        "image": None,
+        "lines_changed": 339,
+        "estimated": False,
+    },
 ]

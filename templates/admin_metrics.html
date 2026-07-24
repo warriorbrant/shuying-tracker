@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}性能指标 - 知行合一AI实验室{% endblock %}
+{% block content %}
+<h1>性能指标</h1>
+<p class="hint">
+  延迟和吞吐量数据只存在内存里，服务重启会清零，不做历史存档。
+  命中 CDN 边缘缓存的静态资源不会打到这里的源站，这里看到的是实际到达服务器的请求。
+</p>
+
+<div class="metrics-grid">
+  <div class="metrics-card">
+    <h2>最近 60 秒</h2>
+    <div class="metric-row"><span>QPS</span><strong id="m60-tps">-</strong></div>
+    <div class="metric-row"><span>请求数</span><strong id="m60-count">-</strong></div>
+    <div class="metric-row"><span>平均延迟</span><strong id="m60-avg">-</strong></div>
+    <div class="metric-row"><span>P50</span><strong id="m60-p50">-</strong></div>
+    <div class="metric-row"><span>P95</span><strong id="m60-p95">-</strong></div>
+    <div class="metric-row"><span>P99</span><strong id="m60-p99">-</strong></div>
+  </div>
+  <div class="metrics-card">
+    <h2>最近 5 分钟</h2>
+    <div class="metric-row"><span>QPS</span><strong id="m5m-tps">-</strong></div>
+    <div class="metric-row"><span>请求数</span><strong id="m5m-count">-</strong></div>
+    <div class="metric-row"><span>平均延迟</span><strong id="m5m-avg">-</strong></div>
+    <div class="metric-row"><span>P50</span><strong id="m5m-p50">-</strong></div>
+    <div class="metric-row"><span>P95</span><strong id="m5m-p95">-</strong></div>
+    <div class="metric-row"><span>P99</span><strong id="m5m-p99">-</strong></div>
+  </div>
+</div>
+
+<div class="metrics-card">
+  <h2>状态码分布（最近 5 分钟）</h2>
+  <div id="m5m-status" class="status-breakdown">-</div>
+</div>
+
+<div class="metrics-card">
+  <h2>按接口统计（最近 5 分钟，按请求量排序）</h2>
+  <table class="metrics-table">
+    <thead><tr><th>接口</th><th>请求数</th><th>平均延迟</th></tr></thead>
+    <tbody id="m5m-endpoints"></tbody>
+  </table>
+</div>
+
+<p class="hint">运行时长：<span id="uptime">-</span> · 每 3 秒自动刷新</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fmtMs(v) { return v.toFixed(1) + " ms"; }
+
+function fmtUptime(s) {
+  s = Math.floor(s);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h) return `${h}小时${m}分钟`;
+  if (m) return `${m}分${sec}秒`;
+  return `${sec}秒`;
+}
+
+function fillWindow(prefix, s) {
+  document.getElementById(`${prefix}-tps`).textContent = s.tps.toFixed(2);
+  document.getElementById(`${prefix}-count`).textContent = s.count;
+  document.getElementById(`${prefix}-avg`).textContent = fmtMs(s.avg_ms);
+  document.getElementById(`${prefix}-p50`).textContent = fmtMs(s.p50_ms);
+  document.getElementById(`${prefix}-p95`).textContent = fmtMs(s.p95_ms);
+  document.getElementById(`${prefix}-p99`).textContent = fmtMs(s.p99_ms);
+}
+
+async function refresh() {
+  let data;
+  try {
+    const res = await fetch("{{ url_for('admin_metrics_data') }}");
+    data = await res.json();
+  } catch (e) {
+    return;
+  }
+
+  fillWindow("m60", data.last_60s);
+  fillWindow("m5m", data.last_5m);
+
+  const st = data.last_5m.status;
+  document.getElementById("m5m-status").textContent =
+    `2xx: ${st["2xx"]}  3xx: ${st["3xx"]}  4xx: ${st["4xx"]}  5xx: ${st["5xx"]}`;
+
+  const tbody = document.getElementById("m5m-endpoints");
+  tbody.textContent = "";
+  for (const e of data.last_5m.top_endpoints) {
+    const tr = document.createElement("tr");
+    const tdEndpoint = document.createElement("td");
+    tdEndpoint.textContent = e.endpoint;
+    const tdCount = document.createElement("td");
+    tdCount.textContent = e.count;
+    const tdAvg = document.createElement("td");
+    tdAvg.textContent = fmtMs(e.avg_ms);
+    tr.append(tdEndpoint, tdCount, tdAvg);
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById("uptime").textContent = fmtUptime(data.last_5m.uptime_seconds);
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+{% endblock %}

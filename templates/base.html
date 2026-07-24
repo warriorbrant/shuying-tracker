@@ -22,6 +22,7 @@
         <a href="{{ url_for('moment_new') }}">+ 记录动态</a>
         <a href="{{ url_for('moment_scan') }}">+ 截图导入</a>
         <a href="{{ url_for('search') }}">🔍 搜索</a>
+        <a href="{{ url_for('admin_metrics_page') }}">📊 性能指标</a>
       {% endif %}
       <a href="{{ url_for('changelog') }}">更新日志</a>
       {% if auth_enabled and session.authed %}
