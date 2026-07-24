@@ -7,22 +7,38 @@
   <a class="lang-switch" href="{{ url_for('novel_detail', novel_id=novel.id) }}">目录</a>
 </div>
 
-{% if characters %}
-<div class="character-stage" id="characterStage">
-  {% for ch in characters %}
-  <div class="character-standee" style="--standee-delay: {{ (0.3 + loop.index0 * 0.15) | round(2) }}s">
-    {% if ch.image_path %}
-      <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
-    {% endif %}
-    <span class="character-standee-name">{{ ch.name }}</span>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-
 <article class="chapter-reader">
   <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
-  <div class="chapter-body">{{ chapter.content }}</div>
+  <div class="chapter-body">
+    {% for block in blocks %}
+      {% if block.type == 'text' %}
+        <p>{{ block.text }}</p>
+      {% else %}
+        {% set ch = block.character %}
+        <div class="character-reveal">
+          <div class="character-standee">
+            {% if ch.image_path %}
+              <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+            {% endif %}
+            <span class="character-standee-name">{{ ch.name }}</span>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if unmatched_characters %}
+  <div class="character-grid unmatched-characters">
+    {% for ch in unmatched_characters %}
+    <div class="character-card">
+      {% if ch.image_path %}
+        <img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+      {% endif %}
+      <h3>{{ ch.name }}</h3>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </article>
 
 {% if videos %}
@@ -69,11 +85,12 @@
 {% endblock %}
 
 {% block scripts %}
-{% if characters %}
+{% if blocks %}
 <script>
 (function () {
-  var stage = document.getElementById('characterStage');
-  if (!stage || !('IntersectionObserver' in window)) return;
+  if (!('IntersectionObserver' in window)) return;
+  var standees = document.querySelectorAll('.character-reveal .character-standee');
+  if (!standees.length) return;
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
@@ -81,10 +98,8 @@
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.3 });
-  stage.querySelectorAll('.character-standee').forEach(function (el) {
-    observer.observe(el);
-  });
+  }, { threshold: 0.4 });
+  standees.forEach(function (el) { observer.observe(el); });
 })();
 </script>
 {% endif %}

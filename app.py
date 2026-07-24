@@ -1359,6 +1359,24 @@ def novel_detail(novel_id):
     )
 
 
+def build_chapter_blocks(content, characters):
+    """Split chapter text into paragraphs and slot each character's standee in right
+    after the paragraph where their name is first mentioned, so it reveals as the
+    reader actually gets there rather than all at once at the top of the page."""
+    paragraphs = [p for p in content.split("\n") if p.strip()]
+    introduced = set()
+    blocks = []
+    for p in paragraphs:
+        blocks.append({"type": "text", "text": p})
+        for ch in characters:
+            if ch["id"] in introduced or not ch["name"] or ch["name"] not in p:
+                continue
+            introduced.add(ch["id"])
+            blocks.append({"type": "character", "character": ch})
+    unmatched = [ch for ch in characters if ch["id"] not in introduced]
+    return blocks, unmatched
+
+
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>")
 def novel_chapter_read(novel_id, chapter_id):
     conn = get_db()
@@ -1391,10 +1409,11 @@ def novel_chapter_read(novel_id, chapter_id):
     idx = ids.index(chapter_id)
     prev_chapter = chapters[idx - 1] if idx > 0 else None
     next_chapter = chapters[idx + 1] if idx < len(chapters) - 1 else None
+    blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
 
     return render_template(
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
-        characters=characters, videos=videos,
+        blocks=blocks, unmatched_characters=unmatched_characters, videos=videos,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
     )
 

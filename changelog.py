@@ -791,4 +791,30 @@ CHANGELOG = [
         "lines_changed": 4,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "重做：人物立绘改成读到名字时才出现，不是开头",
+        "title_en": "Redesigned: standees now reveal at the character's first mention, not upfront",
+        "summary": (
+            "之前理解错了需求，做成了页面一打开就在顶部展示所有人物；实际想要的是读者读到"
+            "这个人物的名字时才触发，比如读到「游企生道」这句才出现游企生的立绘，更有代入感。"
+            "重新设计：把章节正文按行拆成段落，服务端找出每个出场人物的名字第一次出现在"
+            "哪一段，就把立绘插在那一段后面，读者滚动到那里时才会触发淡入动画。如果某个"
+            "人物选了但名字没在正文里出现，就放到章节末尾一个简单的小卡片列表里，不做动画。"
+        ),
+        "summary_en": (
+            "Misread the original request and built characters showing all at once at the top "
+            "of the page on load; what was actually wanted was the reveal triggering when the "
+            "reader reaches that character's name in the text — e.g. the standee for 游企生 "
+            "should appear right as the reader reads the line where he's mentioned, for a "
+            "stronger sense of immersion. Redesigned: chapter text is split into paragraphs "
+            "server-side, the first paragraph mentioning each selected character is found, and "
+            "their standee is inserted right after it — the fade-in now triggers when the "
+            "reader actually scrolls there. Characters selected but never mentioned in the text "
+            "fall back to a small, unanimated card list at the end of the chapter."
+        ),
+        "image": None,
+        "lines_changed": 76,
+        "estimated": False,
+    },
 ]
