@@ -86,7 +86,8 @@
   <h2>参考书目</h2>
   <div class="novel-grid">
     {% for ref in references %}
-    <a class="novel-card" href="{{ ref.douban_url }}" target="_blank" rel="noopener">
+    {% set tag = "a" if ref.douban_url else "div" %}
+    <{{ tag }} class="novel-card" {% if ref.douban_url %}href="{{ ref.douban_url }}" target="_blank" rel="noopener"{% endif %}>
       <div class="novel-card-cover">
         {% if ref.cover_url %}
           <img src="{{ cover_src(ref.cover_url) }}" alt="{{ ref.title }}">
@@ -97,7 +98,7 @@
       <div class="novel-card-body">
         <h3>{{ ref.title }}</h3>
       </div>
-    </a>
+    </{{ tag }}>
     {% endfor %}
   </div>
 </section>

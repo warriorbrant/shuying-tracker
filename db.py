@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS items (
     status TEXT NOT NULL DEFAULT '想看',
     rating INTEGER,
     review TEXT DEFAULT '',
+    douban_url TEXT DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
@@ -105,12 +106,9 @@ CREATE TABLE IF NOT EXISTS novel_chapter_videos (
 );
 
 CREATE TABLE IF NOT EXISTS novel_references (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    cover_url TEXT DEFAULT '',
-    douban_url TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    PRIMARY KEY (novel_id, item_id)
 );
 """
 
@@ -122,8 +120,32 @@ def get_db():
     return conn
 
 
+def _migrate(conn):
+    # items table predates the douban_url column; patch it in for installs that
+    # already exist (CREATE TABLE IF NOT EXISTS above is a no-op for them).
+    cols = [row["name"] for row in conn.execute("PRAGMA table_info(items)")]
+    if "douban_url" not in cols:
+        conn.execute("ALTER TABLE items ADD COLUMN douban_url TEXT DEFAULT ''")
+
+    # novel_references used to store its own title/cover/douban_url per row; it now
+    # links to an existing items row instead, so the old shape is dropped and
+    # recreated (this table shipped and was redesigned within the same session,
+    # no real reference data existed yet to preserve).
+    ref_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novel_references)")]
+    if ref_cols and "item_id" not in ref_cols:
+        conn.execute("DROP TABLE novel_references")
+        conn.execute(
+            "CREATE TABLE novel_references ("
+            "novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE, "
+            "item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE, "
+            "PRIMARY KEY (novel_id, item_id))"
+        )
+
+
 def init_db():
     conn = get_db()
     conn.executescript(SCHEMA)
+    conn.commit()
+    _migrate(conn)
     conn.commit()
     conn.close()

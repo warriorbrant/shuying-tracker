@@ -899,8 +899,8 @@ def item_new():
     if request.method == "POST":
         conn = get_db()
         conn.execute(
-            "INSERT INTO items (type, title, creator, cover_url, total_units, unit_label, status, rating, review) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO items (type, title, creator, cover_url, total_units, unit_label, status, rating, "
+            "review, douban_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 request.form["type"],
                 request.form["title"].strip(),
@@ -911,6 +911,7 @@ def item_new():
                 request.form.get("status", "想看"),
                 to_int(request.form.get("rating")),
                 request.form.get("review", "").strip(),
+                request.form.get("douban_url", "").strip(),
             ),
         )
         conn.commit()
@@ -995,7 +996,7 @@ def item_edit(item_id):
     if request.method == "POST":
         conn.execute(
             "UPDATE items SET type=?, title=?, creator=?, cover_url=?, total_units=?, unit_label=?, "
-            "status=?, rating=?, review=? WHERE id=?",
+            "status=?, rating=?, review=?, douban_url=? WHERE id=?",
             (
                 request.form["type"],
                 request.form["title"].strip(),
@@ -1006,6 +1007,7 @@ def item_edit(item_id):
                 request.form.get("status", "想看"),
                 to_int(request.form.get("rating")),
                 request.form.get("review", "").strip(),
+                request.form.get("douban_url", "").strip(),
                 item_id,
             ),
         )
@@ -1354,7 +1356,9 @@ def novel_detail(novel_id):
         "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
     ).fetchall()
     references = conn.execute(
-        "SELECT * FROM novel_references WHERE novel_id = ? ORDER BY id ASC", (novel_id,)
+        "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
+        "WHERE nr.novel_id = ? ORDER BY i.title ASC",
+        (novel_id,),
     ).fetchall()
     conn.close()
     return render_template(
@@ -1480,12 +1484,19 @@ def novel_edit(novel_id):
         "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
     ).fetchall()
     references = conn.execute(
-        "SELECT * FROM novel_references WHERE novel_id = ? ORDER BY id ASC", (novel_id,)
+        "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
+        "WHERE nr.novel_id = ? ORDER BY i.title ASC",
+        (novel_id,),
     ).fetchall()
+    all_books = conn.execute(
+        "SELECT id, title, cover_url FROM items WHERE type = 'book' ORDER BY title ASC"
+    ).fetchall()
+    referenced_ids = {row["id"] for row in references}
     conn.close()
     return render_template(
         "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
         chapters=chapters, characters=characters, videos=videos, references=references,
+        all_books=all_books, referenced_ids=referenced_ids,
         error=request.args.get("error"),
     )
 
@@ -1751,24 +1762,21 @@ def novel_reference_new(novel_id):
         conn.close()
         return "未找到该小说", 404
 
-    title = request.form.get("title", "").strip()
-    if not title:
-        conn.close()
-        return redirect(url_for("novel_edit", novel_id=novel_id, error="参考书目需要填写书名"))
-
-    conn.execute(
-        "INSERT INTO novel_references (novel_id, title, cover_url, douban_url) VALUES (?, ?, ?, ?)",
-        (novel_id, title, request.form.get("cover_url", "").strip(), request.form.get("douban_url", "").strip()),
+    item_ids = to_int_list(request.form.getlist("item_ids"))
+    conn.execute("DELETE FROM novel_references WHERE novel_id = ?", (novel_id,))
+    conn.executemany(
+        "INSERT INTO novel_references (novel_id, item_id) VALUES (?, ?)",
+        [(novel_id, item_id) for item_id in item_ids],
     )
     conn.commit()
     conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
-@app.route("/novel/<int:novel_id>/reference/<int:reference_id>/delete", methods=["POST"])
-def novel_reference_delete(novel_id, reference_id):
+@app.route("/novel/<int:novel_id>/reference/<int:item_id>/delete", methods=["POST"])
+def novel_reference_delete(novel_id, item_id):
     conn = get_db()
-    conn.execute("DELETE FROM novel_references WHERE id = ? AND novel_id = ?", (reference_id, novel_id))
+    conn.execute("DELETE FROM novel_references WHERE item_id = ? AND novel_id = ?", (item_id, novel_id))
     conn.commit()
     conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))

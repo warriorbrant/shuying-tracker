@@ -41,6 +41,11 @@
     <input type="url" name="cover_url" value="{{ item.cover_url if item else '' }}">
   </label>
 
+  <label>
+    豆瓣链接（可选，用自动填充会自动带上）
+    <input type="url" name="douban_url" value="{{ item.douban_url if item else '' }}">
+  </label>
+
   <div class="row">
     <label>
       总量（总页数 / 总集数）
@@ -108,6 +113,7 @@ document.getElementById('doubanFetchBtn').addEventListener('click', async () => 
     form.querySelector('[name=title]').value = data.title || '';
     form.querySelector('[name=creator]').value = data.creator || '';
     form.querySelector('[name=cover_url]').value = data.cover_url || '';
+    form.querySelector('[name=douban_url]').value = url;
     if (data.total_units) form.querySelector('[name=total_units]').value = data.total_units;
     if (data.unit_label) form.querySelector('[name=unit_label]').value = data.unit_label;
     if (data.review_draft && !form.querySelector('[name=review]').value) {

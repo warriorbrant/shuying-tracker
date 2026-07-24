@@ -895,4 +895,32 @@ CHANGELOG = [
         "lines_changed": 150,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "参考书目改成从已有书目里选，不用重新录入",
+        "title_en": "Reference bibliography now picks from existing books instead of re-entering",
+        "summary": (
+            "上一版参考书目是自己单独存一份书名/封面/豆瓣链接，等于重新加了一遍数据。改成"
+            "直接从已经在追踪的书（首页那个书影列表）里勾选，跟章节挑人物/视频一样的勾选框"
+            "界面；勾选的书本来就会正常出现在主页的时间线和书目列表里，不需要额外处理。"
+            "要引用的书还没加过？表单里有个「先去添加一本」的链接，加完回来勾选就行，不用"
+            "跳来跳去重新抓豆瓣数据。顺带给 items 表加了 douban_url 字段，添加书的时候用"
+            "豆瓣自动填充会顺便存下豆瓣链接，之后可以点回去看原页面。"
+        ),
+        "summary_en": (
+            "The previous version stored its own copy of title/cover/Douban link per reference "
+            "— effectively re-entering data that already existed. Switched to picking directly "
+            "from books already being tracked (the same list that shows on the homepage), using "
+            "the same checkbox-picker UI as selecting characters/videos for a chapter. Since "
+            "referenced books are just regular tracked items, they already show up in the "
+            "homepage timeline and book list with no extra work needed. If the book you want to "
+            "cite hasn't been added yet, there's a link straight to the add-book form; add it "
+            "there and come back to check the box, no need to re-fetch anything from Douban. "
+            "Also added a douban_url column to the items table itself, so using Douban auto-fill "
+            "when adding a book now saves the original link too, for future reference."
+        ),
+        "image": None,
+        "lines_changed": 86,
+        "estimated": False,
+    },
 ]
