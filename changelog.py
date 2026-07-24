@@ -817,4 +817,17 @@ CHANGELOG = [
         "lines_changed": 76,
         "estimated": False,
     },
+    {
+        "date": "2026-07-24",
+        "title": "章节目录改成一排 3 个的网格排版",
+        "title_en": "Chapter list now shows 3 per row in a grid",
+        "summary": "小说详情页和编辑页的章节目录，从竖排列表改成一排 3 个的网格，手机上自动收回单列。",
+        "summary_en": (
+            "The chapter list on both the novel detail page and the edit page switched from a "
+            "single stacked column to a 3-per-row grid, collapsing back to one column on mobile."
+        ),
+        "image": None,
+        "lines_changed": 13,
+        "estimated": False,
+    },
 ]
