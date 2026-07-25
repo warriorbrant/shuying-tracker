@@ -1330,4 +1330,26 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "没上传封面时，占位图标不再孤零零飘在空色块里",
+        "title_en": "Fixed the cover placeholder looking bare and unbalanced",
+        "summary": (
+            "反馈说小说详情页的封面看着不协调——其实是没上传封面时的占位图标（一个小 emoji "
+            "飘在一大块纯色背景里），旁边配上一段很长的简介，显得很空。改成一个带阴影的白色"
+            "圆形徽章托着图标，外面的色块加了一圈细边框。这个占位样式是书影条目和小说共用的，"
+            "两边都顺带好看了一些。"
+        ),
+        "summary_en": (
+            "Reported the novel detail page's cover looking mismatched — turned out to be the "
+            "no-cover-uploaded placeholder (a bare emoji floating in a flat color block), which "
+            "looked especially empty next to a long summary. Changed it to a small white "
+            "circular badge with a soft shadow holding the icon, plus a subtle border around the "
+            "cover box. This placeholder is shared with book/show items, so both got the same "
+            "polish."
+        ),
+        "image": None,
+        "lines_changed": 10,
+        "estimated": False,
+    },
 ]
