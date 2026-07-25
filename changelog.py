@@ -1462,4 +1462,32 @@ CHANGELOG = [
         "lines_changed": 168,
         "estimated": False,
     },
+    {
+        "date": "2026-07-26",
+        "title": "修复：小说导出的 PDF 中文乱码",
+        "title_en": "Fixed garbled Chinese text in the novel PDF export",
+        "summary": (
+            "PDF 导出本地测过没问题，但线上生成的 PDF 中文是乱码。原因是 PDF 那边用的字"
+            "体加载方式跟分享图的 Pillow 不一样：分享图用 Pillow/FreeType 读字体没问题，"
+            "但 PDF 库 reportlab 自己解析字体文件的逻辑对 Linux 上那个 Noto Sans CJK 字"
+            "体文件（虽然后缀是 .ttc，内部其实是 CFF 轮廓）支持得不好，解析错了字形对应"
+            "关系，所以显示出来是乱码而不是报错——本地测试用的是 macOS 系统字体，没测到"
+            "线上这条路径，所以之前没发现。改成用 reportlab 自带的中文字体支持（不用解"
+            "析任何字体文件，直接引用阅读器自带的中文字体），彻底绕开这个解析问题。"
+        ),
+        "summary_en": (
+            "The PDF export tested fine locally, but the Chinese text came out garbled once "
+            "generated in production. The PDF path used a different font-loading route than "
+            "the share-card images: Pillow/FreeType reads the Linux CJK font file just fine, "
+            "but reportlab's own font parser doesn't handle that particular Noto Sans CJK "
+            "file well (it's a .ttc by extension but CFF-outlined internally), so it mapped "
+            "character codes to the wrong glyphs instead of erroring out — and the local test "
+            "used a macOS system font, so it never exercised that code path. Switched to "
+            "reportlab's built-in CJK font support instead, which doesn't parse any font "
+            "file at all, sidestepping the bug entirely."
+        ),
+        "image": None,
+        "lines_changed": 10,
+        "estimated": False,
+    },
 ]

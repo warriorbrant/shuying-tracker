@@ -8,18 +8,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
-
-# Same candidate paths share_card.py uses for Pillow — macOS locally,
-# Debian's fonts-noto-cjk package (installed in the Dockerfile) in production.
-CJK_FONT_CANDIDATES = [
-    "/System/Library/Fonts/STHeiti Light.ttc",
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-    "/System/Library/Fonts/STHeiti Medium.ttc",
-    "/System/Library/Fonts/Songti.ttc",
-]
 
 
 def _chapter_paragraphs(chapter):
@@ -67,13 +57,14 @@ def build_novel_docx(novel, chapters):
 
 
 def _register_pdf_font():
-    for path in CJK_FONT_CANDIDATES:
-        try:
-            pdfmetrics.registerFont(TTFont("NovelExportCJK", path, subfontIndex=0))
-            return "NovelExportCJK"
-        except Exception:
-            continue
-    return "Helvetica"
+    # reportlab's TTFont parser is built around TrueType glyf outlines and chokes on
+    # Noto Sans CJK's .ttc (it's actually a CFF-flavored OpenType collection despite the
+    # extension), producing garbled text instead of raising — silently wrong, not just
+    # missing. Use reportlab's built-in CID font instead: no font file is parsed at all,
+    # so there's nothing to get wrong. It's a serif face, which reads fine for prose.
+    name = "STSong-Light"
+    pdfmetrics.registerFont(UnicodeCIDFont(name))
+    return name
 
 
 def build_novel_pdf(novel, chapters):
