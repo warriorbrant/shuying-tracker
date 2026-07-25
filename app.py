@@ -80,6 +80,8 @@ CHANGELOG_STRINGS = {
         "share_today": "📤 今天的更新分享图",
         "day_total": "共 {count} 次更新 · 当日约 {lines} 行代码",
         "today_tag": "今天",
+        "date_label": "选择日期",
+        "date_today_suffix": " · 今天",
         "lines_badge": "+{lines} 行",
         "estimated_suffix": "（估算）",
         "empty": "这段时间还没有更新记录",
@@ -115,6 +117,8 @@ CHANGELOG_STRINGS = {
         "share_today": "📤 Share: today's updates",
         "day_total": "{count} updates · ~{lines} lines that day",
         "today_tag": "Today",
+        "date_label": "Pick a date",
+        "date_today_suffix": " · Today",
         "lines_badge": "+{lines} lines",
         "estimated_suffix": " (estimated)",
         "empty": "No updates in this range yet",
@@ -712,16 +716,29 @@ def changelog():
     if lang not in CHANGELOG_STRINGS:
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
-    days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
+    # Show one day at a time, chosen via the date picker; default to today, or the
+    # most recent update day when today has no entries yet.
+    all_dates = sorted({c["date"] for c in CHANGELOG}, reverse=True)
+    today_str = date.today().isoformat()
+    default_date = today_str if today_str in all_dates else (all_dates[0] if all_dates else today_str)
+    selected_date = request.args.get("date") or default_date
+    if all_dates and selected_date not in all_dates:
+        selected_date = default_date
+
+    day_entries = [c for c in CHANGELOG if c["date"] == selected_date]
+    days, _ = group_changelog_by_day(day_entries, lang=lang)
+
     metrics_summary = metrics.get_stats(60)
     return render_template(
         "changelog.html",
         days=days,
-        days_has_more=has_more,
+        days_has_more=False,
         heatmap=build_changelog_heatmap(lang=lang),
-        today=date.today().isoformat(),
+        today=today_str,
         lang=lang,
         t=t,
+        all_dates=all_dates,
+        selected_date=selected_date,
         metrics_summary=metrics_summary,
         uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
         share_ver=int(time.time()),

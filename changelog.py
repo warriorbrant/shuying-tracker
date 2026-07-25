@@ -1178,4 +1178,25 @@ CHANGELOG = [
         "lines_changed": 11,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "更新日志页面改成按天查看，加了日期选择器",
+        "title_en": "Changelog page now views one day at a time with a date picker",
+        "summary": (
+            "完整的 /changelog 页面原来是一屏 5 天、往下无限加载。改成一次只显示一天，默认"
+            "今天（今天还没更新就退回最近一天），标题下面加了个日期下拉框，可以选任意一个"
+            "有更新的日期来查看那天的日志。下拉里只列出真正有更新的日期，不会选到空的。切换"
+            "中英文、分享图这些都保留着。"
+        ),
+        "summary_en": (
+            "The full /changelog page used to show 5 days at once with infinite scroll. Now it "
+            "shows one day at a time, defaulting to today (falling back to the most recent day "
+            "when today has no entries), with a date dropdown under the heading to jump to any "
+            "day that has updates. The dropdown only lists days that actually have entries, so "
+            "you can't land on an empty one. The language toggle and share buttons stay."
+        ),
+        "image": None,
+        "lines_changed": 55,
+        "estimated": False,
+    },
 ]

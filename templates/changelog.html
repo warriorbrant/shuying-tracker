@@ -4,9 +4,20 @@
 
 <div class="changelog-header-row">
   <h1>{{ t.heading }}</h1>
-  <a class="lang-switch" href="{{ url_for('changelog', lang=t.lang_code) }}">{{ t.lang_label }}</a>
+  <a class="lang-switch" href="{{ url_for('changelog', lang=t.lang_code, date=selected_date) }}">{{ t.lang_label }}</a>
 </div>
 <p class="hint">{{ t.hint }}</p>
+
+<form class="date-filter" method="get" action="{{ url_for('changelog') }}">
+  <input type="hidden" name="lang" value="{{ lang }}">
+  <label>{{ t.date_label }}
+    <select name="date" onchange="this.form.submit()">
+      {% for d in all_dates %}
+        <option value="{{ d }}" {{ 'selected' if d == selected_date }}>{{ d }}{{ t.date_today_suffix if d == today else '' }}</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
 
 <section class="heatmap-card">
   <div class="heatmap-months">
@@ -42,12 +53,5 @@
 <div id="changelog-days">
   {% include "_changelog_days.html" %}
 </div>
-{% if days_has_more %}
-  <div id="changelog-sentinel" data-infinite-scroll
-       data-list-id="changelog-days" data-loading-id="changelog-loading"
-       data-url="{{ url_for('changelog_more') }}" data-offset="{{ days|length }}"
-       data-params='{"lang": "{{ lang }}"}'></div>
-  <p id="changelog-loading" class="hint feed-loading">加载中…</p>
-{% endif %}
 
 {% endblock %}
