@@ -1633,16 +1633,10 @@ def novel_chapter_new(novel_id):
         conn.close()
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
-    characters = conn.execute(
-        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
-    ).fetchall()
-    videos = conn.execute(
-        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
-    ).fetchall()
     conn.close()
     return render_template(
         "novel_chapter_form.html", novel=novel, chapter=None,
-        all_characters=characters, all_videos=videos, selected_character_ids=set(), selected_video_ids=set(),
+        preselected_characters=[], preselected_videos=[],
     )
 
 
@@ -1672,26 +1666,82 @@ def novel_chapter_edit(novel_id, chapter_id):
         conn.close()
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
-    characters = conn.execute(
-        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
+    preselected_characters = conn.execute(
+        "SELECT nc.id, nc.name, nc.image_path FROM novel_characters nc "
+        "JOIN novel_chapter_characters ncc ON ncc.character_id = nc.id "
+        "WHERE ncc.chapter_id = ? ORDER BY nc.sort_order ASC, nc.id ASC",
+        (chapter_id,),
     ).fetchall()
-    videos = conn.execute(
-        "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
+    preselected_videos = conn.execute(
+        "SELECT nv.id, nv.title, nv.thumbnail_path, nv.source_type FROM novel_videos nv "
+        "JOIN novel_chapter_videos ncv ON ncv.video_id = nv.id "
+        "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
+        (chapter_id,),
     ).fetchall()
-    selected_character_ids = {
-        row["character_id"] for row in
-        conn.execute("SELECT character_id FROM novel_chapter_characters WHERE chapter_id = ?", (chapter_id,))
-    }
-    selected_video_ids = {
-        row["video_id"] for row in
-        conn.execute("SELECT video_id FROM novel_chapter_videos WHERE chapter_id = ?", (chapter_id,))
-    }
     conn.close()
     return render_template(
         "novel_chapter_form.html", novel=novel, chapter=chapter,
-        all_characters=characters, all_videos=videos,
-        selected_character_ids=selected_character_ids, selected_video_ids=selected_video_ids,
+        preselected_characters=preselected_characters, preselected_videos=preselected_videos,
     )
+
+
+@app.route("/novel/<int:novel_id>/characters/search")
+def novel_character_search(novel_id):
+    # Per-novel list is small, so an empty query returns everyone (typing filters) —
+    # this way untitled/hard-to-spell entries are still reachable by just focusing.
+    q = request.args.get("q", "").strip()
+    conn = get_db()
+    if q:
+        rows = conn.execute(
+            "SELECT id, name, image_path FROM novel_characters WHERE novel_id = ? AND name LIKE ? "
+            "ORDER BY sort_order ASC, id ASC LIMIT 20",
+            (novel_id, f"%{q}%"),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT id, name, image_path FROM novel_characters WHERE novel_id = ? "
+            "ORDER BY sort_order ASC, id ASC LIMIT 20",
+            (novel_id,),
+        ).fetchall()
+    conn.close()
+    return jsonify([
+        {
+            "id": r["id"],
+            "label": r["name"],
+            "image_url": url_for("serve_novel_media", filename=r["image_path"]) if r["image_path"] else "",
+        }
+        for r in rows
+    ])
+
+
+@app.route("/novel/<int:novel_id>/videos/search")
+def novel_video_search(novel_id):
+    q = request.args.get("q", "").strip()
+    conn = get_db()
+    if q:
+        rows = conn.execute(
+            "SELECT id, title, thumbnail_path, source_type FROM novel_videos "
+            "WHERE novel_id = ? AND title LIKE ? ORDER BY created_at DESC LIMIT 20",
+            (novel_id, f"%{q}%"),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT id, title, thumbnail_path, source_type FROM novel_videos "
+            "WHERE novel_id = ? ORDER BY created_at DESC LIMIT 20",
+            (novel_id,),
+        ).fetchall()
+    conn.close()
+    return jsonify([
+        {
+            "id": r["id"],
+            "label": r["title"] or f"视频 #{r['id']}",
+            "image_url": (
+                url_for("serve_novel_media", filename=r["thumbnail_path"])
+                if r["source_type"] == "upload" and r["thumbnail_path"] else ""
+            ),
+        }
+        for r in rows
+    ])
 
 
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/delete", methods=["POST"])

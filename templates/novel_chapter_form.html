@@ -15,46 +15,135 @@
     <textarea name="content" rows="20">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
-  <label>本章出场人物（从已上传的人物里挑，不用重新上传）</label>
-  {% if all_characters %}
-  <div class="picker-grid">
-    {% for ch in all_characters %}
-    <label class="picker-item">
-      <input type="checkbox" name="character_ids" value="{{ ch.id }}" {{ 'checked' if ch.id in selected_character_ids }}>
-      {% if ch.image_path %}
-        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
-      {% endif %}
-      <span>{{ ch.name }}</span>
-    </label>
+  <label>本章出场人物（搜索添加）</label>
+  <div id="selectedCharacters" class="chip-list">
+    {% for ch in preselected_characters %}
+    <span class="chip">
+      {% if ch.image_path %}<img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="">{% endif %}
+      {{ ch.name }}
+      <button type="button" class="chip-remove" aria-label="移除">×</button>
+      <input type="hidden" name="character_ids" value="{{ ch.id }}">
+    </span>
     {% endfor %}
   </div>
-  {% else %}
-  <p class="hint">还没有人物角色，先在小说编辑页加几个。</p>
-  {% endif %}
+  <div class="ref-search-box">
+    <input type="text" id="charSearch" autocomplete="off" placeholder="输入人物名，或点一下看全部…">
+    <div id="charResults" class="ref-results"></div>
+  </div>
 
-  <label>本章视频（从已上传/已添加的视频里挑）</label>
-  {% if all_videos %}
-  <div class="picker-grid">
-    {% for v in all_videos %}
-    <label class="picker-item">
-      <input type="checkbox" name="video_ids" value="{{ v.id }}" {{ 'checked' if v.id in selected_video_ids }}>
-      {% if v.source_type == 'upload' and v.thumbnail_path %}
-        <img loading="lazy" src="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}" alt="{{ v.title }}">
-      {% else %}
-        <span class="picker-video-icon">🎬</span>
-      {% endif %}
-      <span>{{ v.title or ('视频 #' ~ v.id) }}</span>
-    </label>
+  <label>本章视频（搜索添加）</label>
+  <div id="selectedVideos" class="chip-list">
+    {% for v in preselected_videos %}
+    <span class="chip">
+      {% if v.source_type == 'upload' and v.thumbnail_path %}<img src="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}" alt="">{% endif %}
+      {{ v.title or ('视频 #' ~ v.id) }}
+      <button type="button" class="chip-remove" aria-label="移除">×</button>
+      <input type="hidden" name="video_ids" value="{{ v.id }}">
+    </span>
     {% endfor %}
   </div>
-  {% else %}
-  <p class="hint">还没有视频，先在小说编辑页加几个。</p>
-  {% endif %}
+  <div class="ref-search-box">
+    <input type="text" id="videoSearch" autocomplete="off" placeholder="输入视频标题，或点一下看全部…">
+    <div id="videoResults" class="ref-results"></div>
+  </div>
 
   <div class="actions">
     <button type="submit">保存</button>
     <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">取消</a>
   </div>
 </form>
+
+<script>
+(function () {
+  function escapeText(el, text) { el.appendChild(document.createTextNode(text)); }
+
+  function setupPicker(opts) {
+    var input = document.getElementById(opts.searchId);
+    var results = document.getElementById(opts.resultsId);
+    var selected = document.getElementById(opts.selectedId);
+    if (!input) return;
+
+    function selectedIds() {
+      return Array.prototype.map.call(
+        selected.querySelectorAll('input[type=hidden]'), function (i) { return i.value; }
+      );
+    }
+
+    function bindRemove(chip) {
+      chip.querySelector('.chip-remove').addEventListener('click', function () { chip.remove(); });
+    }
+    Array.prototype.forEach.call(selected.querySelectorAll('.chip'), bindRemove);
+
+    function addChip(item) {
+      if (selectedIds().indexOf(String(item.id)) !== -1) return;
+      var chip = document.createElement('span');
+      chip.className = 'chip';
+      if (item.image_url) {
+        var img = document.createElement('img');
+        img.src = item.image_url; img.alt = '';
+        chip.appendChild(img);
+      }
+      escapeText(chip, item.label);
+      var rm = document.createElement('button');
+      rm.type = 'button'; rm.className = 'chip-remove'; rm.textContent = '×';
+      chip.appendChild(rm);
+      var hid = document.createElement('input');
+      hid.type = 'hidden'; hid.name = opts.field; hid.value = item.id;
+      chip.appendChild(hid);
+      bindRemove(chip);
+      selected.appendChild(chip);
+    }
+
+    function render(data) {
+      results.innerHTML = '';
+      var sel = selectedIds();
+      var shown = data.filter(function (item) { return sel.indexOf(String(item.id)) === -1; });
+      if (!shown.length) {
+        var e = document.createElement('div');
+        e.className = 'ref-result-empty';
+        e.textContent = '没有可添加的了';
+        results.appendChild(e);
+        return;
+      }
+      shown.forEach(function (item) {
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'ref-result';
+        if (item.image_url) {
+          var im = document.createElement('img');
+          im.src = item.image_url; im.className = 'ref-result-thumb'; im.alt = '';
+          btn.appendChild(im);
+        }
+        escapeText(btn, item.label);
+        btn.addEventListener('click', function () {
+          addChip(item); input.value = ''; results.innerHTML = '';
+        });
+        results.appendChild(btn);
+      });
+    }
+
+    function query() {
+      fetch(opts.url + '?q=' + encodeURIComponent(input.value.trim()))
+        .then(function (r) { return r.json(); })
+        .then(render).catch(function () {});
+    }
+
+    var timer;
+    input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(query, 250); });
+    input.addEventListener('focus', function () { if (!results.children.length) query(); });
+    document.addEventListener('click', function (e) {
+      if (!input.contains(e.target) && !results.contains(e.target)) results.innerHTML = '';
+    });
+  }
+
+  setupPicker({
+    searchId: 'charSearch', resultsId: 'charResults', selectedId: 'selectedCharacters',
+    field: 'character_ids', url: '{{ url_for("novel_character_search", novel_id=novel.id) }}',
+  });
+  setupPicker({
+    searchId: 'videoSearch', resultsId: 'videoResults', selectedId: 'selectedVideos',
+    field: 'video_ids', url: '{{ url_for("novel_video_search", novel_id=novel.id) }}',
+  });
+})();
+</script>
 
 {% endblock %}

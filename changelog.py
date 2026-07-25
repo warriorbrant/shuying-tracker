@@ -1261,4 +1261,28 @@ CHANGELOG = [
         "lines_changed": 123,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "章节里选人物和视频也改成搜索添加",
+        "title_en": "Chapter character/video selection is now search-based too",
+        "summary": (
+            "把参考书目那套搜索补全也用到了章节编辑里选出场人物和本章视频。跟参考书目不一样"
+            "的是，章节的人物/视频要跟正文一起提交保存（新建章节时还没有章节 ID），所以做成"
+            "搜索→点选→加成「已选标签」（客户端），随章节表单一起保存。人物的搜索结果和标签"
+            "都带头像，选人物看脸更直观。人物/视频列表是单本小说范围、数量不多，所以搜索框点"
+            "一下（空查询）就列出全部，输入再过滤，无标题的视频也能选到（显示成「视频 #编号」）。"
+        ),
+        "summary_en": (
+            "Extended the reference-book search pattern to picking a chapter's characters and "
+            "videos. Unlike references, a chapter's characters/videos are saved together with "
+            "the chapter body (a new chapter has no id yet), so this is search → click → add as "
+            "a client-side chip that submits with the chapter form. Character search results "
+            "and chips show thumbnails so you can pick by face. Since each novel's character/"
+            "video lists are small, focusing the box (empty query) lists everything and typing "
+            "filters — untitled videos are still reachable, shown as '视频 #<id>'."
+        ),
+        "image": None,
+        "lines_changed": 241,
+        "estimated": False,
+    },
 ]

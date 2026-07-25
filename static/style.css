@@ -1351,6 +1351,56 @@ button {
   padding: 6px 2px;
 }
 
+.ref-result-thumb {
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 5px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--bg);
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.chip-list:empty {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-soft);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 4px 6px 4px 4px;
+  font-size: 0.85rem;
+}
+
+.chip img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 999px;
+  background: var(--card-bg);
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
 .picker-grid {
   display: flex;
   flex-wrap: wrap;
