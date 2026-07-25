@@ -1152,6 +1152,19 @@ button {
   overflow: hidden;
 }
 
+.reference-grid {
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.reference-grid .novel-card-body {
+  padding: 8px 10px;
+}
+
+.reference-grid .novel-card-body h3 {
+  font-size: 0.82rem;
+}
+
 .chapter-list {
   list-style: none;
   padding: 0;

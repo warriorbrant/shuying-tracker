@@ -86,7 +86,7 @@
 {% if references %}
 <section class="log-section">
   <h2>参考书目</h2>
-  <div class="novel-grid">
+  <div class="novel-grid reference-grid">
     {% for ref in references %}
     {% set tag = "a" if ref.douban_url else "div" %}
     <{{ tag }} class="novel-card" {% if ref.douban_url %}href="{{ ref.douban_url }}" target="_blank" rel="noopener"{% endif %}>

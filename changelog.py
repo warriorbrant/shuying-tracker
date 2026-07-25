@@ -1311,4 +1311,23 @@ CHANGELOG = [
         "lines_changed": 51,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "参考书目的封面图缩小了一些",
+        "title_en": "Reference book covers are a bit smaller now",
+        "summary": (
+            "参考书目跟小说列表页共用同一套网格样式，之前封面跟小说封面一样大。加了个"
+            "reference-grid 修饰类，只缩小参考书目这里的卡片（最小宽度从 180px 降到 110px），"
+            "小说列表页和其他用到同一套样式的地方不受影响。"
+        ),
+        "summary_en": (
+            "Reference book cards shared the same grid styling as the novel list, so covers "
+            "were as large as novel covers. Added a reference-grid modifier that only shrinks "
+            "cards in the reference-bibliography section (min-width 180px down to 110px); the "
+            "novels list and everything else using the shared grid is untouched."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]
