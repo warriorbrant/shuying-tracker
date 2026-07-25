@@ -879,6 +879,10 @@ button {
 
 .date-filter {
   margin: 4px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
 }
 
 .date-filter label {
@@ -898,6 +902,27 @@ button {
   color: var(--text);
   font-family: inherit;
   cursor: pointer;
+}
+
+.changelog-search input {
+  font-size: 0.9rem;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+  width: 200px;
+  max-width: 100%;
+}
+
+.btn-search-icon {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .search-form {

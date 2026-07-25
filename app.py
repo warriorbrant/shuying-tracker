@@ -82,6 +82,10 @@ CHANGELOG_STRINGS = {
         "today_tag": "今天",
         "date_label": "选择日期",
         "date_today_suffix": " · 今天",
+        "search_placeholder": "搜索更新日志…",
+        "search_results_label": "「{q}」共 {count} 条结果",
+        "search_no_results": "没有匹配「{q}」的更新记录",
+        "search_clear": "清除搜索",
         "lines_badge": "+{lines} 行",
         "estimated_suffix": "（估算）",
         "empty": "这段时间还没有更新记录",
@@ -119,6 +123,10 @@ CHANGELOG_STRINGS = {
         "today_tag": "Today",
         "date_label": "Pick a date",
         "date_today_suffix": " · Today",
+        "search_placeholder": "Search the changelog…",
+        "search_results_label": "{count} results for “{q}”",
+        "search_no_results": "No updates match “{q}”",
+        "search_clear": "Clear search",
         "lines_badge": "+{lines} lines",
         "estimated_suffix": " (estimated)",
         "empty": "No updates in this range yet",
@@ -717,7 +725,8 @@ def changelog():
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
     # Show one day at a time, chosen via the date picker; default to today, or the
-    # most recent update day when today has no entries yet.
+    # most recent update day when today has no entries yet. A search query takes
+    # over and shows matches across all days instead.
     all_dates = sorted({c["date"] for c in CHANGELOG}, reverse=True)
     today_str = date.today().isoformat()
     default_date = today_str if today_str in all_dates else (all_dates[0] if all_dates else today_str)
@@ -725,8 +734,22 @@ def changelog():
     if all_dates and selected_date not in all_dates:
         selected_date = default_date
 
-    day_entries = [c for c in CHANGELOG if c["date"] == selected_date]
-    days, _ = group_changelog_by_day(day_entries, lang=lang)
+    q = request.args.get("q", "").strip()
+    if q:
+        needle = q.lower()
+        matches = [
+            c for c in CHANGELOG
+            if needle in c["title"].lower()
+            or needle in c.get("title_en", "").lower()
+            or needle in c["summary"].lower()
+            or needle in c.get("summary_en", "").lower()
+        ]
+        days, _ = group_changelog_by_day(matches, lang=lang)
+        search_count = len(matches)
+    else:
+        day_entries = [c for c in CHANGELOG if c["date"] == selected_date]
+        days, _ = group_changelog_by_day(day_entries, lang=lang)
+        search_count = 0
 
     metrics_summary = metrics.get_stats(60)
     return render_template(
@@ -739,6 +762,8 @@ def changelog():
         t=t,
         all_dates=all_dates,
         selected_date=selected_date,
+        q=q,
+        search_count=search_count,
         metrics_summary=metrics_summary,
         uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
         share_ver=int(time.time()),

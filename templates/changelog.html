@@ -4,7 +4,7 @@
 
 <div class="changelog-header-row">
   <h1>{{ t.heading }}</h1>
-  <a class="lang-switch" href="{{ url_for('changelog', lang=t.lang_code, date=selected_date) }}">{{ t.lang_label }}</a>
+  <a class="lang-switch" href="{{ url_for('changelog', lang=t.lang_code, date=selected_date, q=q) }}">{{ t.lang_label }}</a>
 </div>
 <p class="hint">{{ t.hint }}</p>
 
@@ -17,7 +17,18 @@
       {% endfor %}
     </select>
   </label>
+  <label class="changelog-search">
+    <input type="search" name="q" value="{{ q }}" placeholder="{{ t.search_placeholder }}">
+  </label>
+  <button type="submit" class="btn-search-icon" aria-label="{{ t.search_placeholder }}">🔍</button>
+  {% if q %}<a class="btn-link" href="{{ url_for('changelog', lang=lang) }}">{{ t.search_clear }}</a>{% endif %}
 </form>
+
+{% if q %}
+<p class="hint">
+  {% if search_count %}{{ t.search_results_label.format(q=q, count=search_count) }}{% else %}{{ t.search_no_results.format(q=q) }}{% endif %}
+</p>
+{% endif %}
 
 <section class="heatmap-card">
   <div class="heatmap-months">

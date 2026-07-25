@@ -1399,4 +1399,23 @@ CHANGELOG = [
         "lines_changed": 18,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "更新日志页面加了搜索框",
+        "title_en": "Added a search box to the changelog page",
+        "summary": (
+            "更新日志之前只能按日期一天天翻，现在加了个搜索框，按标题和正文（中英文都会"
+            "搜）匹配，结果按日期分组显示，跟日期选择互斥——一搜索就不再受选中日期限制，"
+            "清空搜索框可以一键回到按日期查看。"
+        ),
+        "summary_en": (
+            "The changelog could only be browsed one day at a time before. Added a search "
+            "box that matches title and body text (both languages), with results grouped by "
+            "date and no longer limited to the selected day; clearing the box goes back to "
+            "the date view."
+        ),
+        "image": None,
+        "lines_changed": 65,
+        "estimated": False,
+    },
 ]
