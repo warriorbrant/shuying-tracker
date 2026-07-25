@@ -34,6 +34,7 @@ from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
 from db import DATA_DIR, get_db, init_db
 from douban import DoubanFetchError, fetch_douban_info
+from novel_export import build_novel_docx, build_novel_pdf
 from share_card import (
     build_changelog_share_card,
     build_day_share_card,
@@ -1505,6 +1506,51 @@ def novel_share_image(novel_id):
         as_attachment=bool(download),
         download_name=f"{novel['title']}-分享卡片.png" if download else None,
         max_age=0,
+    )
+
+
+def _load_novel_and_chapters(novel_id, conn):
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    if novel is None:
+        return None, None
+    chapters = conn.execute(
+        "SELECT * FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC", (novel_id,)
+    ).fetchall()
+    return novel, chapters
+
+
+# Not in PUBLIC_ENDPOINTS, so require_login() gates these behind a password login.
+@app.route("/novel/<int:novel_id>/export.docx")
+def novel_export_docx(novel_id):
+    conn = get_db()
+    novel, chapters = _load_novel_and_chapters(novel_id, conn)
+    conn.close()
+    if novel is None:
+        return "未找到该小说", 404
+
+    buf = build_novel_docx(dict(novel), [dict(c) for c in chapters])
+    return send_file(
+        buf,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        as_attachment=True,
+        download_name=f"{novel['title']}.docx",
+    )
+
+
+@app.route("/novel/<int:novel_id>/export.pdf")
+def novel_export_pdf(novel_id):
+    conn = get_db()
+    novel, chapters = _load_novel_and_chapters(novel_id, conn)
+    conn.close()
+    if novel is None:
+        return "未找到该小说", 404
+
+    buf = build_novel_pdf(dict(novel), [dict(c) for c in chapters])
+    return send_file(
+        buf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"{novel['title']}.pdf",
     )
 
 

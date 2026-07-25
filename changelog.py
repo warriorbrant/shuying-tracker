@@ -1440,4 +1440,26 @@ CHANGELOG = [
         "lines_changed": 8,
         "estimated": False,
     },
+    {
+        "date": "2026-07-26",
+        "title": "小说加了导出 Word / PDF，全文一次导出，需要登录",
+        "title_en": "Added Word/PDF export for the whole novel (login required)",
+        "summary": (
+            "小说详情页新增「导出 Word」「导出 PDF」两个按钮，把简介和所有章节按顺序打"
+            "包成一份 .docx 或 .pdf，章节之间自动分页。两个导出接口都没加进公开路由白名"
+            "单，所以跟其他创作类功能一样，必须先登录才能用。Word 用 python-docx 生成，"
+            "PDF 用 reportlab，中文字体复用了分享图那套 Noto CJK 字体查找逻辑。"
+        ),
+        "summary_en": (
+            "Added \"Export Word\" and \"Export PDF\" buttons on the novel detail page — "
+            "each bundles the summary and every chapter, in order, into a single .docx or "
+            ".pdf with a page break between chapters. Neither export route is in the public "
+            "route allowlist, so like the rest of the authoring features, they require "
+            "login. Word generation uses python-docx, PDF uses reportlab, and both reuse "
+            "the same Noto CJK font lookup the share-card generator already had."
+        ),
+        "image": None,
+        "lines_changed": 168,
+        "estimated": False,
+    },
 ]

@@ -20,6 +20,8 @@
       <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
       {% if not auth_enabled or session.authed %}
         <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">编辑小说</a>
+        <a class="btn-link" href="{{ url_for('novel_export_docx', novel_id=novel.id) }}">导出 Word</a>
+        <a class="btn-link" href="{{ url_for('novel_export_pdf', novel_id=novel.id) }}">导出 PDF</a>
       {% endif %}
     </div>
   </div>
