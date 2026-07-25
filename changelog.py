@@ -1139,4 +1139,25 @@ CHANGELOG = [
         "lines_changed": 6,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "公开首页的更新日志只显示今天的",
+        "title_en": "Public homepage now shows only today's changelog",
+        "summary": (
+            "未登录的公开首页原来会显示最近 5 天的更新日志、还能往下无限加载。改成只显示"
+            "今天的更新，首页更清爽；如果今天还没更新，就退回显示最近一天的，避免首页空着。"
+            "同时关掉了首页这块的「加载更多」。完整的更新日志（/changelog 页面）不受影响，"
+            "仍然按天分页显示全部历史。"
+        ),
+        "summary_en": (
+            "The logged-out public homepage used to show the last 5 days of changelog with "
+            "infinite scroll. Changed it to show only today's updates for a cleaner landing "
+            "page, falling back to the single most recent day when there's no update today so "
+            "it never looks empty, and turned off the homepage's load-more. The full changelog "
+            "page (/changelog) is unchanged and still paginates through all history."
+        ),
+        "image": None,
+        "lines_changed": 11,
+        "estimated": False,
+    },
 ]

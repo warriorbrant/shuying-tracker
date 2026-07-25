@@ -805,15 +805,23 @@ def public_landing():
     if lang not in CHANGELOG_STRINGS:
         lang = "zh"
     t = CHANGELOG_STRINGS[lang]
-    days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, limit=CHANGELOG_PAGE_DAYS)
+
+    # Public homepage shows only today's changelog entries. On days with no update
+    # yet, fall back to the single most recent day so the page never looks empty.
+    today_str = date.today().isoformat()
+    today_entries = [c for c in CHANGELOG if c["date"] == today_str]
+    if today_entries:
+        days, _ = group_changelog_by_day(today_entries, lang=lang)
+    else:
+        days, _ = group_changelog_by_day(CHANGELOG, lang=lang, limit=1)
     metrics_summary = metrics.get_stats(60)
 
     return render_template(
         "public_home.html",
         days=days,
-        days_has_more=has_more,
+        days_has_more=False,
         heatmap=build_changelog_heatmap(lang=lang),
-        today=date.today().isoformat(),
+        today=today_str,
         lang=lang,
         t=t,
         metrics_summary=metrics_summary,
