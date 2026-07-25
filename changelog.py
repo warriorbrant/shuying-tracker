@@ -1240,4 +1240,25 @@ CHANGELOG = [
         "lines_changed": 16,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "参考书目改成搜索补全，不再把所有书都列出来",
+        "title_en": "Reference books are now added via search autocomplete",
+        "summary": (
+            "之前挑参考书目是把所有已添加的书都列成勾选框，书一多就很长。改成搜索补全："
+            "输入书名或作者，实时搜出匹配的书（已经加过的会自动排除，不重复出现），点一下"
+            "就加进参考书目。已加的书还是显示在上面、带移除按钮。加了个 JSON 搜索接口，"
+            "输入时带 250ms 防抖，只返回前 10 条。"
+        ),
+        "summary_en": (
+            "Picking reference books used to list every book you'd added as checkboxes, which "
+            "got long fast. Switched to search autocomplete: type a title or author, get live "
+            "matches (already-added books are excluded so they don't show up twice), and click "
+            "one to add it. Added books still show above with remove buttons. Backed by a small "
+            "JSON search endpoint, 250ms debounce on input, top 10 results."
+        ),
+        "image": None,
+        "lines_changed": 123,
+        "estimated": False,
+    },
 ]

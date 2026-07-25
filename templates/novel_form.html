@@ -206,31 +206,59 @@ document.getElementById('videoSourceType').addEventListener('change', function()
   </div>
   {% endif %}
 
-  <form class="form" method="post" action="{{ url_for('novel_reference_new', novel_id=novel.id) }}">
-    <label>从已经添加的书里挑（勾选后提交）</label>
-    {% if all_books %}
-    <div class="picker-grid">
-      {% for b in all_books %}
-      <label class="picker-item">
-        <input type="checkbox" name="item_ids" value="{{ b.id }}" {{ 'checked' if b.id in referenced_ids }}>
-        {% if b.cover_url %}
-          <img loading="lazy" src="{{ cover_src(b.cover_url) }}" alt="{{ b.title }}">
-        {% else %}
-          <span class="picker-video-icon">📗</span>
-        {% endif %}
-        <span>{{ b.title }}</span>
-      </label>
-      {% endfor %}
+  <div class="form ref-add">
+    <label for="refSearch">搜索书名添加（从已经添加过的书里找）</label>
+    <div class="ref-search-box">
+      <input type="text" id="refSearch" autocomplete="off" placeholder="输入书名或作者…">
+      <div id="refResults" class="ref-results"></div>
     </div>
-    {% else %}
-    <p class="hint">还没有添加过书。</p>
-    {% endif %}
-    <p class="hint">没有想要的书？<a href="{{ url_for('item_new', type='book') }}">先去添加一本 →</a>（添加完回到这里勾选）</p>
-    <div class="actions">
-      <button type="submit">更新参考书目</button>
-    </div>
+    <p class="hint">没有想要的书？<a href="{{ url_for('item_new', type='book') }}">先去添加一本 →</a>（添加完回到这里搜索）</p>
+  </div>
+
+  <form method="post" action="{{ url_for('novel_reference_new', novel_id=novel.id) }}" id="refAddForm">
+    <input type="hidden" name="item_ids" id="refItemId">
   </form>
 </section>
+
+<script>
+(function () {
+  var input = document.getElementById('refSearch');
+  var results = document.getElementById('refResults');
+  if (!input) return;
+  var timer;
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    var q = input.value.trim();
+    if (!q) { results.innerHTML = ''; return; }
+    timer = setTimeout(function () {
+      fetch('{{ url_for("novel_reference_search", novel_id=novel.id) }}?q=' + encodeURIComponent(q))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          results.innerHTML = '';
+          if (!data.length) {
+            var empty = document.createElement('div');
+            empty.className = 'ref-result-empty';
+            empty.textContent = '没有匹配的书（可能已经加过了）';
+            results.appendChild(empty);
+            return;
+          }
+          data.forEach(function (b) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ref-result';
+            btn.textContent = b.title + (b.creator ? ' · ' + b.creator : '');
+            btn.addEventListener('click', function () {
+              document.getElementById('refItemId').value = b.id;
+              document.getElementById('refAddForm').submit();
+            });
+            results.appendChild(btn);
+          });
+        })
+        .catch(function () {});
+    }, 250);
+  });
+})();
+</script>
 
 {% endif %}
 

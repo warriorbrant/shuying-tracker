@@ -1576,15 +1576,10 @@ def novel_edit(novel_id):
         "WHERE nr.novel_id = ? ORDER BY i.title ASC",
         (novel_id,),
     ).fetchall()
-    all_books = conn.execute(
-        "SELECT id, title, cover_url FROM items WHERE type = 'book' ORDER BY title ASC"
-    ).fetchall()
-    referenced_ids = {row["id"] for row in references}
     conn.close()
     return render_template(
         "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
         chapters=chapters, characters=characters, videos=videos, references=references,
-        all_books=all_books, referenced_ids=referenced_ids,
         error=request.args.get("error"),
     )
 
@@ -1842,6 +1837,24 @@ def novel_video_delete(novel_id, video_id):
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
+@app.route("/novel/<int:novel_id>/reference/search")
+def novel_reference_search(novel_id):
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify([])
+    like = f"%{q}%"
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT id, title, creator, cover_url FROM items "
+        "WHERE type = 'book' AND (title LIKE ? OR creator LIKE ?) "
+        "AND id NOT IN (SELECT item_id FROM novel_references WHERE novel_id = ?) "
+        "ORDER BY title ASC LIMIT 10",
+        (like, like, novel_id),
+    ).fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
 @app.route("/novel/<int:novel_id>/reference/new", methods=["POST"])
 def novel_reference_new(novel_id):
     conn = get_db()
@@ -1850,10 +1863,11 @@ def novel_reference_new(novel_id):
         conn.close()
         return "未找到该小说", 404
 
+    # Additive: search-and-add drops one book in at a time; the per-book remove
+    # button handles taking one back out (no full-list re-sync anymore).
     item_ids = to_int_list(request.form.getlist("item_ids"))
-    conn.execute("DELETE FROM novel_references WHERE novel_id = ?", (novel_id,))
     conn.executemany(
-        "INSERT INTO novel_references (novel_id, item_id) VALUES (?, ?)",
+        "INSERT OR IGNORE INTO novel_references (novel_id, item_id) VALUES (?, ?)",
         [(novel_id, item_id) for item_id in item_ids],
     )
     conn.commit()
