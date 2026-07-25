@@ -1285,4 +1285,30 @@ CHANGELOG = [
         "lines_changed": 241,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "修复：今天新加的书没写进度/评论时，查看今天看不到",
+        "title_en": "Fixed: books added today without a log didn't show in the day view",
+        "summary": (
+            "点开「今天」页面看不到刚加的书，因为 day_view 只查 logs 表（要有进度/评论记录"
+            "才算），没记录任何进度的新书压根没查。这个坑首页 feed 早就处理过（build_feed "
+            "里专门查了「没有 log 的新条目」），day_view 当时漏了。加了同样的查询：当天创建、"
+            "还没有任何 log 的条目也会显示，标成「新添加 · 状态」。每日分享图用的是同一份"
+            "数据，顺手一起修了，复用了进度卡片的样式（显示成「用时 0 分钟」，稍微有点多余但"
+            "总比看不见强）。"
+        ),
+        "summary_en": (
+            "Clicking into \"today\" didn't show books just added, because day_view only "
+            "queried the logs table (which requires a progress/comment entry) — items with no "
+            "log yet were never fetched. The homepage feed already handled this exact gap "
+            "(build_feed has a dedicated query for \"new items with no log\"); day_view had "
+            "just never gotten the same treatment. Added the same query: items created that "
+            "day with no log yet now show, labeled \"newly added · <status>\". The daily share "
+            "image pulls from the same data, so fixed that too, reusing the log-card layout "
+            "(shows \"0 minutes\", a bit redundant but better than invisible)."
+        ),
+        "image": None,
+        "lines_changed": 51,
+        "estimated": False,
+    },
 ]

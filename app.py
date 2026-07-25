@@ -1172,6 +1172,15 @@ def day_view(date_str):
     moments = conn.execute(
         "SELECT * FROM moments WHERE log_date = ? ORDER BY id", (date_str,)
     ).fetchall()
+    # Items added this day with no log entry yet (no progress/comment recorded)
+    # were invisible here even though they already show on the homepage feed as
+    # "item_new" — same gap build_feed() already handles, applied to a single day.
+    new_items = conn.execute(
+        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? "
+        "AND NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id) "
+        "ORDER BY id",
+        (date_str,),
+    ).fetchall()
     conn.close()
 
     day_changelog = [c for c in CHANGELOG if c["date"] == date_str]
@@ -1186,11 +1195,12 @@ def day_view(date_str):
         date_str=date_str,
         logs=logs,
         moments=moments,
+        new_items=new_items,
         day_changelog=day_changelog,
         changelog_type=CHANGELOG_TYPE,
         moment_types=MOMENT_TYPES,
         total_minutes=total_minutes,
-        activity_count=len(logs) + len(moments) + len(day_changelog),
+        activity_count=len(logs) + len(moments) + len(day_changelog) + len(new_items),
         weekday_label=f"星期{WEEKDAY_CN[day.weekday()]}",
         prev_date=(day - timedelta(days=1)).isoformat(),
         next_date=(day + timedelta(days=1)).isoformat(),
@@ -1216,11 +1226,32 @@ def day_share_image(date_str):
     moments = conn.execute(
         "SELECT * FROM moments WHERE log_date = ? ORDER BY id", (date_str,)
     ).fetchall()
+    new_items = conn.execute(
+        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? "
+        "AND NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id) "
+        "ORDER BY id",
+        (date_str,),
+    ).fetchall()
     conn.close()
+
+    # Reuse the log card layout for items added today with no log yet (same gap
+    # as day_view) by shaping them like a zero-effort log entry.
+    log_rows = [dict(row) for row in logs] + [
+        {
+            "item_title": item["title"],
+            "item_type": item["type"],
+            "item_cover_url": item["cover_url"],
+            "item_unit_label": item["unit_label"],
+            "minutes_spent": 0,
+            "progress_at": None,
+            "comment": f"新添加 · {item['status']}",
+        }
+        for item in new_items
+    ]
 
     buf = build_day_share_card(
         day,
-        [dict(row) for row in logs],
+        log_rows,
         [dict(row) for row in moments],
         MOMENT_TYPES,
     )
