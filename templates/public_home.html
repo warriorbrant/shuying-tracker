@@ -82,7 +82,7 @@
 
 <section class="architecture-card">
   <h2>网站的技术架构</h2>
-  <svg class="arch-diagram" viewBox="0 0 420 770" role="img" aria-label="网站技术架构图">
+  <svg class="arch-diagram" viewBox="0 0 420 850" role="img" aria-label="网站技术架构图">
     <defs>
       <marker id="arch-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
         <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
@@ -99,17 +99,17 @@
     <!-- CDN -->
     <rect x="20" y="96" width="380" height="76" rx="10" fill="var(--accent-soft)" stroke="var(--accent)"></rect>
     <text x="210" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">🌍 Railway 边缘 CDN</text>
-    <text x="210" y="138" text-anchor="middle" font-size="10" fill="var(--muted)">全球多节点，缓存命中直接返回</text>
+    <text x="210" y="138" text-anchor="middle" font-size="10" fill="var(--muted)">全球多节点，图片/静态资源边缘缓存</text>
     <text x="210" y="154" text-anchor="middle" font-size="10" fill="var(--muted)">未命中 / 动态请求 → 转发源站</text>
 
     <line x1="210" y1="172" x2="210" y2="198" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arch-arrow)"></line>
 
     <!-- origin container -->
-    <rect x="10" y="198" width="400" height="310" rx="14" fill="var(--card-bg)" stroke="var(--border)"></rect>
+    <rect x="10" y="198" width="400" height="362" rx="14" fill="var(--card-bg)" stroke="var(--border)"></rect>
     <text x="30" y="224" font-size="12.5" font-weight="700" fill="var(--text)">🐳 源站容器 · Railway（新加坡）</text>
     <text x="30" y="240" font-size="10" fill="var(--muted)">gunicorn：1 进程 + 4 线程，共享内存态数据</text>
 
-    <rect x="30" y="252" width="360" height="240" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.2"></rect>
+    <rect x="30" y="252" width="360" height="292" rx="10" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.2"></rect>
     <text x="48" y="272" font-size="11.5" font-weight="700" fill="var(--accent)">⚙️ Flask 应用（app.py）</text>
 
     <rect x="48" y="284" width="324" height="44" rx="8" fill="var(--card-bg)" stroke="var(--border)"></rect>
@@ -119,33 +119,39 @@
     <text x="210" y="363" text-anchor="middle" font-size="11.5" fill="var(--text)">🧩 Jinja2 服务端渲染</text>
 
     <rect x="48" y="388" width="324" height="44" rx="8" fill="var(--card-bg)" stroke="var(--border)"></rect>
-    <text x="210" y="415" text-anchor="middle" font-size="11.5" fill="var(--text)">🗜️ Gzip / Brotli 压缩</text>
+    <text x="210" y="415" text-anchor="middle" font-size="11.5" fill="var(--text)">🖼️ Pillow 图片 / ffmpeg 视频处理</text>
 
     <rect x="48" y="440" width="324" height="44" rx="8" fill="var(--card-bg)" stroke="var(--border)"></rect>
-    <text x="210" y="467" text-anchor="middle" font-size="11.5" fill="var(--text)">📊 请求耗时统计</text>
+    <text x="210" y="467" text-anchor="middle" font-size="11.5" fill="var(--text)">🗜️ Gzip / Brotli 压缩</text>
 
-    <line x1="210" y1="508" x2="210" y2="534" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arch-arrow)"></line>
+    <rect x="48" y="492" width="324" height="44" rx="8" fill="var(--card-bg)" stroke="var(--border)"></rect>
+    <text x="210" y="519" text-anchor="middle" font-size="11.5" fill="var(--text)">📊 请求耗时统计</text>
+
+    <line x1="210" y1="560" x2="210" y2="586" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arch-arrow)"></line>
 
     <!-- storage + external services combined -->
-    <rect x="10" y="534" width="400" height="216" rx="14" fill="var(--card-bg)" stroke="var(--border)"></rect>
+    <rect x="10" y="586" width="400" height="248" rx="14" fill="var(--card-bg)" stroke="var(--border)"></rect>
 
-    <text x="30" y="560" font-size="11.5" font-weight="700" fill="var(--text)">💾 持久化存储</text>
-    <text x="30" y="576" font-size="9.5" fill="var(--muted)">Railway Volume · /data</text>
-    <text x="30" y="598" font-size="10.5" fill="var(--text)">• tracker.db（SQLite 数据库）</text>
-    <text x="30" y="618" font-size="10.5" fill="var(--text)">• uploads/（用户上传照片）</text>
-    <text x="30" y="638" font-size="10.5" fill="var(--text)">• cover_cache/（豆瓣封面缓存）</text>
+    <text x="30" y="612" font-size="11.5" font-weight="700" fill="var(--text)">💾 持久化存储</text>
+    <text x="30" y="628" font-size="9.5" fill="var(--muted)">Railway Volume · /data</text>
+    <text x="30" y="650" font-size="10.5" fill="var(--text)">• tracker.db（书影 / 动态 / 小说 数据）</text>
+    <text x="30" y="670" font-size="10.5" fill="var(--text)">• uploads/（动态上传的照片）</text>
+    <text x="30" y="690" font-size="10.5" fill="var(--text)">• novel_media/（小说封面 / 立绘 / 视频）</text>
+    <text x="30" y="710" font-size="10.5" fill="var(--text)">• cover_cache/（豆瓣封面缓存）</text>
 
-    <line x1="30" y1="654" x2="390" y2="654" stroke="var(--border)"></line>
+    <line x1="30" y1="726" x2="390" y2="726" stroke="var(--border)"></line>
 
-    <text x="30" y="676" font-size="11.5" font-weight="700" fill="var(--text)">🔌 外部服务</text>
-    <text x="30" y="692" font-size="9.5" fill="var(--muted)">运行时对外请求</text>
-    <text x="30" y="714" font-size="10.5" fill="var(--text)">• 豆瓣网页抓取 + 封面代理</text>
-    <text x="30" y="734" font-size="10.5" fill="var(--text)">• Claude API（AI 截图识别，可选）</text>
+    <text x="30" y="748" font-size="11.5" font-weight="700" fill="var(--text)">🔌 外部服务</text>
+    <text x="30" y="764" font-size="9.5" fill="var(--muted)">运行时对外请求</text>
+    <text x="30" y="786" font-size="10.5" fill="var(--text)">• 豆瓣网页抓取 + 封面代理</text>
+    <text x="30" y="806" font-size="10.5" fill="var(--text)">• Claude API（AI 截图识别，可选）</text>
   </svg>
   <p class="hint">
     服务端是一个 Flask + SQLite 的单体应用，没有独立前端构建，页面都是服务端用 Jinja2 直接渲染出来的；
-    用 gunicorn（1 进程 4 线程）跑在 Railway 新加坡区域的一个 Docker 容器里。数据库、用户照片、豆瓣封面缓存
-    都存在 Railway 的持久化 Volume 里；豆瓣书影信息靠抓取网页拿到，AI 截图识别接的是 Anthropic 的 Claude API。
+    用 gunicorn（1 进程 4 线程）跑在 Railway 新加坡区域的一个 Docker 容器里。图片用 Pillow 处理（生成分享图、
+    压缩上传图片），视频用 ffmpeg 压缩并抽封面帧。数据库、用户照片、小说封面/立绘/视频、豆瓣封面缓存都存在
+    Railway 的持久化 Volume 里，图片和静态资源通过边缘 CDN 缓存；豆瓣书影信息靠抓取网页拿到，AI 截图识别接的
+    是 Anthropic 的 Claude API。
   </p>
 </section>
 

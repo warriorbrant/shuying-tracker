@@ -1199,4 +1199,28 @@ CHANGELOG = [
         "lines_changed": 55,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "更新首页的技术架构图，补上这几轮新增的部分",
+        "title_en": "Updated the homepage architecture diagram to match recent iterations",
+        "summary": (
+            "这么多轮迭代后，首页那张技术架构图有点跟不上了，补了两处：Flask 应用里加了一格"
+            "「Pillow 图片 / ffmpeg 视频处理」（生成分享图、压缩上传图片、压缩视频抽封面帧），"
+            "持久化存储里加了 novel_media/（小说封面/立绘/视频），tracker.db 的说明也从纯书影"
+            "改成「书影/动态/小说 数据」。CDN 那行顺便改成「图片/静态资源边缘缓存」，对应这轮"
+            "刚修好的图片 CDN 缓存。图下面的说明文字一并更新。"
+        ),
+        "summary_en": (
+            "After all these iterations the homepage architecture diagram had drifted, so "
+            "updated two spots: added a 'Pillow image / ffmpeg video processing' box to the "
+            "Flask app (share-card generation, upload compression, video compression + poster "
+            "frames), and added novel_media/ (novel covers/standees/videos) to persistent "
+            "storage, with tracker.db relabeled from books/shows to 'books, moments & novels'. "
+            "Also tweaked the CDN line to 'image/static-asset edge caching' to match the image "
+            "CDN-caching fix from this pass, and refreshed the caption below."
+        ),
+        "image": None,
+        "lines_changed": 26,
+        "estimated": False,
+    },
 ]
