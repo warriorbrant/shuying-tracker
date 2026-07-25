@@ -724,6 +724,7 @@ def changelog():
         t=t,
         metrics_summary=metrics_summary,
         uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
+        share_ver=int(time.time()),
     )
 
 
@@ -817,6 +818,7 @@ def public_landing():
         t=t,
         metrics_summary=metrics_summary,
         uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
+        share_ver=int(time.time()),
     )
 
 

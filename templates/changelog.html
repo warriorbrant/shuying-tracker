@@ -35,8 +35,8 @@
 <p class="hint">{{ t.lines_hint }}</p>
 
 <div class="actions">
-  <a class="btn-share" href="{{ url_for('changelog_share_image', range='recent', lang=lang, download=1) }}">{{ t.share_recent }}</a>
-  <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', lang=lang, download=1) }}">{{ t.share_today }}</a>
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='recent', lang=lang, download=1, v=share_ver) }}">{{ t.share_recent }}</a>
+  <a class="btn-share" href="{{ url_for('changelog_share_image', range='today', lang=lang, download=1, v=share_ver) }}">{{ t.share_today }}</a>
 </div>
 
 <div id="changelog-days">

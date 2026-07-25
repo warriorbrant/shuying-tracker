@@ -1113,4 +1113,30 @@ CHANGELOG = [
         "lines_changed": 73,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "更新日志分享图链接也加上版本号，避开旧缓存",
+        "title_en": "Changelog share links now carry a version param too",
+        "summary": (
+            "点更新日志的「今天的更新分享图」，出来的是老的 24 号残缺图。查了下发现源站现在"
+            "生成的其实是对的（25 号两条，完整），问题是这个分享链接是固定网址，在 24 号"
+            "（加 max_age=0 之前）就被某个 CDN 边缘节点缓存了 30 天，缓存的是当时还没写完的"
+            "24 号内容，正好被点到那个节点。之前给小说分享链接加过版本号绕开这个问题，更新"
+            "日志的「最近 10 条」「今天」两个分享链接漏了，这次补上——每次打开页面都是新网址，"
+            "直接绕开卡住的旧缓存。"
+        ),
+        "summary_en": (
+            "Clicking the changelog's \"today's updates\" share image returned a stale, "
+            "incomplete July-24 image. The origin actually generates the correct one now "
+            "(two complete July-25 entries) — the problem was the fixed share URL had been "
+            "cached on July 24 (before max_age=0 shipped) with that day's then-incomplete "
+            "content, on an edge node the click happened to hit. The novel share links already "
+            "got a version param for exactly this; the changelog's \"recent 10\" and \"today\" "
+            "links were missed. Added it to both, so each page load gets a fresh URL that "
+            "bypasses the stuck cache."
+        ),
+        "image": None,
+        "lines_changed": 6,
+        "estimated": False,
+    },
 ]
