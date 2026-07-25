@@ -1,4 +1,6 @@
+import hashlib
 import io
+import mimetypes
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -10,6 +12,7 @@ from db import DATA_DIR
 
 STATIC_ROOT = Path(__file__).parent / "static"
 WEEKDAY_CN = ["一", "二", "三", "四", "五", "六", "日"]
+COVER_CACHE_DIR = DATA_DIR / "cover_cache"
 
 CARD_W, CARD_H = 1080, 1440
 BG = (250, 248, 245)
@@ -82,6 +85,16 @@ def _wrap(draw, text, font, max_width):
 def _fetch_cover(url):
     if not url:
         return None
+
+    cache_key = hashlib.sha256(url.encode()).hexdigest()
+    try:
+        COVER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        cached = next(COVER_CACHE_DIR.glob(f"{cache_key}.*"), None)
+        if cached:
+            return Image.open(cached).convert("RGB")
+    except Exception:
+        pass
+
     try:
         resp = requests.get(
             url,
@@ -90,6 +103,11 @@ def _fetch_cover(url):
         )
         resp.raise_for_status()
         img = Image.open(io.BytesIO(resp.content)).convert("RGB")
+        try:
+            ext = mimetypes.guess_extension(resp.headers.get("Content-Type", "image/jpeg")) or ".jpg"
+            (COVER_CACHE_DIR / f"{cache_key}{ext}").write_bytes(resp.content)
+        except Exception:
+            pass
         return img
     except Exception:
         return None

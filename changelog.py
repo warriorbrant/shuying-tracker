@@ -1375,4 +1375,28 @@ CHANGELOG = [
         "lines_changed": 51,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "修复：小说分享图生成慢——豆瓣封面图现在也走磁盘缓存",
+        "title_en": "Fixed slow novel share-image generation by disk-caching reference covers",
+        "summary": (
+            "小说分享图最多带 10 本参考书，之前每次生成都要挨个现抓豆瓣封面，一本一本"
+            "顺序请求，慢的时候单张图要等好几秒。其实网站里 /cover-proxy 早就有一套按"
+            "网址哈希存本地的封面缓存，只是分享图生成用的是另一段独立代码，没接上这套"
+            "缓存。现在两边共用同一个缓存目录：命中缓存直接读本地文件，本地测了一下，"
+            "首次现抓要 6 秒，命中缓存后只要 0.015 秒。"
+        ),
+        "summary_en": (
+            "Novel share images can include up to 10 reference books, and each one was "
+            "fetched live from Douban on every single generation — sequentially, so a slow "
+            "run could take several seconds. The site already had a disk cache for cover "
+            "images keyed by URL hash (used by /cover-proxy), but the share-card code was a "
+            "separate path that never used it. Now both share the same cache directory: a "
+            "cache hit reads straight from disk. Measured locally: 6s on a cold fetch vs "
+            "0.015s once cached."
+        ),
+        "image": None,
+        "lines_changed": 18,
+        "estimated": False,
+    },
 ]
