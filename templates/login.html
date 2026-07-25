@@ -20,6 +20,7 @@
       </label>
       {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
       <button type="submit">登录</button>
+      <a class="login-back" href="{{ url_for('index') }}">← 返回公开主页</a>
     </form>
   </main>
 </body>

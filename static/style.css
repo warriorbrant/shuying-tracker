@@ -473,6 +473,19 @@ a.heat-day:hover {
   margin: -6px 0 0;
 }
 
+.login-back {
+  display: block;
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.login-back:hover {
+  color: var(--accent);
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;

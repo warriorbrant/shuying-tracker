@@ -1223,4 +1223,21 @@ CHANGELOG = [
         "lines_changed": 26,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "登录页加了「返回公开主页」链接",
+        "title_en": "Added a 'back to public homepage' link on the login page",
+        "summary": (
+            "登录页原来是个死胡同——不想登录就只能改地址栏。在登录按钮下面加了个「← 返回"
+            "公开主页」的链接，点一下回到公开首页（那些不需要登录也能看的内容）。"
+        ),
+        "summary_en": (
+            "The login page used to be a dead end — without logging in you had to edit the URL "
+            "bar to leave. Added a '← back to public homepage' link under the login button that "
+            "returns to the public landing page (the content viewable without logging in)."
+        ),
+        "image": None,
+        "lines_changed": 16,
+        "estimated": False,
+    },
 ]
