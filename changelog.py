@@ -1160,4 +1160,22 @@ CHANGELOG = [
         "lines_changed": 11,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "公开首页去掉分享图按钮和站点状态卡片",
+        "title_en": "Removed share buttons and live-stats card from the public homepage",
+        "summary": (
+            "把未登录公开首页上的「更新分享图」两个按钮和「站点实时概况」卡片都去掉了，"
+            "首页更简洁。这俩在完整的 /changelog 页面还保留着（分享图、站点状态卡片都在），"
+            "只是首页这个精简展示不再放它们。"
+        ),
+        "summary_en": (
+            "Removed the two changelog share-image buttons and the live-stats card from the "
+            "logged-out public homepage for a cleaner landing page. Both remain on the full "
+            "/changelog page — only the trimmed homepage view drops them."
+        ),
+        "image": None,
+        "lines_changed": 11,
+        "estimated": False,
+    },
 ]

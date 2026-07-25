@@ -814,7 +814,6 @@ def public_landing():
         days, _ = group_changelog_by_day(today_entries, lang=lang)
     else:
         days, _ = group_changelog_by_day(CHANGELOG, lang=lang, limit=1)
-    metrics_summary = metrics.get_stats(60)
 
     return render_template(
         "public_home.html",
@@ -824,9 +823,6 @@ def public_landing():
         today=today_str,
         lang=lang,
         t=t,
-        metrics_summary=metrics_summary,
-        uptime_human=metrics.format_uptime(metrics_summary["uptime_seconds"]),
-        share_ver=int(time.time()),
     )
 
 
