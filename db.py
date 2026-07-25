@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS novel_chapter_videos (
 CREATE TABLE IF NOT EXISTS novel_references (
     novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
     item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    in_share INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (novel_id, item_id)
 );
 
@@ -148,8 +149,12 @@ def _migrate(conn):
             "CREATE TABLE novel_references ("
             "novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE, "
             "item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE, "
+            "in_share INTEGER NOT NULL DEFAULT 0, "
             "PRIMARY KEY (novel_id, item_id))"
         )
+        ref_cols = ["novel_id", "item_id", "in_share"]
+    if ref_cols and "in_share" not in ref_cols:
+        conn.execute("ALTER TABLE novel_references ADD COLUMN in_share INTEGER NOT NULL DEFAULT 0")
 
 
 def init_db():

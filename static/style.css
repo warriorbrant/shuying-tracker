@@ -1226,6 +1226,20 @@ button {
   padding: 4px 0;
 }
 
+.ref-share-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 4px 0;
+  cursor: pointer;
+}
+
+.ref-share-toggle input {
+  margin: 0;
+}
+
 .character-grid, .video-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

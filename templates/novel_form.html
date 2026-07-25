@@ -183,6 +183,8 @@ document.getElementById('videoSourceType').addEventListener('change', function()
 <section class="log-section">
   <h2>参考书目</h2>
   {% if references %}
+  {% set share_count = references | selectattr('in_share') | list | length %}
+  <p class="hint">「在分享图中显示」勾选的会出现在小说分享图里，建议选 5-10 本；已选 {{ share_count }} 本{% if share_count > 10 %}（超过 10 本时分享图只取前 10 本）{% endif %}。</p>
   <div class="novel-grid reference-grid">
     {% for ref in references %}
     <div class="novel-card">
@@ -196,6 +198,12 @@ document.getElementById('videoSourceType').addEventListener('change', function()
       <div class="novel-card-body">
         <h3>{{ ref.title }}</h3>
         {% if ref.douban_url %}<a class="btn-link" href="{{ ref.douban_url }}" target="_blank" rel="noopener">豆瓣 →</a>{% endif %}
+        <form method="post" action="{{ url_for('novel_reference_toggle_share', novel_id=novel.id, item_id=ref.id) }}">
+          <label class="ref-share-toggle">
+            <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if ref.in_share }}>
+            在分享图中显示
+          </label>
+        </form>
         <form method="post" action="{{ url_for('novel_reference_delete', novel_id=novel.id, item_id=ref.id) }}"
               onsubmit="return confirm('确定从参考书目移除吗？（不会删除这本书本身）');">
           <button type="submit" class="btn-danger-sm">移除</button>

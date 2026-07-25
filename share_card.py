@@ -606,9 +606,8 @@ def build_changelog_share_card(entries, heading, heatmap=None, t=None):
     return buf
 
 
-NOVEL_MAX_CHARACTERS = 8
 NOVEL_MAX_CHAPTERS = 12
-NOVEL_MAX_REFERENCES = 6
+NOVEL_MAX_REFERENCES = 10
 SECTION_HEADING_H = 66  # height consumed by _section_heading before section content starts
 
 
@@ -621,20 +620,15 @@ def _section_heading(draw, text, x, y, w):
 
 
 def _build_novel_header(measure, w, novel):
-    pad = 0
-    cover_w, cover_h = 260, 347
+    cover_w, cover_h = 292, 389  # fills the full content width (no side margin)
     title_font = _font(46, bold=True)
     status_font = _font(26)
-    summary_font = _font(28)
 
-    title_lines = _wrap(measure, novel["title"], title_font, w - 120)[:2]
-    summary_lines = _wrap(measure, novel["summary"], summary_font, w - 160)[:5] if novel["summary"] else []
+    title_lines = _wrap(measure, novel["title"], title_font, w - 40)[:2]
 
     h = cover_h + 26
     h += len(title_lines) * 58 + 10
     h += 64
-    if summary_lines:
-        h += len(summary_lines) * 40 + 10
 
     def draw_fn(card, draw, x0, y0):
         y = y0
@@ -644,7 +638,7 @@ def _build_novel_header(measure, w, novel):
             _rounded_paste(card, cover_img, (cover_x, y, cover_x + cover_w, y + cover_h), radius=20)
         else:
             draw.rounded_rectangle([cover_x, y, cover_x + cover_w, y + cover_h], radius=20, fill=ACCENT_SOFT)
-            label_font = _font(80)
+            label_font = _font(90)
             bbox = draw.textbbox((0, 0), "小说", font=label_font)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
             draw.text(
@@ -666,48 +660,6 @@ def _build_novel_header(measure, w, novel):
         pill_x = x0 + (w - pill_w) / 2
         draw.rounded_rectangle([pill_x, y, pill_x + pill_w, y + pill_h], radius=pill_h // 2, fill=ACCENT_SOFT)
         draw.text((pill_x + 10, y + 10), status_text, font=status_font, fill=ACCENT)
-        y += pill_h + 24
-
-        if summary_lines:
-            for line in summary_lines:
-                bbox = draw.textbbox((0, 0), line, font=summary_font)
-                tw = bbox[2] - bbox[0]
-                draw.text((x0 + (w - tw) / 2, y), line, font=summary_font, fill=MUTED)
-                y += 40
-
-    return h, draw_fn
-
-
-def _build_character_row(measure, w, characters):
-    shown = characters[:NOVEL_MAX_CHARACTERS]
-    extra = len(characters) - len(shown)
-    tile_w, tile_h, name_h, gap = 150, 190, 34, 20
-    per_row = max(1, (w + gap) // (tile_w + gap))
-    rows = -(-len(shown) // per_row) if shown else 0
-    h = SECTION_HEADING_H + rows * (tile_h + name_h + gap)
-    if extra > 0:
-        h += 36
-
-    def draw_fn(card, draw, x0, y0):
-        y = _section_heading(draw, "人物角色", x0, y0, w)
-        name_font = _font(22)
-        for i, ch in enumerate(shown):
-            col, row = i % per_row, i // per_row
-            tx = x0 + col * (tile_w + gap)
-            ty = y + row * (tile_h + name_h + gap)
-            img = _load_novel_media(ch["image_path"])
-            if img:
-                _contain_paste(card, img, (tx, ty, tx + tile_w, ty + tile_h))
-            else:
-                draw.rounded_rectangle([tx, ty, tx + tile_w, ty + tile_h], radius=14, fill=ACCENT_SOFT)
-            name_lines = _wrap(measure, ch["name"], name_font, tile_w)[:1]
-            if name_lines:
-                bbox = draw.textbbox((0, 0), name_lines[0], font=name_font)
-                tw = bbox[2] - bbox[0]
-                draw.text((tx + (tile_w - tw) / 2, ty + tile_h + 8), name_lines[0], font=name_font, fill=TEXT)
-        if extra > 0:
-            extra_y = y + rows * (tile_h + name_h + gap)
-            draw.text((x0, extra_y), f"还有 {extra} 位角色…", font=_font(24), fill=MUTED)
 
     return h, draw_fn
 
@@ -775,7 +727,7 @@ def _build_reference_row(measure, w, references):
     return h, draw_fn
 
 
-def build_novel_share_card(novel, chapters, characters, references):
+def build_novel_share_card(novel, chapters, references):
     W = 1080
     pad = 64
     section_gap = 40
@@ -786,8 +738,6 @@ def build_novel_share_card(novel, chapters, characters, references):
     header_h, header_draw = _build_novel_header(measure, content_w, novel)
     sections.append((header_h, header_draw))
 
-    if characters:
-        sections.append(_build_character_row(measure, content_w, characters))
     if chapters:
         sections.append(_build_chapter_list(measure, content_w, chapters))
     if references:

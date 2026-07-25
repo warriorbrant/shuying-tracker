@@ -1352,4 +1352,27 @@ CHANGELOG = [
         "lines_changed": 10,
         "estimated": False,
     },
+    {
+        "date": "2026-07-25",
+        "title": "分享图重新设计：封面放大，去掉简介和人物，参考书目改成手动挑选",
+        "title_en": "Redesigned the share image: bigger cover, no summary/characters, curated references",
+        "summary": (
+            "小说分享图做了四处调整：封面从占约一半宽度放大到接近满宽；简介和人物角色两个"
+            "板块整个去掉了；参考书目从「有啥放啥」改成手动挑——每本参考书旁边加了个「在"
+            "分享图中显示」的勾选框，勾哪几本就出现哪几本，编辑页上有个「已选 N 本」的实时"
+            "提示，超过 10 本时分享图只取前 10 本。给 novel_references 表加了 in_share 字段"
+            "记这个状态。"
+        ),
+        "summary_en": (
+            "Four changes to the novel share image: the cover grew from about half the card "
+            "width to nearly full width; the summary and character sections were dropped "
+            "entirely; and reference books switched from \"show everything\" to a manual pick — "
+            "each reference now has an \"in share image\" checkbox, and only the checked ones "
+            "appear, with a live \"N selected\" hint on the edit page (capped at 10 in the "
+            "actual image). Added an in_share column on novel_references to track the flag."
+        ),
+        "image": None,
+        "lines_changed": 51,
+        "estimated": False,
+    },
 ]

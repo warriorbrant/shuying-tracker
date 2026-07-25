@@ -1464,17 +1464,14 @@ def novel_share_image(novel_id):
         "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
-    characters = conn.execute(
-        "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
-    ).fetchall()
     references = conn.execute(
         "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
-        "WHERE nr.novel_id = ? ORDER BY i.title ASC",
+        "WHERE nr.novel_id = ? AND nr.in_share = 1 ORDER BY i.title ASC LIMIT 10",
         (novel_id,),
     ).fetchall()
     conn.close()
 
-    buf = build_novel_share_card(dict(novel), chapters, characters, references)
+    buf = build_novel_share_card(dict(novel), chapters, references)
 
     download = request.args.get("download")
     return send_file(
@@ -1603,7 +1600,7 @@ def novel_edit(novel_id):
         "SELECT * FROM novel_videos WHERE novel_id = ? ORDER BY created_at DESC", (novel_id,)
     ).fetchall()
     references = conn.execute(
-        "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
+        "SELECT i.*, nr.in_share FROM items i JOIN novel_references nr ON nr.item_id = i.id "
         "WHERE nr.novel_id = ? ORDER BY i.title ASC",
         (novel_id,),
     ).fetchall()
@@ -1961,6 +1958,22 @@ def novel_reference_delete(novel_id, item_id):
     conn = get_db()
     conn.execute("DELETE FROM novel_references WHERE item_id = ? AND novel_id = ?", (item_id, novel_id))
     conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/reference/<int:item_id>/toggle-share", methods=["POST"])
+def novel_reference_toggle_share(novel_id, item_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT in_share FROM novel_references WHERE novel_id = ? AND item_id = ?", (novel_id, item_id)
+    ).fetchone()
+    if row is not None:
+        conn.execute(
+            "UPDATE novel_references SET in_share = ? WHERE novel_id = ? AND item_id = ?",
+            (0 if row["in_share"] else 1, novel_id, item_id),
+        )
+        conn.commit()
     conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
