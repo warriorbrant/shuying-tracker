@@ -107,7 +107,7 @@
 (function () {
   var body = document.getElementById('chapterBody');
   if (!body) return;
-  ['copy', 'cut', 'contextmenu'].forEach(function (evt) {
+  ['copy', 'cut', 'contextmenu', 'selectstart', 'dragstart'].forEach(function (evt) {
     body.addEventListener(evt, function (e) { e.preventDefault(); });
   });
 })();

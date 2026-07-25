@@ -1418,4 +1418,26 @@ CHANGELOG = [
         "lines_changed": 65,
         "estimated": False,
     },
+    {
+        "date": "2026-07-26",
+        "title": "修复：小说章节正文在手机上仍然能长按复制",
+        "title_en": "Fixed novel chapters still being copyable on mobile via long-press",
+        "summary": (
+            "之前防复制只加了 user-select: none，桌面端够用，但手机浏览器（尤其是 iOS "
+            "Safari）长按弹出的「复制」菜单是靠一个专门的 -webkit-touch-callout 属性关"
+            "掉的，之前漏加了。补上这个属性，并且把选中保护套用到章节正文里的所有子元素"
+            "上，另外 JS 那边也加了 selectstart / dragstart 兜底。"
+        ),
+        "summary_en": (
+            "The previous copy-protection only set user-select: none, which is enough on "
+            "desktop but not mobile — the long-press \"Copy\" callout on mobile browsers "
+            "(especially iOS Safari) is controlled by a separate -webkit-touch-callout "
+            "property that was missing. Added it, applied the selection lock to every child "
+            "element inside the chapter body, and added selectstart/dragstart as a JS "
+            "fallback."
+        ),
+        "image": None,
+        "lines_changed": 8,
+        "estimated": False,
+    },
 ]
