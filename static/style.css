@@ -1224,9 +1224,9 @@ button {
   color: var(--text);
   text-decoration: none;
   font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .chapter-list a:hover {
@@ -1239,6 +1239,7 @@ button {
 
 .inline-delete {
   display: inline;
+  flex-shrink: 0;
 }
 
 .btn-danger-sm {
@@ -1249,6 +1250,7 @@ button {
   font-weight: 600;
   cursor: pointer;
   padding: 4px 0;
+  white-space: nowrap;
 }
 
 .ref-share-toggle {

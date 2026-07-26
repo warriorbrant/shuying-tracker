@@ -1490,4 +1490,23 @@ CHANGELOG = [
         "lines_changed": 10,
         "estimated": False,
     },
+    {
+        "date": "2026-07-26",
+        "title": "修复：小说章节标题太长时显示不全",
+        "title_en": "Fixed long chapter titles getting cut off",
+        "summary": (
+            "小说目录是一排 3 个的网格排版，之前标题超长会被单行省略号截断，看不到完整"
+            "标题。改成允许换行显示完整标题，卡片跟着变高；顺手把旁边的「删除」按钮也"
+            "固定宽度，不会被挤到跟着换行。"
+        ),
+        "summary_en": (
+            "The chapter list uses a 3-column grid, and overly long titles were being cut "
+            "off with a single-line ellipsis. Switched to letting titles wrap and grow the "
+            "card instead, and fixed the width of the adjacent \"删除\" (delete) button so it "
+            "no longer gets squeezed into wrapping too."
+        ),
+        "image": None,
+        "lines_changed": 8,
+        "estimated": False,
+    },
 ]
