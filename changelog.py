@@ -1509,4 +1509,26 @@ CHANGELOG = [
         "lines_changed": 8,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "小说章节加了分享图，正文全文都会显示",
+        "title_en": "Added per-chapter share images with the full chapter text",
+        "summary": (
+            "章节阅读页新增「生成本章分享图」，把整章正文原样生成一张图，不摘要不截断——"
+            "图片高度是按内容自动算的，短章节图短，长章节图长（小红书常见的那种「长"
+            "图」）。跟其他分享图一样不需要登录，链接也带了版本号避开 CDN 缓存卡住的老问"
+            "题。"
+        ),
+        "summary_en": (
+            "Added a \"Generate chapter share image\" button on the chapter reading page — "
+            "it renders the entire chapter text as-is into one image, no summarizing or "
+            "truncation. The image height is computed from the actual content, so short "
+            "chapters get a short image and long ones get a tall one (the common \"long "
+            "screenshot\" format). Public like the other share images, and the link is "
+            "versioned to avoid the CDN-staleness issue from earlier."
+        ),
+        "image": None,
+        "lines_changed": 98,
+        "estimated": False,
+    },
 ]

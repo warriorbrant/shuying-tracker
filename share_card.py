@@ -745,6 +745,69 @@ def _build_reference_row(measure, w, references):
     return h, draw_fn
 
 
+def build_chapter_share_card(novel, chapter):
+    W = 1080
+    pad = 64
+    content_w = W - pad * 2
+    measure = _measure_draw()
+
+    novel_title_font = _font(28)
+    chapter_title_font = _font(44, bold=True)
+    body_font = _font(30)
+    footer_font = _font(24)
+
+    line_h = 46
+    para_gap = 18
+
+    novel_title_lines = _wrap(measure, novel["title"], novel_title_font, content_w)[:1]
+    chapter_label = f"第 {chapter['chapter_no']} 章 · {chapter['title']}"
+    chapter_title_lines = _wrap(measure, chapter_label, chapter_title_font, content_w)
+
+    paragraphs = [p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()]
+    para_lines = [_wrap(measure, p, body_font, content_w) for p in paragraphs]
+
+    header_h = 0
+    if novel_title_lines:
+        header_h += len(novel_title_lines) * 38 + 12
+    header_h += len(chapter_title_lines) * 58 + 30  # includes divider + gap below title
+
+    body_h = sum(len(lines) * line_h + para_gap for lines in para_lines)
+
+    footer_h = 70
+    H = pad + header_h + body_h + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    y = pad
+    for line in novel_title_lines:
+        draw.text((pad, y), f"《{line}》", font=novel_title_font, fill=MUTED)
+        y += 38
+    y += 12
+    for line in chapter_title_lines:
+        draw.text((pad, y), line, font=chapter_title_font, fill=TEXT)
+        y += 58
+    y += 6
+    draw.line([(pad, y), (W - pad, y)], fill=BORDER, width=2)
+    y += 24
+
+    for lines in para_lines:
+        for line in lines:
+            draw.text((pad, y), line, font=body_font, fill=TEXT)
+            y += line_h
+        y += para_gap
+
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
 def build_novel_share_card(novel, chapters, references):
     W = 1080
     pad = 64

@@ -37,6 +37,7 @@ from douban import DoubanFetchError, fetch_douban_info
 from novel_export import build_novel_docx, build_novel_pdf
 from share_card import (
     build_changelog_share_card,
+    build_chapter_share_card,
     build_day_share_card,
     build_novel_share_card,
     build_share_card,
@@ -189,7 +190,7 @@ def inject_asset_version():
 PUBLIC_ENDPOINTS = {
     "login", "static", "changelog", "changelog_more", "changelog_share_image", "index",
     "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read", "novel_share_image",
-    "cover_proxy",
+    "novel_chapter_share_image", "cover_proxy",
 }
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
@@ -1606,10 +1607,39 @@ def novel_chapter_read(novel_id, chapter_id):
     next_chapter = chapters[idx + 1] if idx < len(chapters) - 1 else None
     blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
 
+    # Same cache-busting versioning as the novel share link — see the comment there.
+    share_ts = int(time.time())
+    share_url = url_for("novel_chapter_share_image", novel_id=novel_id, chapter_id=chapter_id, download=1, v=share_ts)
+    preview_url = url_for("novel_chapter_share_image", novel_id=novel_id, chapter_id=chapter_id, v=share_ts)
+
     return render_template(
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
         blocks=blocks, unmatched_characters=unmatched_characters, videos=videos,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
+        share_url=share_url, preview_url=preview_url,
+    )
+
+
+@app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/share.png")
+def novel_chapter_share_image(novel_id, chapter_id):
+    conn = get_db()
+    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    chapter = conn.execute(
+        "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
+    ).fetchone()
+    conn.close()
+    if novel is None or chapter is None:
+        return "未找到该章节", 404
+
+    buf = build_chapter_share_card(dict(novel), dict(chapter))
+
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"{novel['title']}-第{chapter['chapter_no']}章-分享图.png" if download else None,
+        max_age=0,
     )
 
 

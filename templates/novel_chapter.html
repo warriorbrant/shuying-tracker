@@ -9,6 +9,10 @@
 
 <article class="chapter-reader">
   <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
+  <div class="actions">
+    <a class="btn-share" href="{{ share_url }}">📤 生成本章分享图</a>
+    <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
+  </div>
   <div class="chapter-body" id="chapterBody">
     {% for block in blocks %}
       {% if block.type == 'text' %}
