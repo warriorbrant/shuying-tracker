@@ -3,6 +3,8 @@ import sqlite3
 import time
 from pathlib import Path
 
+from werkzeug.security import generate_password_hash
+
 # Pin the process (and thus SQLite's `datetime('now','localtime')`, and every
 # `date.today()`/`datetime.now()` call) to the user's timezone, regardless of
 # what timezone the host server happens to run in (e.g. Railway defaults to
@@ -114,6 +116,23 @@ CREATE TABLE IF NOT EXISTS novel_references (
     PRIMARY KEY (novel_id, item_id)
 );
 
+-- Multi-user groundwork (phase 0): tables exist and content tables get a
+-- user_id column (added via migration below, since ALTER TABLE is needed for
+-- installs that predate this), but no route enforces ownership yet — that's
+-- a later phase. Nothing about current behavior changes by these existing.
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    allow_registration INTEGER NOT NULL DEFAULT 0
+);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).
@@ -165,6 +184,39 @@ def _migrate(conn):
     chapter_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novel_chapters)")]
     if chapter_cols and "is_locked" not in chapter_cols:
         conn.execute("ALTER TABLE novel_chapters ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0")
+
+    # Multi-user phase 0: add a nullable user_id to every owned content table,
+    # bootstrap a single admin account (reusing APP_PASSWORD so nothing is
+    # locked out by this deploy), and attribute all pre-existing rows to it.
+    # No route reads/enforces user_id yet — that's a later phase; this step
+    # only makes sure every row has a correct owner once that phase lands.
+    owned_tables = [
+        "items", "logs", "moments", "novels",
+        "novel_chapters", "novel_characters", "novel_videos",
+    ]
+    for table in owned_tables:
+        cols = [row["name"] for row in conn.execute(f"PRAGMA table_info({table})")]
+        if cols and "user_id" not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN user_id INTEGER REFERENCES users(id)")
+
+    user_count = conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
+    if user_count == 0:
+        bootstrap_password = os.environ.get("APP_PASSWORD") or "admin"
+        conn.execute(
+            "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, 1)",
+            ("admin", generate_password_hash(bootstrap_password, method="pbkdf2:sha256")),
+        )
+
+    admin_id = conn.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
+    if admin_id is not None:
+        for table in owned_tables:
+            cols = [row["name"] for row in conn.execute(f"PRAGMA table_info({table})")]
+            if "user_id" in cols:
+                conn.execute(
+                    f"UPDATE {table} SET user_id = ? WHERE user_id IS NULL", (admin_id["id"],)
+                )
+
+    conn.execute("INSERT OR IGNORE INTO app_settings (id, allow_registration) VALUES (1, 0)")
 
 
 def init_db():

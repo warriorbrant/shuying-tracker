@@ -1597,4 +1597,31 @@ CHANGELOG = [
         "lines_changed": 45,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "多用户系统第一步：数据库打好底子，网站行为不变",
+        "title_en": "Multi-user groundwork (step 1 of a phased rollout): schema only, no behavior change",
+        "summary": (
+            "打算把网站从单人用的改成能支持多个独立账号，每人数据互相隔离，后台还能"
+            "一键开关是否允许自助注册——但这个改动牵一发动全身，所以拆成好几步来上，"
+            "先从最不冒险的一步开始：新建 users（账号）和 app_settings（站点设置）两"
+            "张表，给书影/动态/小说相关的 7 张表都加上 user_id 字段，并且自动建一个"
+            "admin 账号（密码沿用现在的登录密码），把所有已有数据都归到这个账号名"
+            "下。这一步网站的登录方式、页面显示完全没变——纯粹是把底子打好，后面几步"
+            "才会真正开始用上这些字段。"
+        ),
+        "summary_en": (
+            "Planning to turn this from a single-owner site into one that supports several "
+            "independent accounts, each with fully private data, with an admin toggle for "
+            "public self-registration — but that's a big, cross-cutting change, so it's "
+            "landing in phases. This is the safest first step: new users and app_settings "
+            "tables, a user_id column added to the 7 tables holding personal content, and a "
+            "bootstrap admin account (password carried over from the current login password) "
+            "that all existing data gets attributed to. Nothing about how the site works or "
+            "looks changes yet — this just lays the groundwork the later steps build on."
+        ),
+        "image": None,
+        "lines_changed": 53,
+        "estimated": False,
+    },
 ]
