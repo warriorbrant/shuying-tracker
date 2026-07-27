@@ -1451,8 +1451,11 @@ NOVEL_STATUSES = ["连载中", "已完结", "暂停"]
 def novels_list():
     conn = get_db()
     novels = conn.execute("SELECT * FROM novels ORDER BY updated_at DESC").fetchall()
+    word_counts = dict(conn.execute(
+        "SELECT novel_id, SUM(LENGTH(content)) AS total FROM novel_chapters GROUP BY novel_id"
+    ).fetchall())
     conn.close()
-    return render_template("novels_list.html", novels=novels)
+    return render_template("novels_list.html", novels=novels, word_counts=word_counts)
 
 
 @app.route("/novel/<int:novel_id>")
@@ -1463,9 +1466,11 @@ def novel_detail(novel_id):
         conn.close()
         return "未找到该小说", 404
     chapters = conn.execute(
-        "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT id, chapter_no, title, is_locked, LENGTH(content) AS word_count, updated_at "
+        "FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
+    total_words = sum(c["word_count"] or 0 for c in chapters)
     characters = conn.execute(
         "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
     ).fetchall()
@@ -1486,7 +1491,7 @@ def novel_detail(novel_id):
     preview_url = url_for("novel_share_image", novel_id=novel_id, v=share_ts)
     return render_template(
         "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos,
-        references=references, share_url=share_url, preview_url=preview_url,
+        references=references, share_url=share_url, preview_url=preview_url, total_words=total_words,
     )
 
 
@@ -1721,9 +1726,11 @@ def novel_edit(novel_id):
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
     chapters = conn.execute(
-        "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT id, chapter_no, title, is_locked, LENGTH(content) AS word_count, updated_at "
+        "FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
+    total_words = sum(c["word_count"] or 0 for c in chapters)
     characters = conn.execute(
         "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
     ).fetchall()
@@ -1739,7 +1746,7 @@ def novel_edit(novel_id):
     return render_template(
         "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
         chapters=chapters, characters=characters, videos=videos, references=references,
-        error=request.args.get("error"),
+        total_words=total_words, error=request.args.get("error"),
     )
 
 

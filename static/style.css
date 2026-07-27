@@ -1255,6 +1255,25 @@ button {
   color: var(--accent);
 }
 
+.chapter-list .chapter-meta {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.chapter-reader .chapter-meta {
+  margin: -12px 0 16px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.novel-card-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 4px 0;
+}
+
 @media (max-width: 640px) {
   .chapter-list { grid-template-columns: 1fr; }
 }

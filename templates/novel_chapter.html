@@ -9,6 +9,7 @@
 
 <article class="chapter-reader">
   <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
+  <p class="chapter-meta">{{ chapter.content|length }} 字 · 更新于 {{ chapter.updated_at[:10] }}</p>
   {% if current_user %}
   <div class="actions">
     <a class="btn-share" href="{{ share_url }}">📤 生成本章分享图</a>

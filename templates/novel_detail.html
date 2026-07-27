@@ -14,6 +14,8 @@
     <h1>{{ novel.title }}</h1>
     <span class="lines-badge">{{ novel.status }}</span>
     {% if novel.is_locked %}<span class="lines-badge">🔒 已锁定</span>{% endif %}
+    <span class="lines-badge">共 {{ total_words }} 字</span>
+    <span class="lines-badge">最后更新 {{ novel.updated_at[:10] }}</span>
     {% if novel.summary %}<p class="review">{{ novel.summary }}</p>{% endif %}
 
     <div class="actions">
@@ -33,7 +35,12 @@
   {% if chapters %}
   <ul class="chapter-list">
     {% for c in chapters %}
-    <li><a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">{% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}</a></li>
+    <li>
+      <a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">
+        {% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
+        <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+      </a>
+    </li>
     {% endfor %}
   </ul>
   {% else %}

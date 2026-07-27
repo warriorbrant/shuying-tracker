@@ -55,7 +55,7 @@
 
 <section class="log-section">
   <div class="changelog-header-row">
-    <h2>章节（共 {{ chapters|length }} 章）</h2>
+    <h2>章节（共 {{ chapters|length }} 章 · 共 {{ total_words }} 字）</h2>
     <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">+ 新增章节</a>
   </div>
   {% if chapters %}
@@ -65,7 +65,10 @@
       <label class="chapter-select">
         <input type="checkbox" name="chapter_ids" value="{{ c.id }}" form="bulkLockForm">
       </label>
-      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">{% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}</a>
+      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">
+        {% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
+        <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+      </a>
       <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
             onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
         <button type="submit" class="btn-danger-sm">删除</button>

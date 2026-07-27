@@ -24,6 +24,7 @@
     <div class="novel-card-body">
       <h3>{{ novel.title }}</h3>
       <span class="lines-badge">{{ novel.status }}</span>
+      <p class="novel-card-meta">共 {{ word_counts.get(novel.id, 0) }} 字 · 更新于 {{ novel.updated_at[:10] }}</p>
       {% if novel.summary %}<p>{{ novel.summary }}</p>{% endif %}
     </div>
   </a>

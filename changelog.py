@@ -1650,4 +1650,26 @@ CHANGELOG = [
         "lines_changed": 42,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "小说加了字数统计和更新时间",
+        "title_en": "Added word counts and update timestamps to novels",
+        "summary": (
+            "小说列表、小说详情页、编辑页、章节阅读页现在都会显示字数：小说列表和详情"
+            "页显示整本小说的总字数，目录里每章也单独标了这一章的字数，另外都带上了"
+            "最后更新时间（章节改内容会更新这个时间）。字数统计不含空白字符，用"
+            "SQLite 的 LENGTH() 直接在数据库里算，没有额外拉取正文内容。"
+        ),
+        "summary_en": (
+            "The novels list, novel detail page, editor, and chapter reading page all now "
+            "show word counts — total word count for the whole novel on the list/detail "
+            "pages, and each chapter's own count next to it in the table of contents — plus "
+            "a last-updated date everywhere (bumped whenever a chapter's content changes). "
+            "Counts are computed with SQLite's LENGTH() directly in the query, so list views "
+            "don't need to fetch the full chapter text just to size it up."
+        ),
+        "image": None,
+        "lines_changed": 46,
+        "estimated": False,
+    },
 ]
