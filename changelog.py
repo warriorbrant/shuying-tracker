@@ -1556,4 +1556,26 @@ CHANGELOG = [
         "lines_changed": 65,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "锁定的章节改成显示前几段预览，不再直接跳登录页",
+        "title_en": "Locked chapters now show a text preview instead of redirecting to login",
+        "summary": (
+            "之前锁定的章节未登录访问会直接跳转登录页，正文一个字都看不到。现在改成正"
+            "常打开章节页，显示正文前 3 段（带渐隐效果），底下有个「本章已锁定」的提示"
+            "和登录按钮，登录后回到本章看剩下的内容。预览状态下也不会剧透本章的出场人"
+            "物立绘和视频。"
+        ),
+        "summary_en": (
+            "Locked chapters used to redirect straight to the login page with zero text "
+            "visible. Now the chapter page opens normally and shows the first 3 paragraphs "
+            "(with a fade-out effect), followed by a \"this chapter is locked\" prompt and a "
+            "login button that returns to the chapter afterward. The preview also holds back "
+            "character standees and videos tied to the rest of the chapter, so it doesn't "
+            "spoil anything beyond the visible text."
+        ),
+        "image": None,
+        "lines_changed": 85,
+        "estimated": False,
+    },
 ]

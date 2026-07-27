@@ -1573,6 +1573,9 @@ def build_chapter_blocks(content, characters):
     return blocks, unmatched
 
 
+CHAPTER_LOCK_PREVIEW_PARAGRAPHS = 3
+
+
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>")
 def novel_chapter_read(novel_id, chapter_id):
     conn = get_db()
@@ -1583,32 +1586,44 @@ def novel_chapter_read(novel_id, chapter_id):
     if novel is None or chapter is None:
         conn.close()
         return "未找到该章节", 404
-    if (novel["is_locked"] or chapter["is_locked"]) and app_password() and not session.get("authed"):
-        conn.close()
-        return redirect(url_for("login", next=request.path))
+
+    locked = bool(novel["is_locked"] or chapter["is_locked"]) and app_password() and not session.get("authed")
+
     chapters = conn.execute(
         "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
-    characters = conn.execute(
-        "SELECT nc.* FROM novel_characters nc "
-        "JOIN novel_chapter_characters ncc ON ncc.character_id = nc.id "
-        "WHERE ncc.chapter_id = ? ORDER BY nc.sort_order ASC, nc.id ASC",
-        (chapter_id,),
-    ).fetchall()
-    videos = conn.execute(
-        "SELECT nv.* FROM novel_videos nv "
-        "JOIN novel_chapter_videos ncv ON ncv.video_id = nv.id "
-        "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
-        (chapter_id,),
-    ).fetchall()
+    if locked:
+        # Don't reveal characters/videos tied to content the viewer can't actually read.
+        characters, videos = [], []
+    else:
+        characters = conn.execute(
+            "SELECT nc.* FROM novel_characters nc "
+            "JOIN novel_chapter_characters ncc ON ncc.character_id = nc.id "
+            "WHERE ncc.chapter_id = ? ORDER BY nc.sort_order ASC, nc.id ASC",
+            (chapter_id,),
+        ).fetchall()
+        videos = conn.execute(
+            "SELECT nv.* FROM novel_videos nv "
+            "JOIN novel_chapter_videos ncv ON ncv.video_id = nv.id "
+            "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
+            (chapter_id,),
+        ).fetchall()
     conn.close()
 
     ids = [c["id"] for c in chapters]
     idx = ids.index(chapter_id)
     prev_chapter = chapters[idx - 1] if idx > 0 else None
     next_chapter = chapters[idx + 1] if idx < len(chapters) - 1 else None
-    blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
+
+    if locked:
+        paragraphs = [
+            p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()
+        ]
+        preview_text = "\n".join(paragraphs[:CHAPTER_LOCK_PREVIEW_PARAGRAPHS])
+        blocks, unmatched_characters = build_chapter_blocks(preview_text, [])
+    else:
+        blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
 
     # Same cache-busting versioning as the novel share link — see the comment there.
     share_ts = int(time.time())
@@ -1619,7 +1634,7 @@ def novel_chapter_read(novel_id, chapter_id):
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
         blocks=blocks, unmatched_characters=unmatched_characters, videos=videos,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
-        share_url=share_url, preview_url=preview_url,
+        share_url=share_url, preview_url=preview_url, locked=locked,
     )
 
 

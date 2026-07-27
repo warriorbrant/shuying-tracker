@@ -1553,6 +1553,34 @@ label.checkbox-label {
   user-select: none;
 }
 
+.chapter-body-locked {
+  position: relative;
+  max-height: 340px;
+  overflow: hidden;
+}
+
+.chapter-lock-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 140px;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  pointer-events: none;
+}
+
+.chapter-lock-banner {
+  text-align: center;
+  padding: 12px 0 8px;
+  margin-top: -8px;
+}
+
+.chapter-lock-banner p {
+  color: var(--muted);
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+}
+
 .character-reveal {
   display: flex;
   justify-content: center;

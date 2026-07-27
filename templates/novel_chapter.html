@@ -15,23 +15,33 @@
     <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
   </div>
   {% endif %}
-  <div class="chapter-body" id="chapterBody">
-    {% for block in blocks %}
-      {% if block.type == 'text' %}
-        <p>{{ block.text }}</p>
-      {% else %}
-        {% set ch = block.character %}
-        <div class="character-reveal">
-          <div class="character-standee">
-            {% if ch.image_path %}
-              <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
-            {% endif %}
-            <span class="character-standee-name">{{ ch.name }}</span>
+  <div class="{{ 'chapter-body-locked' if locked }}">
+    <div class="chapter-body" id="chapterBody">
+      {% for block in blocks %}
+        {% if block.type == 'text' %}
+          <p>{{ block.text }}</p>
+        {% else %}
+          {% set ch = block.character %}
+          <div class="character-reveal">
+            <div class="character-standee">
+              {% if ch.image_path %}
+                <img loading="lazy" src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="{{ ch.name }}">
+              {% endif %}
+              <span class="character-standee-name">{{ ch.name }}</span>
+            </div>
           </div>
-        </div>
-      {% endif %}
-    {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if locked %}<div class="chapter-lock-fade"></div>{% endif %}
   </div>
+
+  {% if locked %}
+  <div class="chapter-lock-banner">
+    <p>🔒 本章已锁定，登录后可查看完整正文</p>
+    <a class="btn-share" href="{{ url_for('login', next=request.path) }}">登录查看完整内容</a>
+  </div>
+  {% endif %}
 
   {% if unmatched_characters %}
   <div class="character-grid unmatched-characters">
