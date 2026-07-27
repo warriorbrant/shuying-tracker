@@ -4,7 +4,7 @@
 
 <div class="changelog-header-row">
   <h1>小说</h1>
-  {% if not auth_enabled or session.authed %}
+  {% if current_user %}
     <a class="btn-link" href="{{ url_for('novel_new') }}">+ 新建小说</a>
   {% endif %}
 </div>
@@ -30,7 +30,7 @@
   {% endfor %}
 </div>
 {% else %}
-<p class="hint">还没有小说，{% if not auth_enabled or session.authed %}<a href="{{ url_for('novel_new') }}">写第一篇</a>{% else %}敬请期待{% endif %}。</p>
+<p class="hint">还没有小说，{% if current_user %}<a href="{{ url_for('novel_new') }}">写第一篇</a>{% else %}敬请期待{% endif %}。</p>
 {% endif %}
 
 {% endblock %}

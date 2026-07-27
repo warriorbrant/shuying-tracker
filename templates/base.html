@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="{{ url_for('index') }}">📚🎬 知行合一AI实验室</a>
     <nav>
-      {% if not auth_enabled or session.authed %}
+      {% if current_user %}
         <a href="{{ url_for('item_new', type='book') }}">+ 添加书</a>
         <a href="{{ url_for('item_new', type='show') }}">+ 添加剧</a>
         <a href="{{ url_for('moment_new') }}">+ 记录动态</a>
@@ -26,11 +26,12 @@
       {% endif %}
       <a href="{{ url_for('novels_list') }}">📖 小说</a>
       <a href="{{ url_for('changelog') }}">更新日志</a>
-      {% if auth_enabled and session.authed %}
+      {% if current_user %}
+      <span class="current-username">{{ current_user.username }}</span>
       <form class="logout-form" method="post" action="{{ url_for('logout') }}">
         <button type="submit" class="logout-btn">退出登录</button>
       </form>
-      {% elif auth_enabled %}
+      {% else %}
       <a href="{{ url_for('login', next=request.path) }}" class="login-link">登录</a>
       {% endif %}
     </nav>

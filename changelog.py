@@ -1624,4 +1624,30 @@ CHANGELOG = [
         "lines_changed": 53,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "多用户系统第二步：登录方式换成账号+密码",
+        "title_en": "Multi-user step 2: login switched from shared password to username + password",
+        "summary": (
+            "上一步只是把数据库底子打好，这一步开始真正把登录机制换掉：以前是一个共享"
+            "密码，现在是查 users 表里的真实账号（用户名+密码），登录页也加了用户名输"
+            "入框。因为目前 users 表里只有上一步自动建的那个 admin 账号（密码沿用原来"
+            "的登录密码），所以从使用体验上几乎感觉不到变化——用 admin 账号照常登录就"
+            "行，导航栏现在会显示当前登录的用户名。小说的「锁定」章节逻辑也跟着换成新"
+            "的登录判断，行为不变。"
+        ),
+        "summary_en": (
+            "The previous step only laid the database groundwork; this one actually swaps "
+            "the login mechanism — from a single shared password to a real account lookup "
+            "(username + password) against the users table, with a username field added to "
+            "the login page. Since the users table currently holds only the one admin "
+            "account created by the last step's bootstrap (password carried over from the "
+            "old shared password), this is nearly invisible day to day — log in as admin as "
+            "usual, and the nav bar now shows the signed-in username. The novel \"lock\" "
+            "check was updated to the new session model too, with no change in behavior."
+        ),
+        "image": None,
+        "lines_changed": 42,
+        "estimated": False,
+    },
 ]

@@ -299,9 +299,15 @@ a.heat-day:hover {
   color: var(--text) !important;
 }
 
+.current-username {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-left: 16px;
+}
+
 .logout-form {
   display: inline;
-  margin-left: 16px;
+  margin-left: 10px;
 }
 
 .logout-btn {

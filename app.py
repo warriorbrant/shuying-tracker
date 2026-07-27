@@ -28,6 +28,7 @@ from flask import (
 )
 from flask_compress import Compress
 from PIL import Image, ImageOps
+from werkzeug.security import check_password_hash
 
 import metrics
 from ai_scan import ScanError, analyze_screenshot, is_configured
@@ -168,13 +169,20 @@ ALLOWED_VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".avi", ".mkv"}
 MAX_VIDEO_SECONDS = 5 * 60
 
 
-def app_password():
-    return os.environ.get("APP_PASSWORD") or ""
+def get_current_user():
+    if not hasattr(g, "_user"):
+        user_id = session.get("user_id")
+        g._user = None
+        if user_id:
+            conn = get_db()
+            g._user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+            conn.close()
+    return g._user
 
 
 @app.context_processor
 def inject_auth_state():
-    return {"auth_enabled": bool(app_password())}
+    return {"current_user": get_current_user()}
 
 
 @app.context_processor
@@ -230,11 +238,9 @@ def make_inline_media_cacheable(response):
 
 @app.before_request
 def require_login():
-    if not app_password():
-        return None
     if request.endpoint in PUBLIC_ENDPOINTS or request.endpoint is None:
         return None
-    if not session.get("authed"):
+    if not session.get("user_id"):
         return redirect(url_for("login", next=request.path))
     return None
 
@@ -242,13 +248,17 @@ def require_login():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        if app_password() and secrets.compare_digest(password, app_password()):
+        conn = get_db()
+        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        conn.close()
+        if user and check_password_hash(user["password_hash"], password):
             session.clear()
-            session["authed"] = True
+            session["user_id"] = user["id"]
             session.permanent = True
             return redirect(safe_next(request.form.get("next"), url_for("index")))
-        return render_template("login.html", error="密码不对，再试一次", next=request.form.get("next", ""))
+        return render_template("login.html", error="用户名或密码不对，再试一次", next=request.form.get("next", ""))
     return render_template("login.html", error=None, next=request.args.get("next", ""))
 
 
@@ -819,7 +829,7 @@ def changelog_share_image():
 
 @app.route("/")
 def index():
-    if app_password() and not session.get("authed"):
+    if not session.get("user_id"):
         return public_landing()
 
     type_filter = request.args.get("type", "")
@@ -1587,7 +1597,7 @@ def novel_chapter_read(novel_id, chapter_id):
         conn.close()
         return "未找到该章节", 404
 
-    locked = bool(novel["is_locked"] or chapter["is_locked"]) and app_password() and not session.get("authed")
+    locked = bool(novel["is_locked"] or chapter["is_locked"]) and not session.get("user_id")
 
     chapters = conn.execute(
         "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
