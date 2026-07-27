@@ -1578,4 +1578,23 @@ CHANGELOG = [
         "lines_changed": 85,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "小说编辑页可以批量锁定/解锁章节了",
+        "title_en": "Added bulk lock/unlock for chapters in the novel editor",
+        "summary": (
+            "之前锁章节要点进每一章的编辑页勾一次，章节多了很麻烦。现在小说编辑页的章"
+            "节列表每一行前面加了个勾选框，勾几章、点一下「锁定选中章节」或「解锁选中"
+            "章节」，就一次批量改完，不用逐章打开。"
+        ),
+        "summary_en": (
+            "Locking chapters used to mean opening each chapter's edit page one at a time — "
+            "tedious once a novel has more than a few. Added a checkbox next to each chapter "
+            "in the novel editor's chapter list, plus \"lock selected\" / \"unlock selected\" "
+            "buttons that apply to all checked chapters in one request."
+        ),
+        "image": None,
+        "lines_changed": 45,
+        "estimated": False,
+    },
 ]

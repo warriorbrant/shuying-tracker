@@ -1227,6 +1227,22 @@ button {
   white-space: normal;
   word-break: break-word;
   min-width: 0;
+  flex: 1;
+}
+
+.chapter-select {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.chapter-select input {
+  margin: 0;
+}
+
+.bulk-lock-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
 }
 
 .chapter-list a:hover {

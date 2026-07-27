@@ -1909,6 +1909,22 @@ def novel_chapter_delete(novel_id, chapter_id):
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
+@app.route("/novel/<int:novel_id>/chapters/bulk-lock", methods=["POST"])
+def novel_chapters_bulk_lock(novel_id):
+    chapter_ids = to_int_list(request.form.getlist("chapter_ids"))
+    lock = 1 if request.form.get("action") == "lock" else 0
+    if chapter_ids:
+        conn = get_db()
+        conn.executemany(
+            "UPDATE novel_chapters SET is_locked = ?, updated_at=datetime('now','localtime') "
+            "WHERE id = ? AND novel_id = ?",
+            [(lock, cid, novel_id) for cid in chapter_ids],
+        )
+        conn.commit()
+        conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
 @app.route("/novel/<int:novel_id>/character/new", methods=["POST"])
 def novel_character_new(novel_id):
     conn = get_db()
