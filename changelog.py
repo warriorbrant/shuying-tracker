@@ -1516,15 +1516,16 @@ CHANGELOG = [
         "summary": (
             "章节阅读页新增「生成本章分享图」，把整章正文原样生成一张图，不摘要不截断——"
             "图片高度是按内容自动算的，短章节图短，长章节图长（小红书常见的那种「长"
-            "图」）。跟其他分享图一样不需要登录，链接也带了版本号避开 CDN 缓存卡住的老问"
-            "题。"
+            "图」）。跟小说编辑/导出功能一样需要登录才能用，按钮和链接对未登录访客都不"
+            "显示；链接也带了版本号避开 CDN 缓存卡住的老问题。"
         ),
         "summary_en": (
             "Added a \"Generate chapter share image\" button on the chapter reading page — "
             "it renders the entire chapter text as-is into one image, no summarizing or "
             "truncation. The image height is computed from the actual content, so short "
             "chapters get a short image and long ones get a tall one (the common \"long "
-            "screenshot\" format). Public like the other share images, and the link is "
+            "screenshot\" format). Requires login, like the novel authoring/export features — "
+            "the button and link are hidden from anonymous visitors. The link is also "
             "versioned to avoid the CDN-staleness issue from earlier."
         ),
         "image": None,
