@@ -77,8 +77,8 @@
     {% endfor %}
   </ul>
   <form id="bulkLockForm" method="post" action="{{ url_for('novel_chapters_bulk_lock', novel_id=novel.id) }}" class="bulk-lock-actions">
-    <button type="submit" name="action" value="lock" class="btn-link">🔒 锁定选中章节</button>
-    <button type="submit" name="action" value="unlock" class="btn-link">🔓 解锁选中章节</button>
+    <button type="submit" name="action" value="lock">🔒 锁定选中章节</button>
+    <button type="submit" name="action" value="unlock">🔓 解锁选中章节</button>
   </form>
   <p class="hint">勾选章节前面的框，再点上面的按钮批量锁定/解锁。</p>
   {% else %}

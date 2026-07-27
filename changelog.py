@@ -1672,4 +1672,27 @@ CHANGELOG = [
         "lines_changed": 46,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "修复：批量锁定/解锁按钮文字看不清",
+        "title_en": "Fixed low-contrast text on the bulk lock/unlock buttons",
+        "summary": (
+            "「锁定选中章节」「解锁选中章节」这两个按钮之前套了 .btn-link 这个类，"
+            "本意是想要淡一点的文字链接样式，但因为它俩本质是 <button>，网站默认的按"
+            "钮样式会给个橙色底，.btn-link 只改了文字颜色（改成了灰色），最后就是灰"
+            "字配橙底，糊成一片。去掉这个类，让它们走默认的白字橙底按钮样式，跟「保"
+            "存」按钮一个风格，看得清了。"
+        ),
+        "summary_en": (
+            "The \"lock selected\" / \"unlock selected\" buttons had a .btn-link class on "
+            "them, meant for a plain muted-text-link look — but since they're actual "
+            "<button> elements, the site's default button style still gave them a solid "
+            "orange background, and .btn-link only overrode the text color to gray, leaving "
+            "low-contrast gray text on orange. Removed the class so they fall back to the "
+            "default white-on-orange button style, matching \"保存\" (Save) elsewhere."
+        ),
+        "image": None,
+        "lines_changed": 2,
+        "estimated": False,
+    },
 ]
