@@ -1453,7 +1453,7 @@ def novel_detail(novel_id):
         conn.close()
         return "未找到该小说", 404
     chapters = conn.execute(
-        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
     characters = conn.execute(
@@ -1583,8 +1583,11 @@ def novel_chapter_read(novel_id, chapter_id):
     if novel is None or chapter is None:
         conn.close()
         return "未找到该章节", 404
+    if (novel["is_locked"] or chapter["is_locked"]) and app_password() and not session.get("authed"):
+        conn.close()
+        return redirect(url_for("login", next=request.path))
     chapters = conn.execute(
-        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
     characters = conn.execute(
@@ -1649,12 +1652,13 @@ def novel_new():
         cover_path = save_novel_image(request.files.get("cover_file"))
         conn = get_db()
         conn.execute(
-            "INSERT INTO novels (title, summary, status, cover_image) VALUES (?, ?, ?, ?)",
+            "INSERT INTO novels (title, summary, status, cover_image, is_locked) VALUES (?, ?, ?, ?, ?)",
             (
                 request.form["title"].strip(),
                 request.form.get("summary", "").strip(),
                 request.form.get("status", "连载中"),
                 cover_path,
+                1 if request.form.get("is_locked") else 0,
             ),
         )
         conn.commit()
@@ -1676,13 +1680,14 @@ def novel_edit(novel_id):
     if request.method == "POST":
         cover_path = save_novel_image(request.files.get("cover_file")) or novel["cover_image"]
         conn.execute(
-            "UPDATE novels SET title=?, summary=?, status=?, cover_image=?, updated_at=datetime('now','localtime') "
-            "WHERE id=?",
+            "UPDATE novels SET title=?, summary=?, status=?, cover_image=?, is_locked=?, "
+            "updated_at=datetime('now','localtime') WHERE id=?",
             (
                 request.form["title"].strip(),
                 request.form.get("summary", "").strip(),
                 request.form.get("status", "连载中"),
                 cover_path,
+                1 if request.form.get("is_locked") else 0,
                 novel_id,
             ),
         )
@@ -1691,7 +1696,7 @@ def novel_edit(novel_id):
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
     chapters = conn.execute(
-        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
         (novel_id,),
     ).fetchall()
     characters = conn.execute(
@@ -1748,8 +1753,11 @@ def novel_chapter_new(novel_id):
             "SELECT COALESCE(MAX(chapter_no), 0) + 1 AS n FROM novel_chapters WHERE novel_id = ?", (novel_id,)
         ).fetchone()["n"]
         conn.execute(
-            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content) VALUES (?, ?, ?, ?)",
-            (novel_id, next_no, request.form["title"].strip(), request.form.get("content", "")),
+            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content, is_locked) VALUES (?, ?, ?, ?, ?)",
+            (
+                novel_id, next_no, request.form["title"].strip(), request.form.get("content", ""),
+                1 if request.form.get("is_locked") else 0,
+            ),
         )
         chapter_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
         set_chapter_links(
@@ -1782,8 +1790,12 @@ def novel_chapter_edit(novel_id, chapter_id):
 
     if request.method == "POST":
         conn.execute(
-            "UPDATE novel_chapters SET title=?, content=?, updated_at=datetime('now','localtime') WHERE id=?",
-            (request.form["title"].strip(), request.form.get("content", ""), chapter_id),
+            "UPDATE novel_chapters SET title=?, content=?, is_locked=?, updated_at=datetime('now','localtime') "
+            "WHERE id=?",
+            (
+                request.form["title"].strip(), request.form.get("content", ""),
+                1 if request.form.get("is_locked") else 0, chapter_id,
+            ),
         )
         set_chapter_links(
             conn, chapter_id,

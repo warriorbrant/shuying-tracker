@@ -1532,4 +1532,28 @@ CHANGELOG = [
         "lines_changed": 98,
         "estimated": False,
     },
+    {
+        "date": "2026-07-27",
+        "title": "小说和章节都可以单独上锁，未登录看不了",
+        "title_en": "Added per-chapter and per-novel locking for chapter content",
+        "summary": (
+            "小说和章节原本都是公开可读的。现在编辑页多了一个「锁定」勾选框：锁一章，"
+            "这一章未登录就看不了（会跳去登录页，登录后自动回来）；锁整本小说，底下所"
+            "有章节都看不了，不用一章一章去锁。目录里锁定的章节会带个 🔒 图标提示，小"
+            "说详情页也会标出「已锁定」。没配置登录密码的话锁定不生效——毕竟锁了也没法"
+            "登录解锁。"
+        ),
+        "summary_en": (
+            "Novels and chapters used to be fully public. Added a \"lock\" checkbox on both "
+            "the novel and chapter edit forms: lock a chapter and anonymous visitors can't "
+            "read it (redirected to login, then bounced back after signing in); lock the "
+            "whole novel and every chapter under it is blocked, without locking each one "
+            "individually. Locked chapters show a 🔒 badge in the table of contents, and a "
+            "locked novel is flagged on its detail page. Locking is a no-op when no login "
+            "password is configured, since there'd be no way to unlock it."
+        ),
+        "image": None,
+        "lines_changed": 65,
+        "estimated": False,
+    },
 ]

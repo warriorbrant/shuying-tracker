@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS novels (
     summary TEXT DEFAULT '',
     status TEXT NOT NULL DEFAULT '连载中',
     cover_image TEXT DEFAULT '',
+    is_locked INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
@@ -67,6 +68,7 @@ CREATE TABLE IF NOT EXISTS novel_chapters (
     chapter_no INTEGER NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL DEFAULT '',
+    is_locked INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
@@ -155,6 +157,14 @@ def _migrate(conn):
         ref_cols = ["novel_id", "item_id", "in_share"]
     if ref_cols and "in_share" not in ref_cols:
         conn.execute("ALTER TABLE novel_references ADD COLUMN in_share INTEGER NOT NULL DEFAULT 0")
+
+    novel_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novels)")]
+    if novel_cols and "is_locked" not in novel_cols:
+        conn.execute("ALTER TABLE novels ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0")
+
+    chapter_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novel_chapters)")]
+    if chapter_cols and "is_locked" not in chapter_cols:
+        conn.execute("ALTER TABLE novel_chapters ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0")
 
 
 def init_db():

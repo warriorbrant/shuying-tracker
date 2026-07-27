@@ -15,6 +15,11 @@
     <textarea name="content" rows="20">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
+  <label class="checkbox-label">
+    <input type="checkbox" name="is_locked" {{ 'checked' if chapter and chapter.is_locked }}>
+    🔒 锁定本章（未登录访客看不了这一章）
+  </label>
+
   <label>本章出场人物（搜索添加）</label>
   <div id="selectedCharacters" class="chip-list">
     {% for ch in preselected_characters %}

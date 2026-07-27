@@ -32,6 +32,11 @@
     </label>
   </div>
 
+  <label class="checkbox-label">
+    <input type="checkbox" name="is_locked" {{ 'checked' if novel and novel.is_locked }}>
+    🔒 锁定整本小说（未登录访客所有章节都看不了）
+  </label>
+
   <div class="actions">
     <button type="submit">保存</button>
     {% if novel %}
@@ -57,7 +62,7 @@
   <ul class="chapter-list">
     {% for c in chapters %}
     <li>
-      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">第 {{ c.chapter_no }} 章 · {{ c.title }}</a>
+      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">{% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}</a>
       <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
             onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
         <button type="submit" class="btn-danger-sm">删除</button>
