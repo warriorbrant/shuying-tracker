@@ -1695,4 +1695,30 @@ CHANGELOG = [
         "lines_changed": 2,
         "estimated": False,
     },
+    {
+        "date": "2026-07-31",
+        "title": "小说章节页加了朗读功能",
+        "title_en": "Added a read-aloud feature for novel chapters",
+        "summary": (
+            "章节阅读页新增「朗读本章」，用的是浏览器自带的语音合成（Web Speech "
+            "API），不用服务器生成音频、不用接第三方 TTS 接口，零成本。可以暂停/继"
+            "续/停止、调语速（0.75x–1.5x），还有个「自动连播下一章」——念完这一章自"
+            "动跳到下一章接着念。锁定章节朗读的也是当前显示的预览段落，不会把还没解"
+            "锁的内容读出来。缺点是音色和是否支持中文朗读要看访客自己浏览器/系统装"
+            "了什么语音引擎，网站这边控制不了。"
+        ),
+        "summary_en": (
+            "Added a \"read chapter aloud\" button on the chapter reading page, using the "
+            "browser's built-in Web Speech API — no server-side audio generation, no "
+            "third-party TTS integration, zero cost. Supports pause/resume/stop, an "
+            "adjustable rate (0.75x–1.5x), and an \"auto-continue to next chapter\" option "
+            "that keeps reading straight through. On a locked chapter it only reads the "
+            "visible preview paragraphs, never the hidden rest. The tradeoff: voice quality "
+            "and Chinese-language support depend entirely on whatever speech engine the "
+            "visitor's own browser/OS has installed — nothing the site can control."
+        ),
+        "image": None,
+        "lines_changed": 133,
+        "estimated": False,
+    },
 ]

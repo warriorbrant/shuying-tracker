@@ -16,6 +16,24 @@
     <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
   </div>
   {% endif %}
+  <div class="tts-controls" id="ttsControls">
+    <button type="button" class="btn-share" id="ttsToggle">▶ 朗读本章</button>
+    <button type="button" class="btn-link" id="ttsStop">⏹ 停止</button>
+    <label class="tts-rate-label">语速
+      <select id="ttsRate">
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+      </select>
+    </label>
+    {% if next_chapter %}
+    <label class="checkbox-label tts-autonext">
+      <input type="checkbox" id="ttsAutoNext">
+      自动连播下一章
+    </label>
+    {% endif %}
+  </div>
   <div class="{{ 'chapter-body-locked' if locked }}">
     <div class="chapter-body" id="chapterBody">
       {% for block in blocks %}
@@ -127,6 +145,91 @@
   ['copy', 'cut', 'contextmenu', 'selectstart', 'dragstart'].forEach(function (evt) {
     body.addEventListener(evt, function (e) { e.preventDefault(); });
   });
+})();
+</script>
+<script>
+(function () {
+  var toggleBtn = document.getElementById('ttsToggle');
+  var stopBtn = document.getElementById('ttsStop');
+  var rateSelect = document.getElementById('ttsRate');
+  var autoNextBox = document.getElementById('ttsAutoNext');
+  var controls = document.getElementById('ttsControls');
+  if (!toggleBtn) return;
+
+  if (!('speechSynthesis' in window)) {
+    controls.style.display = 'none';
+    return;
+  }
+
+  var paragraphs = Array.prototype.map.call(
+    document.querySelectorAll('#chapterBody p'),
+    function (p) { return p.textContent.trim(); }
+  ).filter(Boolean);
+
+  var idx = 0;
+  var speaking = false;
+  var paused = false;
+  var nextChapterUrl = {{ (url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) if next_chapter else None) | tojson }};
+
+  function updateUI() {
+    toggleBtn.textContent = !speaking ? '▶ 朗读本章' : (paused ? '▶ 继续' : '⏸ 暂停');
+  }
+
+  function speakNext() {
+    if (idx >= paragraphs.length) {
+      speaking = false;
+      updateUI();
+      if (autoNextBox && autoNextBox.checked && nextChapterUrl) {
+        window.location.href = nextChapterUrl + '?autoplay=1';
+      }
+      return;
+    }
+    var utter = new SpeechSynthesisUtterance(paragraphs[idx]);
+    utter.lang = 'zh-CN';
+    utter.rate = parseFloat(rateSelect.value);
+    utter.onend = function () { idx += 1; speakNext(); };
+    utter.onerror = function () { idx += 1; speakNext(); };
+    window.speechSynthesis.speak(utter);
+  }
+
+  function start() {
+    window.speechSynthesis.cancel();
+    idx = 0;
+    speaking = true;
+    paused = false;
+    speakNext();
+    updateUI();
+  }
+
+  function toggle() {
+    if (!paragraphs.length) return;
+    if (!speaking) { start(); return; }
+    if (paused) {
+      window.speechSynthesis.resume();
+      paused = false;
+    } else {
+      window.speechSynthesis.pause();
+      paused = true;
+    }
+    updateUI();
+  }
+
+  function stop() {
+    window.speechSynthesis.cancel();
+    speaking = false;
+    paused = false;
+    idx = 0;
+    updateUI();
+  }
+
+  toggleBtn.addEventListener('click', toggle);
+  stopBtn.addEventListener('click', stop);
+  window.addEventListener('beforeunload', function () { window.speechSynthesis.cancel(); });
+
+  if (new URLSearchParams(window.location.search).get('autoplay') === '1') {
+    if (autoNextBox) autoNextBox.checked = true;
+    start();
+  }
 })();
 </script>
 {% endblock %}
