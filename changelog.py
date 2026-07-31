@@ -1770,4 +1770,22 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-07-31",
+        "title": "朗读功能改成需要登录",
+        "title_en": "The read-aloud feature now requires login",
+        "summary": (
+            "章节朗读控件之前对所有人可见，跟章节分享图之前的情况一样。现在改成跟"
+            "「生成本章分享图」放在同一个登录判断里，只有登录后才会显示朗读按钮，未"
+            "登录访客看不到也用不了。"
+        ),
+        "summary_en": (
+            "The read-aloud controls were visible to everyone, same as the chapter share "
+            "image was before. Moved them into the same login check as \"Generate chapter "
+            "share image,\" so the read-aloud button now only shows up when logged in."
+        ),
+        "image": None,
+        "lines_changed": 3,
+        "estimated": False,
+    },
 ]
