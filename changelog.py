@@ -1788,4 +1788,34 @@ CHANGELOG = [
         "lines_changed": 3,
         "estimated": False,
     },
+    {
+        "date": "2026-07-31",
+        "title": "修复：朗读点暂停后过一会儿会自己继续念",
+        "title_en": "Fixed paused read-aloud spontaneously resuming on its own",
+        "summary": (
+            "点暂停之后放着不管，过一会儿它会自己接着念下去。这是浏览器（主要是"
+            "Chrome）speechSynthesis.pause() 一个已知的老问题：暂停状态放久了会被浏"
+            "览器自己悄悄放弃，播放不打招呼就恢复了。之前的代码单纯信任浏览器的暂停"
+            "状态，浏览器一旦擅自恢复，代码就跟着当成正常念完接着往下走。改成不再依"
+            "赖浏览器的 pause()/resume()，暂停时直接取消当前这段的朗读（同时靠序号"
+            "机制防止误触发下一段），继续时从暂停的那一段重新念一遍。用模拟的语音引"
+            "擎复现了这个「浏览器擅自恢复」的场景并验证修好了。"
+        ),
+        "summary_en": (
+            "Leaving the reader paused for a while, it would start reading again on its "
+            "own. This is a known long-standing browser bug (mainly Chrome) in "
+            "speechSynthesis.pause() — a paused utterance can get silently abandoned by the "
+            "browser and resume playback without notice. The old code trusted the "
+            "browser's pause state; once the browser quietly resumed, the code treated it "
+            "as a normal paragraph finish and kept going. Fixed by no longer relying on "
+            "pause()/resume() at all — pausing now fully cancels the current paragraph "
+            "(guarded by the same session-token mechanism so it can't misfire into the next "
+            "one), and resuming re-speaks that paragraph from the start. Reproduced the "
+            "\"browser resumes on its own\" scenario with a mocked speech engine and "
+            "confirmed the fix."
+        ),
+        "image": None,
+        "lines_changed": 12,
+        "estimated": False,
+    },
 ]

@@ -221,10 +221,16 @@
     if (!paragraphs.length) return;
     if (!speaking) { start(); return; }
     if (paused) {
-      window.speechSynthesis.resume();
+      // Resume by re-speaking the paragraph that was interrupted, rather than
+      // speechSynthesis.resume() — Chrome's pause() is known to silently give
+      // up and resume playback on its own after sitting paused for a while,
+      // which made "paused" reading start again on its own with no warning.
+      // cancel()+replay sidesteps the browser's pause state entirely.
       paused = false;
+      speakNext();
     } else {
-      window.speechSynthesis.pause();
+      session += 1;
+      window.speechSynthesis.cancel();
       paused = true;
     }
     updateUI();
