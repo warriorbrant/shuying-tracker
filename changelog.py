@@ -1744,4 +1744,30 @@ CHANGELOG = [
         "lines_changed": 8,
         "estimated": False,
     },
+    {
+        "date": "2026-07-31",
+        "title": "修复：朗读功能点「停止」不管用",
+        "title_en": "Fixed the read-aloud Stop button not actually stopping",
+        "summary": (
+            "点朗读本章再点停止，声音不停，一直往下念。原因是 speechSynthesis.cancel"
+            "() 会触发当前这段话的 onend 事件——跟正常念完一段是同一个事件，之前的代"
+            "码收到 onend 就无脑接着念下一段，于是「停止」实际上变成了「跳到下一"
+            "段」。改成给每次朗读发一个序号，点停止时先把序号加一，onend 触发时先核"
+            "对序号对不对，对不上（说明是被取消的）就不再继续。用模拟的语音引擎重现"
+            "了这个 race condition 并验证修好了。"
+        ),
+        "summary_en": (
+            "Clicking Stop didn't stop the reading — it just kept going. Root cause: "
+            "speechSynthesis.cancel() fires the current utterance's onend event, the exact "
+            "same event as a normal paragraph finishing, and the old handler always "
+            "advanced to the next paragraph on onend — so Stop was effectively acting as "
+            "\"skip to next paragraph\" instead of stopping. Fixed by tagging each utterance "
+            "with a session token that gets bumped before cancelling; the stale onend "
+            "checks the token and bails instead of continuing. Reproduced the exact race "
+            "condition with a mocked speech engine and confirmed the fix."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

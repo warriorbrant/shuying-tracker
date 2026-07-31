@@ -169,6 +169,12 @@
   var idx = 0;
   var speaking = false;
   var paused = false;
+  // speechSynthesis.cancel() fires the *current* utterance's onend/onerror —
+  // same as a natural finish — so a naive handler chases straight into the
+  // next paragraph instead of actually stopping. Tag each utterance with the
+  // session token active when it was created; cancel() bumps the token first,
+  // so by the time the stale callback fires it no longer matches and bails.
+  var session = 0;
   var nextChapterUrl = {{ (url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) if next_chapter else None) | tojson }};
 
   function updateUI() {
@@ -176,6 +182,7 @@
   }
 
   function speakNext() {
+    var mySession = session;
     if (idx >= paragraphs.length) {
       speaking = false;
       updateUI();
@@ -187,12 +194,21 @@
     var utter = new SpeechSynthesisUtterance(paragraphs[idx]);
     utter.lang = 'zh-CN';
     utter.rate = parseFloat(rateSelect.value);
-    utter.onend = function () { idx += 1; speakNext(); };
-    utter.onerror = function () { idx += 1; speakNext(); };
+    utter.onend = function () {
+      if (mySession !== session) return;
+      idx += 1;
+      speakNext();
+    };
+    utter.onerror = function () {
+      if (mySession !== session) return;
+      idx += 1;
+      speakNext();
+    };
     window.speechSynthesis.speak(utter);
   }
 
   function start() {
+    session += 1;
     window.speechSynthesis.cancel();
     idx = 0;
     speaking = true;
@@ -215,6 +231,7 @@
   }
 
   function stop() {
+    session += 1;
     window.speechSynthesis.cancel();
     speaking = false;
     paused = false;
