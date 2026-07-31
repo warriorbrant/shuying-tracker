@@ -1721,4 +1721,27 @@ CHANGELOG = [
         "lines_changed": 133,
         "estimated": False,
     },
+    {
+        "date": "2026-07-31",
+        "title": "修复：章节页朗读按钮太挤、「停止」看不清",
+        "title_en": "Fixed the read-aloud controls being cramped, and the Stop button being unreadable",
+        "summary": (
+            "朗读功能上线后发现两个问题：分享图按钮和朗读控件两排贴在一起没有间距；"
+            "「停止」按钮又是那个熟悉的坑——套了 .btn-link 但本质是 <button>，灰字配"
+            "橙底看不清（跟之前批量锁定按钮一模一样的 bug，这次是新加的朗读功能里漏"
+            "改了）。给两排之间加了间距，「停止」改成描边的次要按钮样式，跟主按钮"
+            "「朗读本章」分得清楚。"
+        ),
+        "summary_en": (
+            "Two issues surfaced after the read-aloud feature shipped: the share-image "
+            "button row and the read-aloud controls row sat with zero gap between them, "
+            "and the Stop button hit the exact same bug as the bulk lock buttons before it "
+            "— a .btn-link class on a real <button>, giving gray text on the default solid "
+            "orange background. Added spacing between the two rows and switched Stop to an "
+            "outlined secondary style, visually distinct from the primary Play button."
+        ),
+        "image": None,
+        "lines_changed": 8,
+        "estimated": False,
+    },
 ]

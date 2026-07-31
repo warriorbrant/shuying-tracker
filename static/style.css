@@ -699,6 +699,13 @@ a.heat-day:hover {
   display: flex;
   gap: 12px;
   align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
 button {
