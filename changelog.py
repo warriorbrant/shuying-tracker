@@ -1818,4 +1818,27 @@ CHANGELOG = [
         "lines_changed": 12,
         "estimated": False,
     },
+    {
+        "date": "2026-08-02",
+        "title": "添加书、添加剧、记录动态合并成一个入口",
+        "title_en": "Merged add-book/add-show/record-moment into one entry point",
+        "summary": (
+            "导航栏原来有三个添加相关的链接（添加书、添加剧、记录动态），现在合并成"
+            "一个「+ 添加」。新页面顶部有个类型下拉框，六个类型（书/剧/股票/运动/照"
+            "片/想法）都在里面，选哪个就切换显示对应的表单（书影表单还带着豆瓣自动"
+            "填充），提交到的还是原来各自的接口，没改后端逻辑，纯粹是前端合并入口、"
+            "少点一次。"
+        ),
+        "summary_en": (
+            "The nav bar used to have three separate \"add\" links (add book, add show, "
+            "record moment) — merged into a single \"+ Add\" entry. The new page has one "
+            "type dropdown covering all six types (book/show/stock/exercise/photo/thought); "
+            "picking one switches which form is shown (the book/show form keeps its Douban "
+            "auto-fill). Each form still posts to its existing backend route unchanged — "
+            "this is purely a front-end consolidation, one less click to get anywhere."
+        ),
+        "image": None,
+        "lines_changed": 197,
+        "estimated": False,
+    },
 ]

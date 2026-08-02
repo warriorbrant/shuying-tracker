@@ -978,6 +978,15 @@ def search_more():
     return jsonify({"html": html, "has_more": has_more, "count": len(page)})
 
 
+@app.route("/add")
+def add_new():
+    default_type = request.args.get("type", "book")
+    return render_template(
+        "add_form.html", default_type=default_type, statuses=STATUSES, moment_types=MOMENT_TYPES,
+        default_date=date.today().isoformat(),
+    )
+
+
 @app.route("/item/new", methods=["GET", "POST"])
 def item_new():
     if request.method == "POST":

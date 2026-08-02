@@ -17,9 +17,7 @@
     <a class="brand" href="{{ url_for('index') }}">📚🎬 知行合一AI实验室</a>
     <nav>
       {% if current_user %}
-        <a href="{{ url_for('item_new', type='book') }}">+ 添加书</a>
-        <a href="{{ url_for('item_new', type='show') }}">+ 添加剧</a>
-        <a href="{{ url_for('moment_new') }}">+ 记录动态</a>
+        <a href="{{ url_for('add_new') }}">+ 添加</a>
         <a href="{{ url_for('moment_scan') }}">+ 截图导入</a>
         <a href="{{ url_for('search') }}">🔍 搜索</a>
         <a href="{{ url_for('admin_metrics_page') }}">📊 性能指标</a>

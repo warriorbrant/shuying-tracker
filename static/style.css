@@ -613,6 +613,26 @@ a.heat-day:hover {
   margin-top: 4px;
 }
 
+.add-type-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 280px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.add-type-picker select {
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
 .douban-import {
   max-width: 560px;
   background: var(--accent-soft);

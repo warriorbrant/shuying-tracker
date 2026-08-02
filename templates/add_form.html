@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}添加{% endblock %}
+{% block content %}
+
+<h1>添加</h1>
+
+<label class="add-type-picker">
+  类型
+  <select id="typeSelect">
+    <optgroup label="书影">
+      <option value="book" {{ 'selected' if default_type == 'book' }}>📚 书</option>
+      <option value="show" {{ 'selected' if default_type == 'show' }}>🎬 剧</option>
+    </optgroup>
+    <optgroup label="动态">
+      {% for key, meta in moment_types.items() %}
+        <option value="{{ key }}" {{ 'selected' if default_type == key }}>{{ meta.icon }} {{ meta.label }}</option>
+      {% endfor %}
+    </optgroup>
+  </select>
+</label>
+
+<div class="douban-import" id="doubanImport">
+  <label>
+    从豆瓣链接自动填充（豆瓣读书 / 豆瓣电影·剧集）
+    <div class="row">
+      <input type="url" id="doubanUrl" placeholder="粘贴豆瓣页面链接，例如 https://book.douban.com/subject/xxxxx/">
+      <button type="button" id="doubanFetchBtn">自动填充</button>
+    </div>
+  </label>
+  <p id="doubanStatus" class="hint"></p>
+</div>
+
+<form class="form" id="itemForm" method="post" action="{{ url_for('item_new') }}">
+  <input type="hidden" name="type" id="itemTypeInput" value="{{ default_type if default_type in ('book', 'show') else 'book' }}">
+
+  <label>
+    标题
+    <input type="text" name="title" required>
+  </label>
+
+  <label>
+    作者 / 导演·出品方
+    <input type="text" name="creator">
+  </label>
+
+  <label>
+    封面图片链接（可选）
+    <input type="url" name="cover_url">
+  </label>
+
+  <label>
+    豆瓣链接（可选，用自动填充会自动带上）
+    <input type="url" name="douban_url">
+  </label>
+
+  <div class="row">
+    <label>
+      总量（总页数 / 总集数）
+      <input type="number" name="total_units" min="0">
+    </label>
+    <label>
+      单位
+      <input type="text" name="unit_label" placeholder="页 / 集">
+    </label>
+  </div>
+
+  <div class="row">
+    <label>
+      状态
+      <select name="status">
+        {% for s in statuses %}
+          <option value="{{ s }}" {{ 'selected' if s == '想看' }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      评分（1-5，可选）
+      <input type="number" name="rating" min="1" max="5">
+    </label>
+  </div>
+
+  <label>
+    总评 / 感想
+    <textarea name="review" rows="4"></textarea>
+  </label>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    <a class="btn-link" href="{{ url_for('index') }}">取消</a>
+  </div>
+</form>
+
+<form class="form" id="momentForm" method="post" action="{{ url_for('moment_new') }}" enctype="multipart/form-data">
+  <input type="hidden" name="type" id="momentTypeInput" value="{{ default_type if default_type in moment_types else 'thought' }}">
+
+  <label>
+    日期
+    <input type="date" name="log_date" value="{{ default_date }}" required>
+  </label>
+
+  <label>
+    标题（可选，如股票代码、运动类型）
+    <input type="text" name="title" placeholder="例如：贵州茅台 / 跑步 / 今日随笔">
+  </label>
+
+  <label>
+    内容 / 评论
+    <textarea name="content" rows="4" placeholder="写点什么：涨跌情况、时长距离、拍到了什么、当下的想法…"></textarea>
+  </label>
+
+  <div class="row">
+    <label>
+      用时（分钟，可选）
+      <input type="number" name="minutes_spent" min="0" value="0">
+    </label>
+    <label>
+      配图（可选）
+      <input type="file" name="image" accept="image/*">
+    </label>
+  </div>
+
+  <div class="actions">
+    <button type="submit">保存</button>
+    <a class="btn-link" href="{{ url_for('index') }}">取消</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  var typeSelect = document.getElementById('typeSelect');
+  var doubanImport = document.getElementById('doubanImport');
+  var itemForm = document.getElementById('itemForm');
+  var momentForm = document.getElementById('momentForm');
+  var itemTypeInput = document.getElementById('itemTypeInput');
+  var momentTypeInput = document.getElementById('momentTypeInput');
+  var itemTypes = ['book', 'show'];
+
+  function applyType(value) {
+    if (itemTypes.indexOf(value) !== -1) {
+      itemTypeInput.value = value;
+      itemForm.style.display = '';
+      doubanImport.style.display = '';
+      momentForm.style.display = 'none';
+    } else {
+      momentTypeInput.value = value;
+      momentForm.style.display = '';
+      itemForm.style.display = 'none';
+      doubanImport.style.display = 'none';
+    }
+  }
+
+  typeSelect.addEventListener('change', function () { applyType(typeSelect.value); });
+  applyType(typeSelect.value);
+
+  document.getElementById('doubanFetchBtn').addEventListener('click', async () => {
+    const url = document.getElementById('doubanUrl').value.trim();
+    const status = document.getElementById('doubanStatus');
+    if (!url) {
+      status.textContent = '请先粘贴豆瓣链接';
+      status.className = 'hint hint-error';
+      return;
+    }
+    status.textContent = '正在抓取…';
+    status.className = 'hint';
+
+    try {
+      const res = await fetch('/douban/fetch?url=' + encodeURIComponent(url));
+      const data = await res.json();
+      if (!res.ok) {
+        status.textContent = data.error || '抓取失败，请手动填写';
+        status.className = 'hint hint-error';
+        return;
+      }
+      if (data.type) {
+        typeSelect.value = data.type;
+        applyType(data.type);
+      }
+      itemForm.querySelector('[name=title]').value = data.title || '';
+      itemForm.querySelector('[name=creator]').value = data.creator || '';
+      itemForm.querySelector('[name=cover_url]').value = data.cover_url || '';
+      itemForm.querySelector('[name=douban_url]').value = url;
+      if (data.total_units) itemForm.querySelector('[name=total_units]').value = data.total_units;
+      if (data.unit_label) itemForm.querySelector('[name=unit_label]').value = data.unit_label;
+      if (data.review_draft && !itemForm.querySelector('[name=review]').value) {
+        itemForm.querySelector('[name=review]').value = data.review_draft;
+      }
+      status.textContent = '已自动填充，请检查并按需修改后保存';
+      status.className = 'hint hint-ok';
+    } catch (err) {
+      status.textContent = '抓取失败，请检查网络或手动填写';
+      status.className = 'hint hint-error';
+    }
+  });
+})();
+</script>
+
+{% endblock %}
