@@ -476,6 +476,24 @@ def to_float(value, default=None):
         return default
 
 
+def group_chapters_by_volume(chapters):
+    """Buckets chapters (already ordered by chapter_no) into runs that share the
+    same volume_id, so consecutive same-volume chapters render under one
+    heading. Chapters with no volume_id form their own (headerless) groups."""
+    groups = []
+    for c in chapters:
+        vid = c["volume_id"]
+        if not groups or groups[-1]["volume_id"] != vid:
+            groups.append({
+                "volume_id": vid,
+                "volume_no": c["volume_no"] if vid else None,
+                "volume_title": c["volume_title"] if vid else None,
+                "chapters": [],
+            })
+        groups[-1]["chapters"].append(c)
+    return groups
+
+
 def to_int_list(values):
     result = []
     for v in values:
@@ -1475,11 +1493,17 @@ def novel_detail(novel_id):
         conn.close()
         return "未找到该小说", 404
     chapters = conn.execute(
-        "SELECT id, chapter_no, title, is_locked, LENGTH(content) AS word_count, updated_at "
-        "FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT c.id, c.chapter_no, c.title, c.is_locked, LENGTH(c.content) AS word_count, c.updated_at, "
+        "c.volume_id, v.volume_no, v.title AS volume_title "
+        "FROM novel_chapters c LEFT JOIN novel_volumes v ON v.id = c.volume_id "
+        "WHERE c.novel_id = ? ORDER BY c.chapter_no ASC",
         (novel_id,),
     ).fetchall()
     total_words = sum(c["word_count"] or 0 for c in chapters)
+    volumes = conn.execute(
+        "SELECT * FROM novel_volumes WHERE novel_id = ? ORDER BY volume_no ASC", (novel_id,)
+    ).fetchall()
+    chapter_groups = group_chapters_by_volume(chapters)
     characters = conn.execute(
         "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
     ).fetchall()
@@ -1499,7 +1523,8 @@ def novel_detail(novel_id):
     share_url = url_for("novel_share_image", novel_id=novel_id, download=1, v=share_ts)
     preview_url = url_for("novel_share_image", novel_id=novel_id, v=share_ts)
     return render_template(
-        "novel_detail.html", novel=novel, chapters=chapters, characters=characters, videos=videos,
+        "novel_detail.html", novel=novel, chapters=chapters, chapter_groups=chapter_groups,
+        volumes=volumes, characters=characters, videos=videos,
         references=references, share_url=share_url, preview_url=preview_url, total_words=total_words,
     )
 
@@ -1539,7 +1564,10 @@ def _load_novel_and_chapters(novel_id, conn):
     if novel is None:
         return None, None
     chapters = conn.execute(
-        "SELECT * FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC", (novel_id,)
+        "SELECT c.*, v.volume_no, v.title AS volume_title "
+        "FROM novel_chapters c LEFT JOIN novel_volumes v ON v.id = c.volume_id "
+        "WHERE c.novel_id = ? ORDER BY c.chapter_no ASC",
+        (novel_id,),
     ).fetchall()
     return novel, chapters
 
@@ -1735,11 +1763,17 @@ def novel_edit(novel_id):
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
     chapters = conn.execute(
-        "SELECT id, chapter_no, title, is_locked, LENGTH(content) AS word_count, updated_at "
-        "FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT c.id, c.chapter_no, c.title, c.is_locked, LENGTH(c.content) AS word_count, c.updated_at, "
+        "c.volume_id, v.volume_no, v.title AS volume_title "
+        "FROM novel_chapters c LEFT JOIN novel_volumes v ON v.id = c.volume_id "
+        "WHERE c.novel_id = ? ORDER BY c.chapter_no ASC",
         (novel_id,),
     ).fetchall()
     total_words = sum(c["word_count"] or 0 for c in chapters)
+    volumes = conn.execute(
+        "SELECT * FROM novel_volumes WHERE novel_id = ? ORDER BY volume_no ASC", (novel_id,)
+    ).fetchall()
+    chapter_groups = group_chapters_by_volume(chapters)
     characters = conn.execute(
         "SELECT * FROM novel_characters WHERE novel_id = ? ORDER BY sort_order ASC, id ASC", (novel_id,)
     ).fetchall()
@@ -1754,7 +1788,8 @@ def novel_edit(novel_id):
     conn.close()
     return render_template(
         "novel_form.html", novel=novel, statuses=NOVEL_STATUSES,
-        chapters=chapters, characters=characters, videos=videos, references=references,
+        chapters=chapters, chapter_groups=chapter_groups, volumes=volumes,
+        characters=characters, videos=videos, references=references,
         total_words=total_words, error=request.args.get("error"),
     )
 
@@ -1794,10 +1829,11 @@ def novel_chapter_new(novel_id):
             "SELECT COALESCE(MAX(chapter_no), 0) + 1 AS n FROM novel_chapters WHERE novel_id = ?", (novel_id,)
         ).fetchone()["n"]
         conn.execute(
-            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content, is_locked) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content, is_locked, volume_id) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
             (
                 novel_id, next_no, request.form["title"].strip(), request.form.get("content", ""),
-                1 if request.form.get("is_locked") else 0,
+                1 if request.form.get("is_locked") else 0, to_int(request.form.get("volume_id")),
             ),
         )
         chapter_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
@@ -1811,9 +1847,12 @@ def novel_chapter_new(novel_id):
         conn.close()
         return redirect(url_for("novel_edit", novel_id=novel_id))
 
+    volumes = conn.execute(
+        "SELECT * FROM novel_volumes WHERE novel_id = ? ORDER BY volume_no ASC", (novel_id,)
+    ).fetchall()
     conn.close()
     return render_template(
-        "novel_chapter_form.html", novel=novel, chapter=None,
+        "novel_chapter_form.html", novel=novel, chapter=None, volumes=volumes,
         preselected_characters=[], preselected_videos=[],
     )
 
@@ -1831,11 +1870,11 @@ def novel_chapter_edit(novel_id, chapter_id):
 
     if request.method == "POST":
         conn.execute(
-            "UPDATE novel_chapters SET title=?, content=?, is_locked=?, updated_at=datetime('now','localtime') "
-            "WHERE id=?",
+            "UPDATE novel_chapters SET title=?, content=?, is_locked=?, volume_id=?, "
+            "updated_at=datetime('now','localtime') WHERE id=?",
             (
                 request.form["title"].strip(), request.form.get("content", ""),
-                1 if request.form.get("is_locked") else 0, chapter_id,
+                1 if request.form.get("is_locked") else 0, to_int(request.form.get("volume_id")), chapter_id,
             ),
         )
         set_chapter_links(
@@ -1860,9 +1899,12 @@ def novel_chapter_edit(novel_id, chapter_id):
         "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
         (chapter_id,),
     ).fetchall()
+    volumes = conn.execute(
+        "SELECT * FROM novel_volumes WHERE novel_id = ? ORDER BY volume_no ASC", (novel_id,)
+    ).fetchall()
     conn.close()
     return render_template(
-        "novel_chapter_form.html", novel=novel, chapter=chapter,
+        "novel_chapter_form.html", novel=novel, chapter=chapter, volumes=volumes,
         preselected_characters=preselected_characters, preselected_videos=preselected_videos,
     )
 
@@ -1930,6 +1972,35 @@ def novel_video_search(novel_id):
 def novel_chapter_delete(novel_id, chapter_id):
     conn = get_db()
     conn.execute("DELETE FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/volume/new", methods=["POST"])
+def novel_volume_new(novel_id):
+    title = request.form.get("title", "").strip()
+    if title:
+        conn = get_db()
+        next_no = conn.execute(
+            "SELECT COALESCE(MAX(volume_no), 0) + 1 AS n FROM novel_volumes WHERE novel_id = ?", (novel_id,)
+        ).fetchone()["n"]
+        conn.execute(
+            "INSERT INTO novel_volumes (novel_id, volume_no, title) VALUES (?, ?, ?)",
+            (novel_id, next_no, title),
+        )
+        conn.commit()
+        conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
+@app.route("/novel/<int:novel_id>/volume/<int:volume_id>/delete", methods=["POST"])
+def novel_volume_delete(novel_id, volume_id):
+    conn = get_db()
+    # ON DELETE SET NULL unassigns any chapters in this volume rather than
+    # deleting them — a volume is just an organizational label on chapters,
+    # not a container that owns them.
+    conn.execute("DELETE FROM novel_volumes WHERE id = ? AND novel_id = ?", (volume_id, novel_id))
     conn.commit()
     conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))

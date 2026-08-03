@@ -39,9 +39,15 @@ def build_novel_docx(novel, chapters):
         run.italic = True
         _set_run_cjk_font(run)
 
+    prev_volume_id = "unset"
     for i, chapter in enumerate(chapters):
         if i > 0:
             doc.add_page_break()
+        if chapter["volume_id"] != prev_volume_id and chapter["volume_id"]:
+            vol_heading = doc.add_heading(f"第 {chapter['volume_no']} 卷 · {chapter['volume_title']}", level=0)
+            for run in vol_heading.runs:
+                _set_run_cjk_font(run)
+        prev_volume_id = chapter["volume_id"]
         heading = doc.add_heading(f"第 {chapter['chapter_no']} 章 · {chapter['title']}", level=1)
         for run in heading.runs:
             _set_run_cjk_font(run)
@@ -77,6 +83,10 @@ def build_novel_pdf(novel, chapters):
         "NovelSummary", parent=styles["Normal"], fontName=font_name, fontSize=10.5,
         leading=18, textColor="#666666", spaceAfter=14,
     )
+    volume_style = ParagraphStyle(
+        "VolumeHeading", parent=styles["Title"], fontName=font_name, fontSize=18,
+        leading=26, spaceBefore=0, spaceAfter=16,
+    )
     heading_style = ParagraphStyle(
         "ChapterHeading", parent=styles["Heading1"], fontName=font_name, fontSize=15,
         leading=22, spaceBefore=18, spaceAfter=10,
@@ -90,9 +100,13 @@ def build_novel_pdf(novel, chapters):
     if novel["summary"]:
         story.append(Paragraph(escape(novel["summary"]), summary_style))
 
+    prev_volume_id = "unset"
     for i, chapter in enumerate(chapters):
         if i > 0:
             story.append(PageBreak())
+        if chapter["volume_id"] != prev_volume_id and chapter["volume_id"]:
+            story.append(Paragraph(escape(f"第 {chapter['volume_no']} 卷 · {chapter['volume_title']}"), volume_style))
+        prev_volume_id = chapter["volume_id"]
         story.append(Paragraph(escape(f"第 {chapter['chapter_no']} 章 · {chapter['title']}"), heading_style))
         for para_text in _chapter_paragraphs(chapter):
             story.append(Paragraph(escape(para_text), body_style))

@@ -64,9 +64,19 @@ CREATE TABLE IF NOT EXISTS novels (
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
+CREATE TABLE IF NOT EXISTS novel_volumes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    volume_no INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 CREATE TABLE IF NOT EXISTS novel_chapters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     novel_id INTEGER NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    volume_id INTEGER REFERENCES novel_volumes(id) ON DELETE SET NULL,
     chapter_no INTEGER NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL DEFAULT '',
@@ -184,6 +194,8 @@ def _migrate(conn):
     chapter_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novel_chapters)")]
     if chapter_cols and "is_locked" not in chapter_cols:
         conn.execute("ALTER TABLE novel_chapters ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0")
+    if chapter_cols and "volume_id" not in chapter_cols:
+        conn.execute("ALTER TABLE novel_chapters ADD COLUMN volume_id INTEGER REFERENCES novel_volumes(id) ON DELETE SET NULL")
 
     # Multi-user phase 0: add a nullable user_id to every owned content table,
     # bootstrap a single admin account (reusing APP_PASSWORD so nothing is
@@ -192,7 +204,7 @@ def _migrate(conn):
     # only makes sure every row has a correct owner once that phase lands.
     owned_tables = [
         "items", "logs", "moments", "novels",
-        "novel_chapters", "novel_characters", "novel_videos",
+        "novel_chapters", "novel_characters", "novel_videos", "novel_volumes",
     ]
     for table in owned_tables:
         cols = [row["name"] for row in conn.execute(f"PRAGMA table_info({table})")]

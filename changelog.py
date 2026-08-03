@@ -1841,4 +1841,31 @@ CHANGELOG = [
         "lines_changed": 197,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "小说章节可以归入卷了，每卷可以起名字",
+        "title_en": "Novel chapters can now be grouped into named volumes",
+        "summary": (
+            "新加了个 novel_volumes 表，一本小说下面可以建好几卷，每卷有名字（比如"
+            "「第一卷 风起」）。章节编辑页多了个「所属卷」下拉框，选哪卷就归到哪卷，"
+            "不选就是未分卷。小说编辑页新增了「分卷」管理区（新增/删除卷），目录和编"
+            "辑页的章节列表都按卷分段显示，带分割线；Word/PDF 导出也会在卷交界处插入"
+            "卷标题。删除一卷不会删掉里面的章节，只是把它们变回未分卷。没建过卷的小"
+            "说完全看不出变化——只有用到分卷功能才会显示卷标题。"
+        ),
+        "summary_en": (
+            "Added a novel_volumes table — a novel can now have several volumes, each with "
+            "a name (e.g. \"Volume 1: The Wind Rises\"). The chapter editor got a \"volume\" "
+            "dropdown to assign a chapter to one (or leave it unassigned); the novel editor "
+            "got a volume management section (add/delete). Both the public table of "
+            "contents and the editor's chapter list now render in volume-grouped sections "
+            "with dividers, and the Word/PDF export inserts a volume heading wherever the "
+            "volume changes. Deleting a volume doesn't delete its chapters, just unassigns "
+            "them. Novels that never use volumes look completely unchanged — the heading "
+            "only appears once at least one volume exists."
+        ),
+        "image": None,
+        "lines_changed": 236,
+        "estimated": False,
+    },
 ]

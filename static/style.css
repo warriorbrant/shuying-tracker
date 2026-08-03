@@ -1301,8 +1301,61 @@ button {
   margin: 4px 0;
 }
 
+.volume-heading {
+  font-size: 1rem;
+  color: var(--text);
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.volume-heading:first-child {
+  margin-top: 0;
+}
+
+.volume-heading-unassigned {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.volume-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.volume-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.volume-add-form {
+  display: flex;
+  gap: 10px;
+}
+
+.volume-add-form input {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
 @media (max-width: 640px) {
   .chapter-list { grid-template-columns: 1fr; }
+  .volume-add-form { flex-direction: column; }
 }
 
 .inline-delete {

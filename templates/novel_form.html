@@ -54,28 +54,56 @@
 {% if novel %}
 
 <section class="log-section">
-  <div class="changelog-header-row">
-    <h2>章节（共 {{ chapters|length }} 章 · 共 {{ total_words }} 字）</h2>
-    <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">+ 新增章节</a>
-  </div>
-  {% if chapters %}
-  <ul class="chapter-list">
-    {% for c in chapters %}
+  <h2>分卷（共 {{ volumes|length }} 卷）</h2>
+  {% if volumes %}
+  <ul class="volume-list">
+    {% for v in volumes %}
     <li>
-      <label class="chapter-select">
-        <input type="checkbox" name="chapter_ids" value="{{ c.id }}" form="bulkLockForm">
-      </label>
-      <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">
-        {% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
-        <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
-      </a>
-      <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
-            onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
+      <span>第 {{ v.volume_no }} 卷 · {{ v.title }}</span>
+      <form method="post" action="{{ url_for('novel_volume_delete', novel_id=novel.id, volume_id=v.id) }}"
+            onsubmit="return confirm('确定删除《{{ v.title }}》这一卷吗？卷里的章节不会被删除，只是变成未分卷。');" class="inline-delete">
         <button type="submit" class="btn-danger-sm">删除</button>
       </form>
     </li>
     {% endfor %}
   </ul>
+  {% endif %}
+  <form method="post" action="{{ url_for('novel_volume_new', novel_id=novel.id) }}" class="volume-add-form">
+    <input type="text" name="title" placeholder="新的一卷叫什么，例如「第一卷 风起」" required>
+    <button type="submit">新增卷</button>
+  </form>
+</section>
+
+<section class="log-section">
+  <div class="changelog-header-row">
+    <h2>章节（共 {{ chapters|length }} 章 · 共 {{ total_words }} 字）</h2>
+    <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">+ 新增章节</a>
+  </div>
+  {% if chapters %}
+  {% for group in chapter_groups %}
+    {% if group.volume_id %}
+      <h3 class="volume-heading">第 {{ group.volume_no }} 卷 · {{ group.volume_title }}</h3>
+    {% elif volumes %}
+      <h3 class="volume-heading volume-heading-unassigned">未分卷</h3>
+    {% endif %}
+    <ul class="chapter-list">
+      {% for c in group.chapters %}
+      <li>
+        <label class="chapter-select">
+          <input type="checkbox" name="chapter_ids" value="{{ c.id }}" form="bulkLockForm">
+        </label>
+        <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">
+          {% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
+          <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+        </a>
+        <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
+              onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
+          <button type="submit" class="btn-danger-sm">删除</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
   <form id="bulkLockForm" method="post" action="{{ url_for('novel_chapters_bulk_lock', novel_id=novel.id) }}" class="bulk-lock-actions">
     <button type="submit" name="action" value="lock">🔒 锁定选中章节</button>
     <button type="submit" name="action" value="unlock">🔓 解锁选中章节</button>

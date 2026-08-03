@@ -33,16 +33,23 @@
 <section class="log-section">
   <h2>目录（共 {{ chapters|length }} 章）</h2>
   {% if chapters %}
-  <ul class="chapter-list">
-    {% for c in chapters %}
-    <li>
-      <a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">
-        {% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
-        <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
+  {% for group in chapter_groups %}
+    {% if group.volume_id %}
+      <h3 class="volume-heading">第 {{ group.volume_no }} 卷 · {{ group.volume_title }}</h3>
+    {% elif volumes %}
+      <h3 class="volume-heading volume-heading-unassigned">未分卷</h3>
+    {% endif %}
+    <ul class="chapter-list">
+      {% for c in group.chapters %}
+      <li>
+        <a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">
+          {% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
+          <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
   {% else %}
   <p class="hint">还没有章节。</p>
   {% endif %}

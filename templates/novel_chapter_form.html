@@ -15,6 +15,16 @@
     <textarea name="content" rows="20">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
+  <label>
+    所属卷（可选）
+    <select name="volume_id">
+      <option value="">不属于任何卷</option>
+      {% for v in volumes %}
+        <option value="{{ v.id }}" {{ 'selected' if chapter and chapter.volume_id == v.id }}>第 {{ v.volume_no }} 卷 · {{ v.title }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
   <label class="checkbox-label">
     <input type="checkbox" name="is_locked" {{ 'checked' if chapter and chapter.is_locked }}>
     🔒 锁定本章（未登录访客看不了这一章）
