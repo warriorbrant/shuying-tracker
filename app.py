@@ -197,9 +197,9 @@ def inject_asset_version():
 
 
 PUBLIC_ENDPOINTS = {
-    "login", "register", "static", "changelog", "changelog_more", "changelog_share_image", "index",
-    "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read", "novel_share_image",
-    "cover_proxy",
+    "login", "register", "reset_password", "static", "changelog", "changelog_more",
+    "changelog_share_image", "index", "serve_novel_media", "novels_list", "novel_detail",
+    "novel_chapter_read", "novel_share_image", "cover_proxy",
 }
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
@@ -335,6 +335,9 @@ def admin_users():
         users=users,
         allow_registration=bool(settings["allow_registration"]) if settings else False,
         error=request.args.get("error"),
+        info=request.args.get("info"),
+        reset_link=request.args.get("reset_link"),
+        reset_username=request.args.get("reset_username"),
     )
 
 
@@ -379,6 +382,84 @@ def admin_toggle_registration():
     conn.commit()
     conn.close()
     return redirect(url_for("admin_users"))
+
+
+@app.route("/admin/users/<int:user_id>/reset-password", methods=["POST"])
+def admin_reset_password(user_id):
+    if not is_admin():
+        return "未找到该页面", 404
+    new_password = request.form.get("password", "")
+    if len(new_password) < 6:
+        return redirect(url_for("admin_users", error="密码至少要 6 位"))
+
+    conn = get_db()
+    user = conn.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return redirect(url_for("admin_users", error="账号不存在"))
+
+    conn.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (generate_password_hash(new_password, method="pbkdf2:sha256"), user_id),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("admin_users", info=f"{user['username']} 的密码已经重置"))
+
+
+@app.route("/admin/users/<int:user_id>/reset-link", methods=["POST"])
+def admin_generate_reset_link(user_id):
+    if not is_admin():
+        return "未找到该页面", 404
+
+    conn = get_db()
+    user = conn.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return redirect(url_for("admin_users", error="账号不存在"))
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now() + timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)",
+        (user_id, token, expires_at),
+    )
+    conn.commit()
+    conn.close()
+    link = url_for("reset_password", token=token, _external=True)
+    return redirect(url_for("admin_users", reset_link=link, reset_username=user["username"]))
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    conn = get_db()
+    reset = conn.execute(
+        "SELECT * FROM password_resets WHERE token = ? AND used = 0 "
+        "AND expires_at >= datetime('now', 'localtime')",
+        (token,),
+    ).fetchone()
+
+    if not reset:
+        conn.close()
+        return render_template("reset_password.html", valid=False, error=None, done=False)
+
+    error = None
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if len(password) < 6:
+            error = "密码至少要 6 位"
+        else:
+            conn.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (generate_password_hash(password, method="pbkdf2:sha256"), reset["user_id"]),
+            )
+            conn.execute("UPDATE password_resets SET used = 1 WHERE id = ?", (reset["id"],))
+            conn.commit()
+            conn.close()
+            return render_template("reset_password.html", valid=True, error=None, done=True)
+
+    conn.close()
+    return render_template("reset_password.html", valid=True, error=error, done=False)
 
 
 COVER_CACHE_DIR = DATA_DIR / "cover_cache"

@@ -1374,6 +1374,52 @@ button {
   white-space: nowrap;
 }
 
+.btn-secondary-sm {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.admin-user-row {
+  flex-wrap: wrap;
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inline-reset-form {
+  display: flex;
+  gap: 6px;
+}
+
+.inline-reset-form input {
+  width: 140px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+.reset-link-code {
+  display: inline-block;
+  word-break: break-all;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+}
+
 .ref-share-toggle {
   display: flex;
   align-items: center;

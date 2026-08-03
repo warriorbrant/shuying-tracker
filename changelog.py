@@ -2057,4 +2057,29 @@ CHANGELOG = [
         "lines_changed": 50,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "忘记密码怎么办：管理员可以帮账号重置密码了",
+        "title_en": "Added admin-assisted password recovery",
+        "summary": (
+            "账号管理页给每个账号加了两个操作：一个是管理员直接输入新密码帮对方重置"
+            "（最简单粗暴，改完口头告诉本人）；另一个是生成一次性重置链接，24 小时内"
+            "有效、用一次就失效，管理员复制链接通过微信之类的渠道发给对方，对方点开"
+            "自己设新密码，管理员不用知道对方设的是什么。没有接邮件发送服务——账号"
+            "目前都是熟人在用，这两种方式已经够用，也省去了配置邮件服务商的麻烦。"
+        ),
+        "summary_en": (
+            "Added two actions to each account row on the account-management page: an "
+            "admin can directly set a new password for someone (simplest option -- just "
+            "tell them the new password afterward), or generate a one-time reset link "
+            "(valid 24 hours, single use) that the admin copies and sends through any "
+            "channel -- the recipient opens it and sets their own new password without "
+            "the admin ever seeing it. Deliberately skipped hooking up an email-sending "
+            "service: with a small, known set of accounts, these two options cover it "
+            "without the setup overhead of a transactional email provider."
+        ),
+        "image": None,
+        "lines_changed": 196,
+        "estimated": False,
+    },
 ]

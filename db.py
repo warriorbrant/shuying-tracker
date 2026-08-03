@@ -143,6 +143,17 @@ CREATE TABLE IF NOT EXISTS app_settings (
     allow_registration INTEGER NOT NULL DEFAULT 0
 );
 
+-- One-time links an admin generates from /admin/users to let a specific
+-- account holder set their own new password without email delivery.
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    token TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).
