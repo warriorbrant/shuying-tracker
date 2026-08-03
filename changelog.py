@@ -1996,4 +1996,34 @@ CHANGELOG = [
         "lines_changed": 67,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "多用户系统收尾：开放自助注册",
+        "title_en": "Multi-user rollout finished: self-registration is live",
+        "summary": (
+            "多用户改造的最后一步：加了 /register 页面。开关关着的时候这个页面直接"
+            "404，跟不存在一样；管理员在账号管理页打开开关之后，登录页会多一条「还没"
+            "有账号？去注册」的链接，任何人都能自己开一个账号（新账号不会是管理员），"
+            "注册完自动登录。密码最少 6 位，用户名重复会被拒绝。修了一个写的时候手滑"
+            "的 bug：把一个普通函数插到了 @app.route 装饰器和它要修饰的 login() 函数"
+            "中间，导致装饰器实际上修饰到了别的函数，/login 路由直接注册失败——测试"
+            "的时候一堆请求跟着报错才发现。到这里，多用户系统五步全部做完了。"
+        ),
+        "summary_en": (
+            "The final step of the multi-user rollout: added a /register page. With the "
+            "toggle off it's a plain 404, indistinguishable from not existing; once an "
+            "admin flips it on from the account management page, the login page grows a "
+            "\"no account yet? register\" link, and anyone can create their own account "
+            "(never as admin), auto-logged-in right after. Minimum 6-character password, "
+            "duplicate usernames rejected. Fixed a slip made while writing this: an "
+            "ordinary helper function ended up sandwiched between the @app.route decorator "
+            "and the login() function it was meant to decorate, so the decorator silently "
+            "attached to the wrong function and the /login route never got registered at "
+            "all -- a wave of test failures caught it immediately. That closes out all five "
+            "steps of the multi-user rollout."
+        ),
+        "image": None,
+        "lines_changed": 54,
+        "estimated": False,
+    },
 ]

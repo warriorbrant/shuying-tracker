@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>登录 · 知行合一AI实验室</title>
+  <title>注册 · 知行合一AI实验室</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#b5654a">
@@ -13,20 +13,17 @@
   <main class="login-wrap">
     <form class="form login-form-box" method="post">
       <h1 class="login-title">📚🎬 知行合一AI实验室</h1>
-      <input type="hidden" name="next" value="{{ next }}">
       <label>
         用户名
         <input type="text" name="username" autofocus required autocomplete="username">
       </label>
       <label>
         密码
-        <input type="password" name="password" required autocomplete="current-password">
+        <input type="password" name="password" required autocomplete="new-password" minlength="6">
       </label>
       {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
-      <button type="submit">登录</button>
-      {% if registration_open %}
-        <a class="login-back" href="{{ url_for('register') }}">还没有账号？去注册 →</a>
-      {% endif %}
+      <button type="submit">注册</button>
+      <a class="login-back" href="{{ url_for('login') }}">已经有账号？去登录 →</a>
       <a class="login-back" href="{{ url_for('index') }}">← 返回公开主页</a>
     </form>
   </main>

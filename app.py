@@ -196,7 +196,7 @@ def inject_asset_version():
 
 
 PUBLIC_ENDPOINTS = {
-    "login", "static", "changelog", "changelog_more", "changelog_share_image", "index",
+    "login", "register", "static", "changelog", "changelog_more", "changelog_share_image", "index",
     "serve_novel_media", "novels_list", "novel_detail", "novel_chapter_read", "novel_share_image",
     "cover_proxy",
 }
@@ -246,6 +246,13 @@ def require_login():
     return None
 
 
+def registration_open():
+    conn = get_db()
+    row = conn.execute("SELECT allow_registration FROM app_settings WHERE id = 1").fetchone()
+    conn.close()
+    return bool(row and row["allow_registration"])
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -259,14 +266,55 @@ def login():
             session["user_id"] = user["id"]
             session.permanent = True
             return redirect(safe_next(request.form.get("next"), url_for("index")))
-        return render_template("login.html", error="用户名或密码不对，再试一次", next=request.form.get("next", ""))
-    return render_template("login.html", error=None, next=request.args.get("next", ""))
+        return render_template(
+            "login.html", error="用户名或密码不对，再试一次",
+            next=request.form.get("next", ""), registration_open=registration_open(),
+        )
+    return render_template(
+        "login.html", error=None, next=request.args.get("next", ""), registration_open=registration_open()
+    )
 
 
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if not registration_open():
+        return "未找到该页面", 404
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        error = None
+        if not username or not password:
+            error = "用户名和密码都要填"
+        elif len(password) < 6:
+            error = "密码至少要 6 位"
+        else:
+            conn = get_db()
+            existing = conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone()
+            if existing:
+                conn.close()
+                error = "这个用户名已经有人用了"
+            else:
+                conn.execute(
+                    "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, 0)",
+                    (username, generate_password_hash(password, method="pbkdf2:sha256")),
+                )
+                conn.commit()
+                user_id = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
+                conn.close()
+                session.clear()
+                session["user_id"] = user_id
+                session.permanent = True
+                return redirect(url_for("index"))
+        return render_template("register.html", error=error)
+
+    return render_template("register.html", error=None)
 
 
 def is_admin():
