@@ -2022,6 +2022,32 @@ def novel_chapters_bulk_lock(novel_id):
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
+@app.route("/novel/<int:novel_id>/chapters/bulk-volume", methods=["POST"])
+def novel_chapters_bulk_volume(novel_id):
+    chapter_ids = to_int_list(request.form.getlist("chapter_ids"))
+    volume_id = to_int(request.form.get("volume_id"))
+    if chapter_ids:
+        conn = get_db()
+        if volume_id is not None:
+            # Guard against a volume_id from a different novel ever landing on a
+            # chapter here — the grouped-list query trusts volume_id -> novel_id
+            # implicitly via the join, so a mismatch would show a chapter under
+            # another novel's volume heading.
+            owns_volume = conn.execute(
+                "SELECT 1 FROM novel_volumes WHERE id = ? AND novel_id = ?", (volume_id, novel_id)
+            ).fetchone()
+            if not owns_volume:
+                volume_id = None
+        conn.executemany(
+            "UPDATE novel_chapters SET volume_id = ?, updated_at=datetime('now','localtime') "
+            "WHERE id = ? AND novel_id = ?",
+            [(volume_id, cid, novel_id) for cid in chapter_ids],
+        )
+        conn.commit()
+        conn.close()
+    return redirect(url_for("novel_edit", novel_id=novel_id))
+
+
 @app.route("/novel/<int:novel_id>/character/new", methods=["POST"])
 def novel_character_new(novel_id):
     conn = get_db()

@@ -1868,4 +1868,27 @@ CHANGELOG = [
         "lines_changed": 236,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "小说章节可以批量移卷了",
+        "title_en": "Added bulk-move-to-volume for novel chapters",
+        "summary": (
+            "上一条加了分卷功能后，一章一章打开去选所属卷太麻烦。现在跟批量锁定用同"
+            "一套勾选框：勾几章，在旁边的下拉框选目标卷（或者选「移到未分卷」），点"
+            "「批量移卷」一次性挪过去。因为勾选框只能绑定一个表单，批量移卷这边是提"
+            "交前用 JS 把勾中的章节 id 现塞进表单里，跟批量锁定共用同一批勾选框。"
+        ),
+        "summary_en": (
+            "After the previous volumes feature landed, assigning a volume meant opening "
+            "each chapter individually — tedious for more than a couple. Reused the same "
+            "checkboxes as bulk lock/unlock: check some chapters, pick a target volume (or "
+            "\"move to unassigned\") from a dropdown, click \"bulk move.\" Since a checkbox "
+            "can only be form-associated with one form, the bulk-move form collects the "
+            "checked chapter ids itself via JS right before submitting, sharing the same "
+            "checkbox set as the lock/unlock action."
+        ),
+        "image": None,
+        "lines_changed": 57,
+        "estimated": False,
+    },
 ]

@@ -108,7 +108,18 @@
     <button type="submit" name="action" value="lock">🔒 锁定选中章节</button>
     <button type="submit" name="action" value="unlock">🔓 解锁选中章节</button>
   </form>
-  <p class="hint">勾选章节前面的框，再点上面的按钮批量锁定/解锁。</p>
+  {% if volumes %}
+  <form id="bulkVolumeForm" method="post" action="{{ url_for('novel_chapters_bulk_volume', novel_id=novel.id) }}" class="bulk-lock-actions">
+    <select name="volume_id">
+      <option value="">移到未分卷</option>
+      {% for v in volumes %}
+        <option value="{{ v.id }}">移到 第 {{ v.volume_no }} 卷 · {{ v.title }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">批量移卷</button>
+  </form>
+  {% endif %}
+  <p class="hint">勾选章节前面的框，再点上面的按钮批量锁定/解锁，或者选一卷批量移过去。</p>
   {% else %}
   <p class="hint">还没有章节。</p>
   {% endif %}
@@ -222,6 +233,25 @@ document.getElementById('videoSourceType').addEventListener('change', function()
   document.getElementById('videoFileLabel').style.display = isLink ? 'none' : '';
   document.getElementById('videoUrlLabel').style.display = isLink ? '' : 'none';
 });
+</script>
+
+<script>
+(function () {
+  // Chapter checkboxes are only form-associated with bulkLockForm (a checkbox
+  // can only carry one `form=` attribute), so bulkVolumeForm collects the same
+  // checked ids itself, right before submitting.
+  var volumeForm = document.getElementById('bulkVolumeForm');
+  if (!volumeForm) return;
+  volumeForm.addEventListener('submit', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="chapter_ids"]:checked'), function (cb) {
+      var hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'chapter_ids';
+      hidden.value = cb.value;
+      volumeForm.appendChild(hidden);
+    });
+  });
+})();
 </script>
 
 <section class="log-section">
