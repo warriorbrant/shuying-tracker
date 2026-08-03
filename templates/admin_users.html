@@ -49,4 +49,12 @@
   <p class="hint">默认关闭，新账号只能在上面手动加；打开之后 /register 页面才能用。</p>
 </section>
 
+<section class="log-section">
+  <h2>数据备份</h2>
+  <p class="hint">下载整个网站数据目录的原样打包（数据库文件 + 所有上传的图片/视频），不区分账号，是最完整的一份快照。文件可能比较大，下载需要一点时间。</p>
+  <div class="actions">
+    <a class="btn-share" href="{{ url_for('admin_backup') }}">⬇️ 下载完整备份</a>
+  </div>
+</section>
+
 {% endblock %}

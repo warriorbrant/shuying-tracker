@@ -2026,4 +2026,35 @@ CHANGELOG = [
         "lines_changed": 54,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "管理员后台加了「下载完整备份」",
+        "title_en": "Added a full-backup download to the admin page",
+        "summary": (
+            "账号管理页新加一块「数据备份」，管理员点一下就能把网站数据库文件加所有"
+            "上传/生成的图片视频打包成一个 zip 下载下来，不区分账号，是最完整的一份"
+            "快照。非管理员访问这个链接照样是 404。写的时候踩了一个坑：一开始直接把"
+            "整个 DATA_DIR 目录打包，本地开发环境因为没设 DATA_DIR 环境变量，这个目"
+            "录其实就是整个项目文件夹——测试的时候打出来的 zip 里混进了 db.py、"
+            "Dockerfile 这些源代码文件。线上环境因为 Dockerfile 里明确写了 DATA_DIR=/"
+            "data，本来就不会有这个问题，但还是改成只打包数据库文件加三个上传目录，"
+            "不管 DATA_DIR 指到哪儿都不会打包错东西。"
+        ),
+        "summary_en": (
+            "Added a \"Data Backup\" section to the account management page: one click "
+            "and an admin gets a zip of the database file plus every uploaded/generated "
+            "image and video, not scoped to any one account -- the most complete snapshot "
+            "available. Non-admins still get a 404 on the link. Hit a snag while building "
+            "it: the first version just zipped everything under DATA_DIR, and since local "
+            "dev never sets that environment variable, it defaults to the whole project "
+            "folder -- testing turned up db.py, Dockerfile and other source files mixed "
+            "into the zip. Production was never actually at risk, since the Dockerfile "
+            "pins DATA_DIR=/data there, but switched to explicitly listing the database "
+            "file plus the three upload directories anyway, so it can't pick up the wrong "
+            "thing regardless of what DATA_DIR happens to point at."
+        ),
+        "image": None,
+        "lines_changed": 50,
+        "estimated": False,
+    },
 ]

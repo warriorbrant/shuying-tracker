@@ -1,4 +1,5 @@
 import hashlib
+import io
 import mimetypes
 import os
 import re
@@ -8,7 +9,7 @@ import tempfile
 import time
 import uuid
 import zipfile
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -33,7 +34,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import metrics
 from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
-from db import DATA_DIR, get_db, init_db
+from db import DATA_DIR, DB_PATH, get_db, init_db
 from douban import DoubanFetchError, fetch_douban_info
 from novel_export import build_novel_docx, build_novel_pdf
 from share_card import (
@@ -380,6 +381,45 @@ def admin_toggle_registration():
     return redirect(url_for("admin_users"))
 
 
+COVER_CACHE_DIR = DATA_DIR / "cover_cache"
+
+
+@app.route("/admin/backup.zip")
+def admin_backup():
+    # A raw, byte-for-byte copy of the real data: the sqlite file plus every
+    # uploaded/generated file (moment photos, novel covers/character art/
+    # videos, cover cache). Deliberately not scoped to one account or curated
+    # into a JSON shape: this is the "grab a real snapshot right now" button,
+    # not the polished per-account export/import from the plan above.
+    #
+    # Explicitly allow-listed rather than DATA_DIR.rglob("*") — in local dev
+    # DATA_DIR falls back to the whole project directory (source code, venv,
+    # .git and all), and only in production does Dockerfile pin it to a clean
+    # /data volume. Listing the known data paths keeps this correct either way.
+    if not is_admin():
+        return "未找到该页面", 404
+
+    data_paths = [DB_PATH, UPLOAD_DIR, NOVEL_MEDIA_DIR, COVER_CACHE_DIR]
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for base in data_paths:
+            if base.is_file():
+                zf.write(base, base.relative_to(DATA_DIR))
+            elif base.is_dir():
+                for path in base.rglob("*"):
+                    if path.is_file():
+                        zf.write(path, path.relative_to(DATA_DIR))
+    buf.seek(0)
+
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return send_file(
+        buf,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=f"knowing-doing-backup-{stamp}.zip",
+    )
+
+
 @app.route("/data/<path:filename>")
 def serve_data(filename):
     return send_from_directory(DATA_DIR, filename)
@@ -388,9 +428,6 @@ def serve_data(filename):
 @app.route("/novel-media/<path:filename>")
 def serve_novel_media(filename):
     return send_from_directory(NOVEL_MEDIA_DIR, filename)
-
-
-COVER_CACHE_DIR = DATA_DIR / "cover_cache"
 
 
 @app.route("/cover-proxy")
