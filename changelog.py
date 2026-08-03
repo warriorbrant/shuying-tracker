@@ -1912,4 +1912,35 @@ CHANGELOG = [
         "lines_changed": 69,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "多用户系统第三步：书影/动态数据按账号隔离",
+        "title_en": "Multi-user step 3: personal tracker data scoped per account",
+        "summary": (
+            "上一步把登录换成了真账号，但数据库里书影/动态数据其实还是不管谁登录都"
+            "能看全部、改全部。这一步把首页、搜索、打卡热力图、条目详情/编辑/删除/"
+            "记进度、按天查看、动态记录，全部加上了按账号过滤——每个账号只能看到、"
+            "改到自己的数据，猜 URL 直接访问别人的条目会得到 404。顺手修了一个刚写"
+            "完时冒出来的 bug：g.user 之前只在渲染模板时才会被填充，路由函数自己想提"
+            "前用就会报 AttributeError，现在挪到登录检查那一步统一先填好。新建了第二"
+            "个测试账号，实测了条目、进度、动态、按天查看、搜索这几个地方的隔离，都"
+            "符合预期。"
+        ),
+        "summary_en": (
+            "The previous step swapped in real accounts, but the actual book/show/moment "
+            "data was still visible and editable by any logged-in account. This step adds "
+            "an ownership filter to the homepage feed, search, the activity heatmap, item "
+            "detail/edit/delete/progress-logging, the day view, and moment recording — each "
+            "account now only sees and can modify its own data, and guessing another "
+            "user's item URL returns a 404. Also fixed a bug that surfaced while writing "
+            "this: g.user was only populated when a template happened to render, so a "
+            "route reading it earlier hit an AttributeError -- moved the population into "
+            "the login check so it's always set before any view function runs. Created a "
+            "second test account and verified isolation across items, progress logs, "
+            "moments, the day view, and search."
+        ),
+        "image": None,
+        "lines_changed": 72,
+        "estimated": False,
+    },
 ]

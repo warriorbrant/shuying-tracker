@@ -170,14 +170,14 @@ MAX_VIDEO_SECONDS = 5 * 60
 
 
 def get_current_user():
-    if not hasattr(g, "_user"):
+    if not hasattr(g, "user"):
         user_id = session.get("user_id")
-        g._user = None
+        g.user = None
         if user_id:
             conn = get_db()
-            g._user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+            g.user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
             conn.close()
-    return g._user
+    return g.user
 
 
 @app.context_processor
@@ -238,6 +238,7 @@ def make_inline_media_cacheable(response):
 
 @app.before_request
 def require_login():
+    get_current_user()  # populate g.user for every request before any view function runs
     if request.endpoint in PUBLIC_ENDPOINTS or request.endpoint is None:
         return None
     if not session.get("user_id"):
@@ -517,7 +518,7 @@ def heat_level(minutes, has_entries):
     return 4
 
 
-def build_heatmap(conn, weeks=HEATMAP_WEEKS):
+def build_heatmap(conn, user_id, weeks=HEATMAP_WEEKS):
     today = date.today()
     dow_sunday_first = (today.weekday() + 1) % 7  # Monday=1 ... Sunday=0
     grid_end = today + timedelta(days=6 - dow_sunday_first)  # this week's Saturday
@@ -525,15 +526,17 @@ def build_heatmap(conn, weeks=HEATMAP_WEEKS):
 
     rows = conn.execute(
         "SELECT log_date, SUM(minutes_spent) AS minutes FROM ("
-        "  SELECT log_date, minutes_spent FROM logs WHERE log_date >= ? AND log_date <= ?"
+        "  SELECT log_date, minutes_spent FROM logs WHERE log_date >= ? AND log_date <= ? AND user_id = ?"
         "  UNION ALL"
-        "  SELECT log_date, minutes_spent FROM moments WHERE log_date >= ? AND log_date <= ?"
+        "  SELECT log_date, minutes_spent FROM moments WHERE log_date >= ? AND log_date <= ? AND user_id = ?"
         ") GROUP BY log_date",
         (
             grid_start.isoformat(),
             today.isoformat(),
+            user_id,
             grid_start.isoformat(),
             today.isoformat(),
+            user_id,
         ),
     ).fetchall()
     minutes_by_date = {r["log_date"]: r["minutes"] for r in rows}
@@ -666,7 +669,7 @@ CHANGELOG_PAGE_DAYS = 5
 SEARCH_PAGE_SIZE = 20
 
 
-def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE):
+def build_feed(conn, user_id, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE):
     show_items = type_filter == "" or type_filter in ("book", "show")
     show_moments = type_filter == "" or type_filter in MOMENT_TYPES
     show_changelog = type_filter == "" or type_filter == "update"
@@ -679,9 +682,9 @@ def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE)
             "logs.progress_at, logs.comment, "
             "items.id AS item_id, items.title, items.creator, items.cover_url, "
             "items.type AS item_type, items.status, items.total_units, items.unit_label "
-            "FROM logs JOIN items ON logs.item_id = items.id WHERE 1=1"
+            "FROM logs JOIN items ON logs.item_id = items.id WHERE items.user_id = ?"
         )
-        params = []
+        params = [user_id]
         if type_filter in ("book", "show"):
             log_query += " AND items.type = ?"
             params.append(type_filter)
@@ -695,9 +698,9 @@ def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE)
 
         untouched_query = (
             "SELECT items.* FROM items "
-            "WHERE NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id)"
+            "WHERE items.user_id = ? AND NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id)"
         )
-        params2 = []
+        params2 = [user_id]
         if type_filter in ("book", "show"):
             untouched_query += " AND items.type = ?"
             params2.append(type_filter)
@@ -711,8 +714,8 @@ def build_feed(conn, type_filter, status_filter, offset=0, limit=FEED_PAGE_SIZE)
             entries.append(entry)
 
     if show_moments:
-        moment_query = "SELECT * FROM moments WHERE 1=1"
-        params3 = []
+        moment_query = "SELECT * FROM moments WHERE user_id = ?"
+        params3 = [user_id]
         if type_filter in MOMENT_TYPES:
             moment_query += " AND type = ?"
             params3.append(type_filter)
@@ -854,8 +857,8 @@ def index():
     status_filter = request.args.get("status", "")
 
     conn = get_db()
-    feed, has_more = build_feed(conn, type_filter, status_filter)
-    heatmap = build_heatmap(conn)
+    feed, has_more = build_feed(conn, g.user["id"], type_filter, status_filter)
+    heatmap = build_heatmap(conn, g.user["id"])
     conn.close()
 
     return render_template(
@@ -905,7 +908,7 @@ def feed_more():
     offset = to_int(request.args.get("offset"), 0) or 0
 
     conn = get_db()
-    feed, has_more = build_feed(conn, type_filter, status_filter, offset=offset)
+    feed, has_more = build_feed(conn, g.user["id"], type_filter, status_filter, offset=offset)
     conn.close()
 
     html = render_template(
@@ -917,14 +920,14 @@ def feed_more():
     return jsonify({"html": html, "has_more": has_more, "count": len(feed)})
 
 
-def run_search(conn, q):
+def run_search(conn, user_id, q):
     like = f"%{q}%"
     results = []
 
     for row in conn.execute(
-        "SELECT * FROM items WHERE title LIKE ? OR creator LIKE ? OR review LIKE ? "
+        "SELECT * FROM items WHERE user_id = ? AND (title LIKE ? OR creator LIKE ? OR review LIKE ?) "
         "ORDER BY created_at DESC",
-        (like, like, like),
+        (user_id, like, like, like),
     ).fetchall():
         entry = dict(row)
         entry["kind"] = "item_match"
@@ -935,8 +938,8 @@ def run_search(conn, q):
         "SELECT logs.*, items.title AS item_title, items.type AS item_type, "
         "items.cover_url AS item_cover_url, items.unit_label AS item_unit_label "
         "FROM logs JOIN items ON logs.item_id = items.id "
-        "WHERE logs.comment LIKE ? ORDER BY logs.log_date DESC",
-        (like,),
+        "WHERE logs.user_id = ? AND logs.comment LIKE ? ORDER BY logs.log_date DESC",
+        (user_id, like),
     ).fetchall():
         entry = dict(row)
         entry["kind"] = "log"
@@ -944,8 +947,8 @@ def run_search(conn, q):
         results.append(entry)
 
     for row in conn.execute(
-        "SELECT * FROM moments WHERE title LIKE ? OR content LIKE ? ORDER BY log_date DESC",
-        (like, like),
+        "SELECT * FROM moments WHERE user_id = ? AND (title LIKE ? OR content LIKE ?) ORDER BY log_date DESC",
+        (user_id, like, like),
     ).fetchall():
         entry = dict(row)
         entry["kind"] = "moment"
@@ -962,7 +965,7 @@ def search():
     feed, has_more = [], False
     if q:
         conn = get_db()
-        all_results = run_search(conn, q)
+        all_results = run_search(conn, g.user["id"], q)
         conn.close()
         feed = all_results[:SEARCH_PAGE_SIZE]
         has_more = len(all_results) > SEARCH_PAGE_SIZE
@@ -985,7 +988,7 @@ def search_more():
         return jsonify({"html": "", "has_more": False, "count": 0})
 
     conn = get_db()
-    all_results = run_search(conn, q)
+    all_results = run_search(conn, g.user["id"], q)
     conn.close()
 
     page = all_results[offset : offset + SEARCH_PAGE_SIZE]
@@ -1011,7 +1014,7 @@ def item_new():
         conn = get_db()
         conn.execute(
             "INSERT INTO items (type, title, creator, cover_url, total_units, unit_label, status, rating, "
-            "review, douban_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "review, douban_url, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 request.form["type"],
                 request.form["title"].strip(),
@@ -1023,6 +1026,7 @@ def item_new():
                 to_int(request.form.get("rating")),
                 request.form.get("review", "").strip(),
                 request.form.get("douban_url", "").strip(),
+                g.user["id"],
             ),
         )
         conn.commit()
@@ -1037,7 +1041,7 @@ def item_new():
 @app.route("/item/<int:item_id>")
 def item_detail(item_id):
     conn = get_db()
-    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+    item = conn.execute("SELECT * FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"])).fetchone()
     if item is None:
         conn.close()
         return "未找到该条目", 404
@@ -1078,7 +1082,7 @@ def item_detail(item_id):
 def item_logs_more(item_id):
     offset = to_int(request.args.get("offset"), 0) or 0
     conn = get_db()
-    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+    item = conn.execute("SELECT * FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"])).fetchone()
     if item is None:
         conn.close()
         return jsonify({"html": "", "has_more": False, "count": 0})
@@ -1099,7 +1103,7 @@ def item_logs_more(item_id):
 @app.route("/item/<int:item_id>/edit", methods=["GET", "POST"])
 def item_edit(item_id):
     conn = get_db()
-    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+    item = conn.execute("SELECT * FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"])).fetchone()
     if item is None:
         conn.close()
         return "未找到该条目", 404
@@ -1107,7 +1111,7 @@ def item_edit(item_id):
     if request.method == "POST":
         conn.execute(
             "UPDATE items SET type=?, title=?, creator=?, cover_url=?, total_units=?, unit_label=?, "
-            "status=?, rating=?, review=?, douban_url=? WHERE id=?",
+            "status=?, rating=?, review=?, douban_url=? WHERE id=? AND user_id=?",
             (
                 request.form["type"],
                 request.form["title"].strip(),
@@ -1120,6 +1124,7 @@ def item_edit(item_id):
                 request.form.get("review", "").strip(),
                 request.form.get("douban_url", "").strip(),
                 item_id,
+                g.user["id"],
             ),
         )
         conn.commit()
@@ -1135,7 +1140,7 @@ def item_status(item_id):
     status = request.form.get("status")
     if status in STATUSES:
         conn = get_db()
-        conn.execute("UPDATE items SET status=? WHERE id=?", (status, item_id))
+        conn.execute("UPDATE items SET status=? WHERE id=? AND user_id=?", (status, item_id, g.user["id"]))
         conn.commit()
         conn.close()
     return redirect(safe_next(request.form.get("next"), url_for("index")))
@@ -1144,7 +1149,7 @@ def item_status(item_id):
 @app.route("/item/<int:item_id>/delete", methods=["POST"])
 def item_delete(item_id):
     conn = get_db()
-    conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+    conn.execute("DELETE FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"]))
     conn.commit()
     conn.close()
     return redirect(url_for("index"))
@@ -1153,14 +1158,20 @@ def item_delete(item_id):
 @app.route("/item/<int:item_id>/log", methods=["POST"])
 def log_add(item_id):
     conn = get_db()
+    item = conn.execute("SELECT id FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"])).fetchone()
+    if item is None:
+        conn.close()
+        return "未找到该条目", 404
     conn.execute(
-        "INSERT INTO logs (item_id, log_date, minutes_spent, progress_at, comment) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO logs (item_id, log_date, minutes_spent, progress_at, comment, user_id) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
         (
             item_id,
             request.form.get("log_date") or date.today().isoformat(),
             to_int(request.form.get("minutes_spent"), 0),
             to_float(request.form.get("progress_at")),
             request.form.get("comment", "").strip(),
+            g.user["id"],
         ),
     )
     conn.commit()
@@ -1183,7 +1194,7 @@ def douban_fetch():
 @app.route("/item/<int:item_id>/share.png")
 def item_share_image(item_id):
     conn = get_db()
-    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+    item = conn.execute("SELECT * FROM items WHERE id = ? AND user_id = ?", (item_id, g.user["id"])).fetchone()
     if item is None:
         conn.close()
         return "未找到该条目", 404
@@ -1230,20 +1241,20 @@ def day_view(date_str):
         "SELECT logs.*, items.title AS item_title, items.type AS item_type, "
         "items.cover_url AS item_cover_url, items.unit_label AS item_unit_label "
         "FROM logs JOIN items ON logs.item_id = items.id "
-        "WHERE logs.log_date = ? ORDER BY logs.id",
-        (date_str,),
+        "WHERE logs.log_date = ? AND logs.user_id = ? ORDER BY logs.id",
+        (date_str, g.user["id"]),
     ).fetchall()
     moments = conn.execute(
-        "SELECT * FROM moments WHERE log_date = ? ORDER BY id", (date_str,)
+        "SELECT * FROM moments WHERE log_date = ? AND user_id = ? ORDER BY id", (date_str, g.user["id"])
     ).fetchall()
     # Items added this day with no log entry yet (no progress/comment recorded)
     # were invisible here even though they already show on the homepage feed as
     # "item_new" — same gap build_feed() already handles, applied to a single day.
     new_items = conn.execute(
-        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? "
+        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? AND user_id = ? "
         "AND NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id) "
         "ORDER BY id",
-        (date_str,),
+        (date_str, g.user["id"]),
     ).fetchall()
     conn.close()
 
@@ -1284,17 +1295,17 @@ def day_share_image(date_str):
         "SELECT logs.*, items.title AS item_title, items.type AS item_type, "
         "items.cover_url AS item_cover_url, items.unit_label AS item_unit_label "
         "FROM logs JOIN items ON logs.item_id = items.id "
-        "WHERE logs.log_date = ? ORDER BY logs.id",
-        (date_str,),
+        "WHERE logs.log_date = ? AND logs.user_id = ? ORDER BY logs.id",
+        (date_str, g.user["id"]),
     ).fetchall()
     moments = conn.execute(
-        "SELECT * FROM moments WHERE log_date = ? ORDER BY id", (date_str,)
+        "SELECT * FROM moments WHERE log_date = ? AND user_id = ? ORDER BY id", (date_str, g.user["id"])
     ).fetchall()
     new_items = conn.execute(
-        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? "
+        "SELECT * FROM items WHERE substr(created_at, 1, 10) = ? AND user_id = ? "
         "AND NOT EXISTS (SELECT 1 FROM logs WHERE logs.item_id = items.id) "
         "ORDER BY id",
-        (date_str,),
+        (date_str, g.user["id"]),
     ).fetchall()
     conn.close()
 
@@ -1341,8 +1352,8 @@ def moment_new():
 
         conn = get_db()
         conn.execute(
-            "INSERT INTO moments (type, log_date, title, content, image_path, minutes_spent) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO moments (type, log_date, title, content, image_path, minutes_spent, user_id) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
             (
                 moment_type,
                 log_date,
@@ -1350,6 +1361,7 @@ def moment_new():
                 request.form.get("content", "").strip(),
                 image_path,
                 to_int(request.form.get("minutes_spent"), 0),
+                g.user["id"],
             ),
         )
         conn.commit()
@@ -1371,9 +1383,11 @@ def moment_new():
 @app.route("/moment/<int:moment_id>/delete", methods=["POST"])
 def moment_delete(moment_id):
     conn = get_db()
-    row = conn.execute("SELECT log_date FROM moments WHERE id = ?", (moment_id,)).fetchone()
+    row = conn.execute(
+        "SELECT log_date FROM moments WHERE id = ? AND user_id = ?", (moment_id, g.user["id"])
+    ).fetchone()
     log_date = row["log_date"] if row else None
-    conn.execute("DELETE FROM moments WHERE id = ?", (moment_id,))
+    conn.execute("DELETE FROM moments WHERE id = ? AND user_id = ?", (moment_id, g.user["id"]))
     conn.commit()
     conn.close()
     if log_date:
@@ -1438,14 +1452,15 @@ def moment_scan_save():
             moment_type = "thought"
         log_date = request.form.get(f"log_date_{i}") or date.today().isoformat()
         conn.execute(
-            "INSERT INTO moments (type, log_date, title, content, image_path, minutes_spent) "
-            "VALUES (?, ?, ?, ?, ?, 0)",
+            "INSERT INTO moments (type, log_date, title, content, image_path, minutes_spent, user_id) "
+            "VALUES (?, ?, ?, ?, ?, 0, ?)",
             (
                 moment_type,
                 log_date,
                 request.form.get(f"title_{i}", "").strip(),
                 request.form.get(f"content_{i}", "").strip(),
                 request.form.get(f"image_path_{i}", ""),
+                g.user["id"],
             ),
         )
         saved += 1
@@ -1461,9 +1476,11 @@ def moment_scan_save():
 @app.route("/log/<int:log_id>/delete", methods=["POST"])
 def log_delete(log_id):
     conn = get_db()
-    row = conn.execute("SELECT item_id FROM logs WHERE id = ?", (log_id,)).fetchone()
+    row = conn.execute(
+        "SELECT item_id FROM logs WHERE id = ? AND user_id = ?", (log_id, g.user["id"])
+    ).fetchone()
     item_id = row["item_id"] if row else None
-    conn.execute("DELETE FROM logs WHERE id = ?", (log_id,))
+    conn.execute("DELETE FROM logs WHERE id = ? AND user_id = ?", (log_id, g.user["id"]))
     conn.commit()
     conn.close()
     if item_id:
@@ -2195,10 +2212,10 @@ def novel_reference_search(novel_id):
     conn = get_db()
     rows = conn.execute(
         "SELECT id, title, creator, cover_url FROM items "
-        "WHERE type = 'book' AND (title LIKE ? OR creator LIKE ?) "
+        "WHERE type = 'book' AND user_id = ? AND (title LIKE ? OR creator LIKE ?) "
         "AND id NOT IN (SELECT item_id FROM novel_references WHERE novel_id = ?) "
         "ORDER BY title ASC LIMIT 10",
-        (like, like, novel_id),
+        (g.user["id"], like, like, novel_id),
     ).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
