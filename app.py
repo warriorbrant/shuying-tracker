@@ -1537,9 +1537,13 @@ def novel_share_image(novel_id):
         conn.close()
         return "未找到该小说", 404
     chapters = conn.execute(
-        "SELECT id, chapter_no, title FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
+        "SELECT c.id, c.chapter_no, c.title, LENGTH(c.content) AS word_count, "
+        "c.volume_id, v.volume_no, v.title AS volume_title "
+        "FROM novel_chapters c LEFT JOIN novel_volumes v ON v.id = c.volume_id "
+        "WHERE c.novel_id = ? ORDER BY c.chapter_no ASC",
         (novel_id,),
     ).fetchall()
+    total_words = sum(c["word_count"] or 0 for c in chapters)
     references = conn.execute(
         "SELECT i.* FROM items i JOIN novel_references nr ON nr.item_id = i.id "
         "WHERE nr.novel_id = ? AND nr.in_share = 1 ORDER BY i.title ASC LIMIT 10",
@@ -1547,7 +1551,7 @@ def novel_share_image(novel_id):
     ).fetchall()
     conn.close()
 
-    buf = build_novel_share_card(dict(novel), chapters, references)
+    buf = build_novel_share_card(dict(novel), chapters, references, total_words)
 
     download = request.args.get("download")
     return send_file(

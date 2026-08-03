@@ -637,7 +637,7 @@ def _section_heading(draw, text, x, y, w):
     return line_y + 22
 
 
-def _build_novel_header(measure, w, novel):
+def _build_novel_header(measure, w, novel, total_words):
     cover_w, cover_h = 292, 389  # fills the full content width (no side margin)
     title_font = _font(46, bold=True)
     status_font = _font(26)
@@ -673,13 +673,40 @@ def _build_novel_header(measure, w, novel):
         y += 10
 
         status_text = f"  {novel['status']}  "
-        bbox = draw.textbbox((0, 0), status_text, font=status_font)
-        pill_w, pill_h = bbox[2] - bbox[0] + 20, bbox[3] - bbox[1] + 24
-        pill_x = x0 + (w - pill_w) / 2
-        draw.rounded_rectangle([pill_x, y, pill_x + pill_w, y + pill_h], radius=pill_h // 2, fill=ACCENT_SOFT)
+        word_text = f"  共 {total_words} 字  "
+        status_font_bbox = draw.textbbox((0, 0), status_text, font=status_font)
+        word_font_bbox = draw.textbbox((0, 0), word_text, font=status_font)
+        pill_gap = 16
+        status_pill_w = status_font_bbox[2] - status_font_bbox[0] + 20
+        word_pill_w = word_font_bbox[2] - word_font_bbox[0] + 20
+        pill_h = status_font_bbox[3] - status_font_bbox[1] + 24
+        total_w = status_pill_w + pill_gap + word_pill_w
+        pill_x = x0 + (w - total_w) / 2
+        draw.rounded_rectangle([pill_x, y, pill_x + status_pill_w, y + pill_h], radius=pill_h // 2, fill=ACCENT_SOFT)
         draw.text((pill_x + 10, y + 10), status_text, font=status_font, fill=ACCENT)
+        word_pill_x = pill_x + status_pill_w + pill_gap
+        draw.rounded_rectangle([word_pill_x, y, word_pill_x + word_pill_w, y + pill_h], radius=pill_h // 2, fill=ACCENT_SOFT)
+        draw.text((word_pill_x + 10, y + 10), word_text, font=status_font, fill=ACCENT)
 
     return h, draw_fn
+
+
+def _group_chapters_by_volume(chapters):
+    """Same bucketing as app.py's group_chapters_by_volume (adjacent chapters
+    sharing a volume_id become one group) — duplicated locally rather than
+    imported, since share_card.py is imported by app.py, not the other way."""
+    groups = []
+    for c in chapters:
+        vid = c["volume_id"]
+        if not groups or groups[-1]["volume_id"] != vid:
+            groups.append({
+                "volume_id": vid,
+                "volume_no": c["volume_no"] if vid else None,
+                "volume_title": c["volume_title"] if vid else None,
+                "chapters": [],
+            })
+        groups[-1]["chapters"].append(c)
+    return groups
 
 
 def _build_chapter_list(measure, w, chapters):
@@ -688,25 +715,42 @@ def _build_chapter_list(measure, w, chapters):
     columns = 2
     col_w = (w - 30) // columns
     row_h = 42
-    rows = -(-len(shown) // columns) if shown else 0
-    h = SECTION_HEADING_H + rows * row_h
+    sub_h = 40
+    has_volumes = any(c["volume_id"] for c in chapters)
+    groups = _group_chapters_by_volume(shown)
+
+    body_h = 0
+    for g in groups:
+        if g["volume_id"] or has_volumes:
+            body_h += sub_h
+        body_h += -(-len(g["chapters"]) // columns) * row_h
+
+    h = SECTION_HEADING_H + body_h
     if extra > 0:
         h += 36
 
     def draw_fn(card, draw, x0, y0):
         y = _section_heading(draw, f"章节目录（共 {len(chapters)} 章）", x0, y0, w)
         item_font = _font(26)
-        for i, c in enumerate(shown):
-            col, row = i % columns, i // columns
-            tx = x0 + col * (col_w + 30)
-            ty = y + row * row_h
-            label = f"第{c['chapter_no']}章 · {c['title']}"
-            line = _wrap(measure, label, item_font, col_w)[:1]
-            text = (line[0] + "…") if line and len(line[0]) < len(label) else label
-            draw.text((tx, ty), text, font=item_font, fill=TEXT)
+        sub_font = _font(22, bold=True)
+        for g in groups:
+            if g["volume_id"]:
+                draw.text((x0, y), f"第{g['volume_no']}卷 · {g['volume_title']}", font=sub_font, fill=ACCENT)
+                y += sub_h
+            elif has_volumes:
+                draw.text((x0, y), "未分卷", font=sub_font, fill=MUTED)
+                y += sub_h
+            for i, c in enumerate(g["chapters"]):
+                col, row = i % columns, i // columns
+                tx = x0 + col * (col_w + 30)
+                ty = y + row * row_h
+                label = f"第{c['chapter_no']}章 · {c['title']}"
+                line = _wrap(measure, label, item_font, col_w)[:1]
+                text = (line[0] + "…") if line and len(line[0]) < len(label) else label
+                draw.text((tx, ty), text, font=item_font, fill=TEXT)
+            y += -(-len(g["chapters"]) // columns) * row_h
         if extra > 0:
-            extra_y = y + rows * row_h
-            draw.text((x0, extra_y), f"还有 {extra} 章…", font=_font(24), fill=MUTED)
+            draw.text((x0, y), f"还有 {extra} 章…", font=_font(24), fill=MUTED)
 
     return h, draw_fn
 
@@ -808,7 +852,7 @@ def build_chapter_share_card(novel, chapter):
     return buf
 
 
-def build_novel_share_card(novel, chapters, references):
+def build_novel_share_card(novel, chapters, references, total_words=0):
     W = 1080
     pad = 64
     section_gap = 40
@@ -816,7 +860,7 @@ def build_novel_share_card(novel, chapters, references):
     measure = _measure_draw()
 
     sections = []
-    header_h, header_draw = _build_novel_header(measure, content_w, novel)
+    header_h, header_draw = _build_novel_header(measure, content_w, novel, total_words)
     sections.append((header_h, header_draw))
 
     if chapters:

@@ -1891,4 +1891,25 @@ CHANGELOG = [
         "lines_changed": 57,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "小说分享图上也显示卷和总字数了",
+        "title_en": "Novel share images now show volumes and total word count",
+        "summary": (
+            "小说的一键分享图之前只有章节目录，没有字数、也不分卷。现在封面下面的状"
+            "态标签旁边加了「共 X 字」，章节目录部分也跟着网页版一样按卷分组显示（带"
+            "卷名的小标题），没分卷的章节归到「未分卷」下面。没建过卷的小说分享图不"
+            "受影响，还是原来那样。"
+        ),
+        "summary_en": (
+            "The novel share image only ever showed the chapter list — no word count, no "
+            "volume grouping. Added a \"共 X 字\" pill next to the status pill below the "
+            "cover, and the chapter list now groups by volume the same way the web page "
+            "does, with a small heading per volume (unassigned chapters fall under \"未分"
+            "卷\"). Share images for novels with no volumes look exactly as before."
+        ),
+        "image": None,
+        "lines_changed": 69,
+        "estimated": False,
+    },
 ]
