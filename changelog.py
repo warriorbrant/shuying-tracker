@@ -1943,4 +1943,33 @@ CHANGELOG = [
         "lines_changed": 72,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "多用户系统第四步：小说也按账号隔离，锁定改成只有作者能看",
+        "title_en": "Multi-user step 4: novels scoped per account, locked content is now author-only",
+        "summary": (
+            "上一步把书影/动态数据隔离了，这一步轮到小说：新建小说、编辑、删除、加"
+            "章节/分卷/人物/视频/参考书目，这些创作类操作现在都要求是小说的作者本人"
+            "才能做，猜 URL 也进不去别人的小说编辑页。小说本身的公开阅读（目录、章"
+            "节正文、分享图）完全没变，谁都能看——只有「锁定」这个功能的含义变了："
+            "以前是「随便哪个账号登录了就能看」，现在是「只有这本小说的作者本人（或"
+            "管理员）能看」。用两个测试账号加一个临时的管理员账号，把「作者本人看到"
+            "全文、别的账号只看预览、管理员绕过锁定」这几种情况都测了一遍。"
+        ),
+        "summary_en": (
+            "Following the previous step's personal-tracker isolation, novels are now "
+            "scoped too: creating, editing, deleting a novel, and adding chapters/volumes/"
+            "characters/videos/reference books all require being the novel's own author — "
+            "guessing another account's novel edit URL now 404s. Public reading (the table "
+            "of contents, chapter text, share images) is completely unchanged and still "
+            "open to everyone; only the meaning of \"locked\" changed, from \"any logged-in "
+            "account\" to \"the novel's own author (or an admin)\". Verified all four cases "
+            "with two test accounts plus a temporary admin flag: the owner sees full "
+            "content, another account only sees the preview, and an admin bypasses the "
+            "lock on someone else's novel."
+        ),
+        "image": None,
+        "lines_changed": 80,
+        "estimated": False,
+    },
 ]

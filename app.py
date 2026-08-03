@@ -1580,8 +1580,17 @@ def novel_share_image(novel_id):
     )
 
 
+def _get_owned_novel(conn, novel_id):
+    """The novel-authoring equivalent of the item ownership checks from step 2 —
+    returns the novel row only if it belongs to the logged-in user, else None
+    (same 404 either way, so a wrong-owner guess doesn't reveal the novel exists)."""
+    return conn.execute(
+        "SELECT * FROM novels WHERE id = ? AND user_id = ?", (novel_id, g.user["id"])
+    ).fetchone()
+
+
 def _load_novel_and_chapters(novel_id, conn):
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         return None, None
     chapters = conn.execute(
@@ -1660,7 +1669,12 @@ def novel_chapter_read(novel_id, chapter_id):
         conn.close()
         return "未找到该章节", 404
 
-    locked = bool(novel["is_locked"] or chapter["is_locked"]) and not session.get("user_id")
+    # Locked content used to mean "any logged-in session" — now that novels have
+    # real per-account owners, it means "the author, or an admin"; unlocked
+    # content is unaffected and stays public exactly as before.
+    locked = bool(novel["is_locked"] or chapter["is_locked"]) and (
+        not g.user or (g.user["id"] != novel["user_id"] and not g.user["is_admin"])
+    )
 
     chapters = conn.execute(
         "SELECT id, chapter_no, title, is_locked FROM novel_chapters WHERE novel_id = ? ORDER BY chapter_no ASC",
@@ -1714,7 +1728,7 @@ def novel_chapter_read(novel_id, chapter_id):
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/share.png")
 def novel_chapter_share_image(novel_id, chapter_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     chapter = conn.execute(
         "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
     ).fetchone()
@@ -1740,13 +1754,15 @@ def novel_new():
         cover_path = save_novel_image(request.files.get("cover_file"))
         conn = get_db()
         conn.execute(
-            "INSERT INTO novels (title, summary, status, cover_image, is_locked) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO novels (title, summary, status, cover_image, is_locked, user_id) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
             (
                 request.form["title"].strip(),
                 request.form.get("summary", "").strip(),
                 request.form.get("status", "连载中"),
                 cover_path,
                 1 if request.form.get("is_locked") else 0,
+                g.user["id"],
             ),
         )
         conn.commit()
@@ -1760,7 +1776,7 @@ def novel_new():
 @app.route("/novel/<int:novel_id>/edit", methods=["GET", "POST"])
 def novel_edit(novel_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         conn.close()
         return "未找到该小说", 404
@@ -1818,7 +1834,7 @@ def novel_edit(novel_id):
 @app.route("/novel/<int:novel_id>/delete", methods=["POST"])
 def novel_delete(novel_id):
     conn = get_db()
-    conn.execute("DELETE FROM novels WHERE id = ?", (novel_id,))
+    conn.execute("DELETE FROM novels WHERE id = ? AND user_id = ?", (novel_id, g.user["id"]))
     conn.commit()
     conn.close()
     return redirect(url_for("novels_list"))
@@ -1840,7 +1856,7 @@ def set_chapter_links(conn, chapter_id, character_ids, video_ids):
 @app.route("/novel/<int:novel_id>/chapter/new", methods=["GET", "POST"])
 def novel_chapter_new(novel_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         conn.close()
         return "未找到该小说", 404
@@ -1850,11 +1866,12 @@ def novel_chapter_new(novel_id):
             "SELECT COALESCE(MAX(chapter_no), 0) + 1 AS n FROM novel_chapters WHERE novel_id = ?", (novel_id,)
         ).fetchone()["n"]
         conn.execute(
-            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content, is_locked, volume_id) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO novel_chapters (novel_id, chapter_no, title, content, is_locked, volume_id, user_id) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
             (
                 novel_id, next_no, request.form["title"].strip(), request.form.get("content", ""),
                 1 if request.form.get("is_locked") else 0, to_int(request.form.get("volume_id")),
+                g.user["id"],
             ),
         )
         chapter_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
@@ -1881,7 +1898,7 @@ def novel_chapter_new(novel_id):
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/edit", methods=["GET", "POST"])
 def novel_chapter_edit(novel_id, chapter_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     chapter = conn.execute(
         "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
     ).fetchone()
@@ -1936,6 +1953,9 @@ def novel_character_search(novel_id):
     # this way untitled/hard-to-spell entries are still reachable by just focusing.
     q = request.args.get("q", "").strip()
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return jsonify([])
     if q:
         rows = conn.execute(
             "SELECT id, name, image_path FROM novel_characters WHERE novel_id = ? AND name LIKE ? "
@@ -1963,6 +1983,9 @@ def novel_character_search(novel_id):
 def novel_video_search(novel_id):
     q = request.args.get("q", "").strip()
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return jsonify([])
     if q:
         rows = conn.execute(
             "SELECT id, title, thumbnail_path, source_type FROM novel_videos "
@@ -1992,6 +2015,9 @@ def novel_video_search(novel_id):
 @app.route("/novel/<int:novel_id>/chapter/<int:chapter_id>/delete", methods=["POST"])
 def novel_chapter_delete(novel_id, chapter_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     conn.execute("DELETE FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id))
     conn.commit()
     conn.close()
@@ -2001,23 +2027,26 @@ def novel_chapter_delete(novel_id, chapter_id):
 @app.route("/novel/<int:novel_id>/volume/new", methods=["POST"])
 def novel_volume_new(novel_id):
     title = request.form.get("title", "").strip()
-    if title:
-        conn = get_db()
+    conn = get_db()
+    if title and _get_owned_novel(conn, novel_id) is not None:
         next_no = conn.execute(
             "SELECT COALESCE(MAX(volume_no), 0) + 1 AS n FROM novel_volumes WHERE novel_id = ?", (novel_id,)
         ).fetchone()["n"]
         conn.execute(
-            "INSERT INTO novel_volumes (novel_id, volume_no, title) VALUES (?, ?, ?)",
-            (novel_id, next_no, title),
+            "INSERT INTO novel_volumes (novel_id, volume_no, title, user_id) VALUES (?, ?, ?, ?)",
+            (novel_id, next_no, title, g.user["id"]),
         )
         conn.commit()
-        conn.close()
+    conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
 @app.route("/novel/<int:novel_id>/volume/<int:volume_id>/delete", methods=["POST"])
 def novel_volume_delete(novel_id, volume_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     # ON DELETE SET NULL unassigns any chapters in this volume rather than
     # deleting them — a volume is just an organizational label on chapters,
     # not a container that owns them.
@@ -2031,15 +2060,15 @@ def novel_volume_delete(novel_id, volume_id):
 def novel_chapters_bulk_lock(novel_id):
     chapter_ids = to_int_list(request.form.getlist("chapter_ids"))
     lock = 1 if request.form.get("action") == "lock" else 0
-    if chapter_ids:
-        conn = get_db()
+    conn = get_db()
+    if chapter_ids and _get_owned_novel(conn, novel_id) is not None:
         conn.executemany(
             "UPDATE novel_chapters SET is_locked = ?, updated_at=datetime('now','localtime') "
             "WHERE id = ? AND novel_id = ?",
             [(lock, cid, novel_id) for cid in chapter_ids],
         )
         conn.commit()
-        conn.close()
+    conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
@@ -2047,8 +2076,8 @@ def novel_chapters_bulk_lock(novel_id):
 def novel_chapters_bulk_volume(novel_id):
     chapter_ids = to_int_list(request.form.getlist("chapter_ids"))
     volume_id = to_int(request.form.get("volume_id"))
-    if chapter_ids:
-        conn = get_db()
+    conn = get_db()
+    if chapter_ids and _get_owned_novel(conn, novel_id) is not None:
         if volume_id is not None:
             # Guard against a volume_id from a different novel ever landing on a
             # chapter here — the grouped-list query trusts volume_id -> novel_id
@@ -2065,22 +2094,25 @@ def novel_chapters_bulk_volume(novel_id):
             [(volume_id, cid, novel_id) for cid in chapter_ids],
         )
         conn.commit()
-        conn.close()
+    conn.close()
     return redirect(url_for("novel_edit", novel_id=novel_id))
 
 
 @app.route("/novel/<int:novel_id>/character/new", methods=["POST"])
 def novel_character_new(novel_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         conn.close()
         return "未找到该小说", 404
 
     image_path = save_novel_image(request.files.get("image_file"))
     conn.execute(
-        "INSERT INTO novel_characters (novel_id, name, description, image_path) VALUES (?, ?, ?, ?)",
-        (novel_id, request.form.get("name", "").strip(), request.form.get("description", "").strip(), image_path),
+        "INSERT INTO novel_characters (novel_id, name, description, image_path, user_id) VALUES (?, ?, ?, ?, ?)",
+        (
+            novel_id, request.form.get("name", "").strip(), request.form.get("description", "").strip(),
+            image_path, g.user["id"],
+        ),
     )
     conn.commit()
     conn.close()
@@ -2090,7 +2122,7 @@ def novel_character_new(novel_id):
 @app.route("/novel/<int:novel_id>/character/<int:character_id>/edit", methods=["GET", "POST"])
 def novel_character_edit(novel_id, character_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     character = conn.execute(
         "SELECT * FROM novel_characters WHERE id = ? AND novel_id = ?", (character_id, novel_id)
     ).fetchone()
@@ -2120,6 +2152,9 @@ def novel_character_edit(novel_id, character_id):
 @app.route("/novel/<int:novel_id>/character/<int:character_id>/delete", methods=["POST"])
 def novel_character_delete(novel_id, character_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     conn.execute("DELETE FROM novel_characters WHERE id = ? AND novel_id = ?", (character_id, novel_id))
     conn.commit()
     conn.close()
@@ -2129,7 +2164,7 @@ def novel_character_delete(novel_id, character_id):
 @app.route("/novel/<int:novel_id>/video/new", methods=["POST"])
 def novel_video_new(novel_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         conn.close()
         return "未找到该小说", 404
@@ -2144,8 +2179,9 @@ def novel_video_new(novel_id):
             return redirect(url_for("novel_edit", novel_id=novel_id, error="请填写视频链接"))
         conn = get_db()
         conn.execute(
-            "INSERT INTO novel_videos (novel_id, title, source_type, video_url) VALUES (?, ?, 'link', ?)",
-            (novel_id, title, video_url),
+            "INSERT INTO novel_videos (novel_id, title, source_type, video_url, user_id) "
+            "VALUES (?, ?, 'link', ?, ?)",
+            (novel_id, title, video_url, g.user["id"]),
         )
         conn.commit()
         conn.close()
@@ -2185,9 +2221,9 @@ def novel_video_new(novel_id):
 
     conn = get_db()
     conn.execute(
-        "INSERT INTO novel_videos (novel_id, title, source_type, video_path, thumbnail_path, duration_seconds) "
-        "VALUES (?, ?, 'upload', ?, ?, ?)",
-        (novel_id, title, out_path.name, thumb_path.name if has_thumb else "", int(duration)),
+        "INSERT INTO novel_videos (novel_id, title, source_type, video_path, thumbnail_path, "
+        "duration_seconds, user_id) VALUES (?, ?, 'upload', ?, ?, ?, ?)",
+        (novel_id, title, out_path.name, thumb_path.name if has_thumb else "", int(duration), g.user["id"]),
     )
     conn.commit()
     conn.close()
@@ -2197,6 +2233,9 @@ def novel_video_new(novel_id):
 @app.route("/novel/<int:novel_id>/video/<int:video_id>/delete", methods=["POST"])
 def novel_video_delete(novel_id, video_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     conn.execute("DELETE FROM novel_videos WHERE id = ? AND novel_id = ?", (video_id, novel_id))
     conn.commit()
     conn.close()
@@ -2210,6 +2249,9 @@ def novel_reference_search(novel_id):
         return jsonify([])
     like = f"%{q}%"
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return jsonify([])
     rows = conn.execute(
         "SELECT id, title, creator, cover_url FROM items "
         "WHERE type = 'book' AND user_id = ? AND (title LIKE ? OR creator LIKE ?) "
@@ -2224,7 +2266,7 @@ def novel_reference_search(novel_id):
 @app.route("/novel/<int:novel_id>/reference/new", methods=["POST"])
 def novel_reference_new(novel_id):
     conn = get_db()
-    novel = conn.execute("SELECT * FROM novels WHERE id = ?", (novel_id,)).fetchone()
+    novel = _get_owned_novel(conn, novel_id)
     if novel is None:
         conn.close()
         return "未找到该小说", 404
@@ -2244,6 +2286,9 @@ def novel_reference_new(novel_id):
 @app.route("/novel/<int:novel_id>/reference/<int:item_id>/delete", methods=["POST"])
 def novel_reference_delete(novel_id, item_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     conn.execute("DELETE FROM novel_references WHERE item_id = ? AND novel_id = ?", (item_id, novel_id))
     conn.commit()
     conn.close()
@@ -2253,6 +2298,9 @@ def novel_reference_delete(novel_id, item_id):
 @app.route("/novel/<int:novel_id>/reference/<int:item_id>/toggle-share", methods=["POST"])
 def novel_reference_toggle_share(novel_id, item_id):
     conn = get_db()
+    if _get_owned_novel(conn, novel_id) is None:
+        conn.close()
+        return "未找到该小说", 404
     row = conn.execute(
         "SELECT in_share FROM novel_references WHERE novel_id = ? AND item_id = ?", (novel_id, item_id)
     ).fetchone()
