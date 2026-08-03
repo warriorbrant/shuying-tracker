@@ -21,6 +21,9 @@
         <a href="{{ url_for('moment_scan') }}">+ 截图导入</a>
         <a href="{{ url_for('search') }}">🔍 搜索</a>
         <a href="{{ url_for('admin_metrics_page') }}">📊 性能指标</a>
+        {% if current_user.is_admin %}
+          <a href="{{ url_for('admin_users') }}">🛡️ 账号管理</a>
+        {% endif %}
       {% endif %}
       <a href="{{ url_for('novels_list') }}">📖 小说</a>
       <a href="{{ url_for('changelog') }}">更新日志</a>

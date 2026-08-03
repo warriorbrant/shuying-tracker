@@ -28,7 +28,7 @@ from flask import (
 )
 from flask_compress import Compress
 from PIL import Image, ImageOps
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import metrics
 from ai_scan import ScanError, analyze_screenshot, is_configured
@@ -267,6 +267,69 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+def is_admin():
+    return bool(g.user and g.user["is_admin"])
+
+
+@app.route("/admin/users")
+def admin_users():
+    if not is_admin():
+        return "未找到该页面", 404
+    conn = get_db()
+    users = conn.execute("SELECT id, username, is_admin, created_at FROM users ORDER BY id ASC").fetchall()
+    settings = conn.execute("SELECT allow_registration FROM app_settings WHERE id = 1").fetchone()
+    conn.close()
+    return render_template(
+        "admin_users.html",
+        users=users,
+        allow_registration=bool(settings["allow_registration"]) if settings else False,
+        error=request.args.get("error"),
+    )
+
+
+@app.route("/admin/users/new", methods=["POST"])
+def admin_users_new():
+    if not is_admin():
+        return "未找到该页面", 404
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "")
+    new_is_admin = 1 if request.form.get("is_admin") else 0
+
+    if not username or not password:
+        return redirect(url_for("admin_users", error="用户名和密码都要填"))
+
+    conn = get_db()
+    existing = conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone()
+    if existing:
+        conn.close()
+        return redirect(url_for("admin_users", error="这个用户名已经有人用了"))
+
+    conn.execute(
+        "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)",
+        (username, generate_password_hash(password, method="pbkdf2:sha256"), new_is_admin),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("admin_users"))
+
+
+@app.route("/admin/users/toggle-registration", methods=["POST"])
+def admin_toggle_registration():
+    if not is_admin():
+        return "未找到该页面", 404
+    conn = get_db()
+    row = conn.execute("SELECT allow_registration FROM app_settings WHERE id = 1").fetchone()
+    new_value = 0 if (row and row["allow_registration"]) else 1
+    conn.execute(
+        "INSERT INTO app_settings (id, allow_registration) VALUES (1, ?) "
+        "ON CONFLICT(id) DO UPDATE SET allow_registration = ?",
+        (new_value, new_value),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("admin_users"))
 
 
 @app.route("/data/<path:filename>")

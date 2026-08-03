@@ -1972,4 +1972,28 @@ CHANGELOG = [
         "lines_changed": 80,
         "estimated": False,
     },
+    {
+        "date": "2026-08-03",
+        "title": "多用户系统第五步：后台加了账号管理页面",
+        "title_en": "Multi-user step 5: added an admin account management page",
+        "summary": (
+            "新加了 /admin/users，只有管理员账号能进（普通账号访问会看到 404，压根"
+            "不知道这个页面存在）。上面能看到所有账号的列表，能手动加新账号（可以顺"
+            "手勾成管理员），还有一个「允许自助注册」的开关——先加在这儿备用，默认"
+            "关闭，真正的 /register 注册页面还没做，等这个做完开关才有实际用处。导"
+            "航栏里「🛡️ 账号管理」这个入口也只有管理员账号才看得到。"
+        ),
+        "summary_en": (
+            "Added /admin/users, reachable only by admin accounts (a non-admin gets a "
+            "plain 404 — the page doesn't even hint that it exists). It lists every "
+            "account, has a form to add a new one (with an optional \"make admin\" "
+            "checkbox), and an \"allow self-registration\" toggle — wired up now for later, "
+            "off by default; the actual /register page doesn't exist yet, so the toggle "
+            "has no real effect until that's built. The \"🛡️ Account Management\" nav link "
+            "is likewise only visible to admin accounts."
+        ),
+        "image": None,
+        "lines_changed": 67,
+        "estimated": False,
+    },
 ]

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}账号管理{% endblock %}
+{% block content %}
+
+<h1>账号管理</h1>
+
+{% if error %}<p class="hint hint-error">{{ error }}</p>{% endif %}
+
+<section class="log-section">
+  <h2>已有账号（共 {{ users|length }} 个）</h2>
+  <ul class="volume-list">
+    {% for u in users %}
+    <li>
+      <span>{{ u.username }}{% if u.is_admin %} · 🛡️ 管理员{% endif %} · {{ u.created_at[:10] }} 创建</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="log-section">
+  <h2>新增账号</h2>
+  <form class="form" method="post" action="{{ url_for('admin_users_new') }}">
+    <label>
+      用户名
+      <input type="text" name="username" required autocomplete="off">
+    </label>
+    <label>
+      密码
+      <input type="password" name="password" required autocomplete="new-password">
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" name="is_admin">
+      设为管理员（能管理账号、绕过所有人的锁定内容）
+    </label>
+    <div class="actions">
+      <button type="submit">新增账号</button>
+    </div>
+  </form>
+</section>
+
+<section class="log-section">
+  <h2>自助注册</h2>
+  <form method="post" action="{{ url_for('admin_toggle_registration') }}">
+    <label class="checkbox-label">
+      <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if allow_registration }}>
+      允许任何人自己注册账号
+    </label>
+  </form>
+  <p class="hint">默认关闭，新账号只能在上面手动加；打开之后 /register 页面才能用。</p>
+</section>
+
+{% endblock %}
