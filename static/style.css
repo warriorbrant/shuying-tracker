@@ -710,6 +710,19 @@ a.heat-day:hover {
   background: #fff;
 }
 
+/* Chapter editing wants to be as wide as the reading view (.chapter-reader,
+   which has no max-width of its own and just fills .container), so what you
+   see while writing lines up with what readers will see. */
+.form-wide {
+  max-width: 960px;
+}
+
+.form textarea.chapter-content-input {
+  font-size: 1rem;
+  line-height: 1.9;
+  padding: 20px 22px;
+}
+
 .row {
   display: flex;
   gap: 16px;

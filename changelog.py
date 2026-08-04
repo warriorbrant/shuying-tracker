@@ -2082,4 +2082,30 @@ CHANGELOG = [
         "lines_changed": 196,
         "estimated": False,
     },
+    {
+        "date": "2026-08-04",
+        "title": "小说章节编辑框改成跟阅读页一样宽、一样大字号",
+        "title_en": "Chapter editor now matches the reader view's width and font size",
+        "summary": (
+            "编辑章节正文的输入框之前套用的是通用表单样式，最大只有 560px 宽，比"
+            "实际阅读页窄很多，写的时候很难感觉出真实排版效果。现在编辑框和阅读页"
+            "的正文区域宽度、字号、行高都对齐了（都是 870px 宽、16px 字号、1.9 倍行"
+            "距），编辑时看到的宽度基本就是读者看到的宽度。中途踩了个 CSS 优先级的"
+            "坑：新加的字号规则一开始被更早的通用规则（`.form textarea`）盖掉了，"
+            "因为后者选择器权重更高，改成更具体的选择器才生效。"
+        ),
+        "summary_en": (
+            "The chapter content textarea was using the generic form style, capped at "
+            "560px wide -- much narrower than the actual reading page, making it hard to "
+            "judge real layout while writing. Now the editor and the reader view line up "
+            "on width, font size, and line height (both 870px wide, 16px text, 1.9x line "
+            "height), so what you see while editing is close to what readers will see. Hit "
+            "a CSS specificity snag along the way: the new font-size rule was silently "
+            "overridden by an earlier, more specific generic rule (`.form textarea`) until "
+            "switched to a more specific selector."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

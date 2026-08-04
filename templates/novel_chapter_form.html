@@ -4,7 +4,7 @@
 
 <h1>{{ '编辑章节' if chapter else '新增章节' }} · {{ novel.title }}</h1>
 
-<form class="form" method="post">
+<form class="form form-wide" method="post">
   <label>
     章节标题
     <input type="text" name="title" required value="{{ chapter.title if chapter else '' }}">
@@ -12,7 +12,7 @@
 
   <label>
     正文
-    <textarea name="content" rows="20">{{ chapter.content if chapter else '' }}</textarea>
+    <textarea name="content" rows="24" class="chapter-content-input">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
   <label>
