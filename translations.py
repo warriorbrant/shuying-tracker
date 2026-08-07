@@ -508,6 +508,7 @@ TR = {
     "周五": "Fri",
 
     # --- showcase.html ---
+    "网站现在有哪些功能": "What the Site Can Do",
     "功能一览": "Features",
     "✨ 功能一览": "✨ Features",
     "交易 · 消费 · 创作 · 生活点滴，都在这一个地方": "Trading, spending, writing, and everyday life -- all in one place",

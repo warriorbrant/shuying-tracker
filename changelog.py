@@ -2566,4 +2566,28 @@ CHANGELOG = [
         "lines_changed": 260,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "功能一览的四张卡片也放到了公开首页，就在「网站的技术架构」上面",
+        "title_en": "The four feature cards now also show up on the public homepage, right above the architecture diagram",
+        "summary": (
+            "之前功能卡片（带小动画的那四张）只在登录后的 /showcase 页面能看到，现在公开首页（没登录"
+            "看到的那个页面）也加了同一份，放在「这个网站是怎么做出来的」流程图下面、「网站的技术架构」"
+            "图上面，标题是「网站现在有哪些功能」。为了不重复写两遍，把卡片部分拆成了一个共享的模板"
+            "片段 `_showcase_features.html`，两个页面都引用它。没登录点卡片里的链接，交易/消费/动态"
+            "还是会跳去登录页，小说是公开的可以直接进。"
+        ),
+        "summary_en": (
+            "The feature cards (the four with mini demo animations) used to only show up on the "
+            "login-gated /showcase page. Added the same set to the public homepage now too -- between "
+            "the \"how this site gets built\" pipeline diagram and the \"site architecture\" diagram, "
+            "under a new \"What the Site Can Do\" heading. Pulled the card markup out into a shared "
+            "template partial (`_showcase_features.html`) so both pages include the same thing instead "
+            "of duplicating it. Clicking a card without being logged in still sends you to login for "
+            "trading/expenses/moments; novels is public so that one opens straight away."
+        ),
+        "image": None,
+        "lines_changed": 90,
+        "estimated": False,
+    },
 ]

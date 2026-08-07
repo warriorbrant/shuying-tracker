@@ -1202,6 +1202,7 @@ def public_landing():
         today=today_str,
         lang=lang,
         t=t,
+        features=SHOWCASE_FEATURES,
     )
 
 
