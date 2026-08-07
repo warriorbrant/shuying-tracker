@@ -4,25 +4,25 @@
 
 <div class="day-header">
   <div>
-    <a class="day-nav" href="{{ url_for('day_view', date_str=prev_date) }}">← 前一天</a>
-    <h1>{{ day.month }}月{{ day.day }}日 {{ weekday_label }}{% if is_today %}<span class="today-tag">今天</span>{% endif %}</h1>
+    <a class="day-nav" href="{{ url_for('day_view', date_str=prev_date) }}">{{ tr('← 前一天') }}</a>
+    <h1>{{ date_heading }}{% if is_today %}<span class="today-tag">{{ tr('今天') }}</span>{% endif %}</h1>
     <div class="stats">
-      <span>📌 {{ activity_count }} 项记录</span>
-      <span>⏱ 共 {{ total_minutes }} 分钟</span>
+      <span>{{ tr('📌 {n} 项记录', n=activity_count) }}</span>
+      <span>{{ tr('⏱ 共 {m} 分钟', m=total_minutes) }}</span>
     </div>
   </div>
-  <a class="day-nav" href="{{ url_for('day_view', date_str=next_date) }}">后一天 →</a>
+  <a class="day-nav" href="{{ url_for('day_view', date_str=next_date) }}">{{ tr('后一天 →') }}</a>
 </div>
 
 <div class="actions day-actions">
-  <a class="btn-share" href="{{ url_for('day_share_image', date_str=date_str, download=1) }}">📤 一键生成今日分享图</a>
-  <a class="btn-link" href="{{ url_for('day_share_image', date_str=date_str) }}" target="_blank">先预览</a>
-  <a class="btn-link" href="{{ url_for('moment_new', date=date_str) }}">+ 记录今天的动态</a>
+  <a class="btn-share" href="{{ url_for('day_share_image', date_str=date_str, download=1) }}">{{ tr('📤 一键生成今日分享图') }}</a>
+  <a class="btn-link" href="{{ url_for('day_share_image', date_str=date_str) }}" target="_blank">{{ tr('先预览') }}</a>
+  <a class="btn-link" href="{{ url_for('moment_new', date=date_str) }}">{{ tr('+ 记录今天的动态') }}</a>
 </div>
 
 {% if logs or new_items %}
 <section class="log-section">
-  <h2>📚🎬 书影进度</h2>
+  <h2>{{ tr('📚🎬 书影进度') }}</h2>
   {% if logs %}
   <ul class="log-list">
     {% for log in logs %}
@@ -32,8 +32,8 @@
       {% endif %}
       <div class="log-meta">
         <a href="{{ url_for('item_detail', item_id=log.item_id) }}"><strong>{{ log.item_title }}</strong></a>
-        <span>⏱ {{ log.minutes_spent }} 分钟</span>
-        {% if log.progress_at is not none %}<span>进度：{{ log.progress_at | round(1) }} {{ log.item_unit_label }}</span>{% endif %}
+        <span>{{ tr('⏱ {m} 分钟', m=log.minutes_spent) }}</span>
+        {% if log.progress_at is not none %}<span>{{ tr('进度：{p} {u}', p=log.progress_at | round(1), u=log.item_unit_label) }}</span>{% endif %}
       </div>
       {% if log.comment %}<p class="log-comment">{{ log.comment }}</p>{% endif %}
     </li>
@@ -49,7 +49,7 @@
       {% endif %}
       <div class="log-meta">
         <a href="{{ url_for('item_detail', item_id=item.id) }}"><strong>{{ item.title }}</strong></a>
-        <span>{{ '📚' if item.type == 'book' else '🎬' }} 新添加 · {{ item.status }}</span>
+        <span>{{ '📚' if item.type == 'book' else '🎬' }} {{ tr('新添加 · {s}', s=tr(item.status)) }}</span>
       </div>
     </li>
     {% endfor %}
@@ -59,25 +59,25 @@
 {% endif %}
 
 <section class="log-section">
-  <h2>📝 今日动态</h2>
+  <h2>{{ tr('📝 今日动态') }}</h2>
   {% if not moments %}
-    <p class="empty">这一天还没有添加动态。</p>
+    <p class="empty">{{ tr('这一天还没有添加动态。') }}</p>
   {% else %}
   <ul class="moment-list">
     {% for m in moments %}
     <li class="moment-item">
       <div class="moment-meta">
-        <span class="moment-type">{{ moment_types[m.type].icon }} {{ moment_types[m.type].label }}</span>
+        <span class="moment-type">{{ moment_types[m.type].icon }} {{ tr(moment_types[m.type].label) }}</span>
         {% if m.title %}<strong>{{ m.title }}</strong>{% endif %}
-        {% if m.minutes_spent %}<span>⏱ {{ m.minutes_spent }} 分钟</span>{% endif %}
+        {% if m.minutes_spent %}<span>{{ tr('⏱ {m} 分钟', m=m.minutes_spent) }}</span>{% endif %}
       </div>
       {% if m.content %}<p class="log-comment">{{ m.content }}</p>{% endif %}
       {% if m.image_path %}
         <img loading="lazy" class="moment-photo" src="{{ url_for('serve_data', filename=m.image_path) }}" alt="{{ m.title }}">
       {% endif %}
       <form method="post" action="{{ url_for('moment_delete', moment_id=m.id) }}"
-            onsubmit="return confirm('删除这条动态？');">
-        <button type="submit" class="btn-link-danger">删除</button>
+            onsubmit="return confirm({{ tr('删除这条动态？') | tojson }});">
+        <button type="submit" class="btn-link-danger">{{ tr('删除') }}</button>
       </form>
     </li>
     {% endfor %}
@@ -87,12 +87,12 @@
 
 {% if day_changelog %}
 <section class="log-section">
-  <h2>{{ changelog_type.icon }} {{ changelog_type.label }}</h2>
+  <h2>{{ changelog_type.icon }} {{ tr(changelog_type.label) }}</h2>
   <ul class="moment-list">
     {% for c in day_changelog %}
     <li class="moment-item">
       <div class="moment-meta">
-        <span class="moment-type">{{ changelog_type.icon }} {{ changelog_type.label }}</span>
+        <span class="moment-type">{{ changelog_type.icon }} {{ tr(changelog_type.label) }}</span>
         <strong>{{ c.title }}</strong>
       </div>
       <p class="log-comment">{{ c.summary }}</p>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}知行合一AI实验室{% endblock %}
+{% block title %}{{ tr('知行合一AI实验室') }}{% endblock %}
 {% block content %}
 
 <section class="heatmap-card">
@@ -13,36 +13,36 @@
         {% if day.level == -1 %}
           <div class="heat-day future"></div>
         {% else %}
-          <a class="heat-day level-{{ day.level }}" href="{{ url_for('day_view', date_str=day.date) }}" title="{{ day.date }}：{{ day.minutes }} 分钟"></a>
+          <a class="heat-day level-{{ day.level }}" href="{{ url_for('day_view', date_str=day.date) }}" title="{{ tr('{d}：{m} 分钟', d=day.date, m=day.minutes) }}"></a>
         {% endif %}
       {% endfor %}
     </div>
     {% endfor %}
   </div>
   <div class="heatmap-summary">
-    过去一年打卡 {{ heatmap.total_days }} 天，累计用时 {{ (heatmap.total_minutes / 60) | round(1) }} 小时
-    <a class="today-link" href="{{ url_for('day_view', date_str=today) }}">查看今天 →</a>
+    {{ tr('过去一年打卡 {d} 天，累计用时 {h} 小时', d=heatmap.total_days, h=(heatmap.total_minutes / 60) | round(1)) }}
+    <a class="today-link" href="{{ url_for('day_view', date_str=today) }}">{{ tr('查看今天 →') }}</a>
   </div>
 </section>
 
-<h2>动态</h2>
+<h2>{{ tr('动态') }}</h2>
 <div class="filters">
-  <a class="chip {{ 'active' if not type_filter }}" href="{{ url_for('index', status=status_filter) }}">全部</a>
-  <a class="chip {{ 'active' if type_filter == 'book' }}" href="{{ url_for('index', type='book', status=status_filter) }}">📚 书</a>
-  <a class="chip {{ 'active' if type_filter == 'show' }}" href="{{ url_for('index', type='show', status=status_filter) }}">🎬 剧</a>
+  <a class="chip {{ 'active' if not type_filter }}" href="{{ url_for('index', status=status_filter) }}">{{ tr('全部') }}</a>
+  <a class="chip {{ 'active' if type_filter == 'book' }}" href="{{ url_for('index', type='book', status=status_filter) }}">{{ tr('📚 书') }}</a>
+  <a class="chip {{ 'active' if type_filter == 'show' }}" href="{{ url_for('index', type='show', status=status_filter) }}">{{ tr('🎬 剧') }}</a>
   {% for key, meta in moment_types.items() %}
-    <a class="chip {{ 'active' if type_filter == key }}" href="{{ url_for('index', type=key, status=status_filter) }}">{{ meta.icon }} {{ meta.label }}</a>
+    <a class="chip {{ 'active' if type_filter == key }}" href="{{ url_for('index', type=key, status=status_filter) }}">{{ meta.icon }} {{ tr(meta.label) }}</a>
   {% endfor %}
-  <a class="chip {{ 'active' if type_filter == 'update' }}" href="{{ url_for('index', type='update', status=status_filter) }}">{{ changelog_type.icon }} {{ changelog_type.label }}</a>
+  <a class="chip {{ 'active' if type_filter == 'update' }}" href="{{ url_for('index', type='update', status=status_filter) }}">{{ changelog_type.icon }} {{ tr(changelog_type.label) }}</a>
   <span class="sep"></span>
-  <a class="chip {{ 'active' if not status_filter }}" href="{{ url_for('index', type=type_filter) }}">全部状态</a>
+  <a class="chip {{ 'active' if not status_filter }}" href="{{ url_for('index', type=type_filter) }}">{{ tr('全部状态') }}</a>
   {% for s in statuses %}
-    <a class="chip {{ 'active' if status_filter == s }}" href="{{ url_for('index', type=type_filter, status=s) }}">{{ s }}</a>
+    <a class="chip {{ 'active' if status_filter == s }}" href="{{ url_for('index', type=type_filter, status=s) }}">{{ tr(s) }}</a>
   {% endfor %}
 </div>
 
 {% if not feed %}
-  <p class="empty">还没有记录，点右上角「添加书」「添加剧」「记录动态」开始吧。</p>
+  <p class="empty">{{ tr('还没有记录，点右上角「添加书」「添加剧」「记录动态」开始吧。') }}</p>
 {% else %}
 <ul class="moment-list" id="feed-list">
   {% include "_feed_items.html" %}
@@ -52,7 +52,7 @@
        data-list-id="feed-list" data-loading-id="feed-loading"
        data-url="{{ url_for('feed_more') }}" data-offset="{{ feed|length }}"
        data-params='{"type": "{{ type_filter }}", "status": "{{ status_filter }}"}'></div>
-  <p id="feed-loading" class="hint feed-loading">加载中…</p>
+  <p id="feed-loading" class="hint feed-loading">{{ tr('加载中…') }}</p>
 {% endif %}
 {% endif %}
 

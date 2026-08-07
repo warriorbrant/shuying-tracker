@@ -168,4 +168,111 @@ TR = {
     "编辑这一章": "Edit this chapter",
     "▶ 继续": "▶ Resume",
     "⏸ 暂停": "⏸ Pause",
+
+    # --- index.html / _feed_items.html / _log_items.html ---
+    "{d}：{m} 分钟": "{d}: {m} min",
+    "过去一年打卡 {d} 天，累计用时 {h} 小时": "{d} active days in the past year, {h} hours total",
+    "查看今天 →": "View today →",
+    "动态": "Moments",
+    "全部": "All",
+    "📚 书": "📚 Books",
+    "🎬 剧": "🎬 Shows",
+    "全部状态": "All statuses",
+    "还没有记录，点右上角「添加书」「添加剧」「记录动态」开始吧。":
+        "Nothing yet — tap “Add” in the top right to add a book, a show, or log a moment.",
+    "用时 {m} 分钟": "{m} min spent",
+    "书": "Book",
+    "剧": "Show",
+    "进度：{p} {u}": "Progress: {p} {u}",
+    "加入了待看清单（{s}），还没有进度记录": "Added to the list ({s}), no progress logged yet",
+
+    # --- _log_items.html ---
+    "⏱ {m} 分钟": "⏱ {m} min",
+    "删除这条记录？": "Delete this entry?",
+    "删除": "Delete",
+
+    # --- item_detail.html ---
+    "{p} / {t} {u}（{pct}%）": "{p} / {t} {u} ({pct}%)",
+    "⏱ 总用时 {m} 分钟": "⏱ {m} min total",
+    "📝 {n} 条记录": "📝 {n} entries",
+    "总评 / 感想": "Overall review",
+    "编辑条目": "Edit",
+    "📤 一键生成分享图": "📤 Generate share image",
+    "先预览": "Preview first",
+    "确定删除《{title}》及其所有记录吗？此操作不可撤销。": "Delete “{title}” and all its logs? This can't be undone.",
+    "删除条目": "Delete",
+    "生成的图片可直接上传到小红书发笔记（小红书暂不支持网页一键跳转发布）。":
+        "The generated image can be uploaded directly to Xiaohongshu (no one-click web publish yet).",
+    "添加今日进度": "Log today's progress",
+    "日期": "Date",
+    "用时（分钟）": "Time spent (min)",
+    "进度到第几{u}": "Progress ({u})",
+    "页": "page",
+    "备注 / 感想": "Notes",
+    "今天读到/看到哪里，有什么想法…": "Where you got to today, any thoughts…",
+    "保存记录": "Save",
+    "历史记录": "History",
+    "还没有记录。": "No entries yet.",
+
+    # --- add_form.html ---
+    "添加": "Add",
+    "类型": "Type",
+    "书影": "Books & shows",
+    "从豆瓣链接自动填充（豆瓣读书 / 豆瓣电影·剧集）": "Auto-fill from a Douban link (Douban Books / Movies·Shows)",
+    "粘贴豆瓣页面链接，例如 https://book.douban.com/subject/xxxxx/":
+        "Paste a Douban page link, e.g. https://book.douban.com/subject/xxxxx/",
+    "自动填充": "Auto-fill",
+    "标题": "Title",
+    "作者 / 导演·出品方": "Author / Director·Studio",
+    "封面图片链接（可选）": "Cover image URL (optional)",
+    "豆瓣链接（可选，用自动填充会自动带上）": "Douban link (optional, filled in automatically by auto-fill)",
+    "总量（总页数 / 总集数）": "Total (pages / episodes)",
+    "单位": "Unit",
+    "页 / 集": "page / ep",
+    "状态": "Status",
+    "评分（1-5，可选）": "Rating (1-5, optional)",
+    "保存": "Save",
+    "取消": "Cancel",
+    "标题（可选，如股票代码、运动类型）": "Title (optional — stock ticker, workout type, etc.)",
+    "例如：贵州茅台 / 跑步 / 今日随笔": "e.g. AAPL / Running / Today's thoughts",
+    "内容 / 评论": "Content",
+    "写点什么：涨跌情况、时长距离、拍到了什么、当下的想法…":
+        "Write something: price moves, time/distance, what you photographed, what's on your mind…",
+    "用时（分钟，可选）": "Time spent (min, optional)",
+    "配图（可选）": "Photo (optional)",
+    "请先粘贴豆瓣链接": "Paste a Douban link first",
+    "正在抓取…": "Fetching…",
+    "抓取失败，请手动填写": "Fetch failed, please fill in manually",
+    "已自动填充，请检查并按需修改后保存": "Auto-filled — check it over and adjust before saving",
+    "抓取失败，请检查网络或手动填写": "Fetch failed — check your connection or fill in manually",
+
+    # --- item_form.html ---
+    "编辑": "Edit",
+    "编辑条目": "Edit Entry",
+    "添加新条目": "Add New Entry",
+
+    # --- moment_form.html ---
+    "记录动态": "Log a Moment",
+    "记录今天的动态": "Log Today's Moment",
+
+    # --- day.html ---
+    "← 前一天": "← Previous day",
+    "后一天 →": "Next day →",
+    "今天": "Today",
+    "📌 {n} 项记录": "📌 {n} entries",
+    "⏱ 共 {m} 分钟": "⏱ {m} min total",
+    "📤 一键生成今日分享图": "📤 Generate share image",
+    "+ 记录今天的动态": "+ Log a moment",
+    "📚🎬 书影进度": "📚🎬 Book/show progress",
+    "新添加 · {s}": "New · {s}",
+    "📝 今日动态": "📝 Today's moments",
+    "这一天还没有添加动态。": "No moments logged this day yet.",
+    "删除这条动态？": "Delete this moment?",
+
+    # --- search.html ---
+    "搜索": "Search",
+    "搜书名、作者、评论、想法…": "Search titles, authors, reviews, thoughts…",
+    "输入点什么开始搜索：书名、作者、每日感想、动态内容都能搜到。":
+        "Type something to search — titles, authors, daily notes, and moments are all searchable.",
+    "没有找到匹配「{q}」的内容。": "Nothing matches “{q}”.",
 }

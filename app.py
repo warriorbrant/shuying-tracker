@@ -310,8 +310,11 @@ def login():
         user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         conn.close()
         if user and check_password_hash(user["password_hash"], password):
+            lang = session.get("lang")
             session.clear()
             session["user_id"] = user["id"]
+            if lang:
+                session["lang"] = lang
             session.permanent = True
             return redirect(safe_next(request.form.get("next"), url_for("index")))
         return render_template(
@@ -325,7 +328,10 @@ def login():
 
 @app.route("/logout", methods=["POST"])
 def logout():
+    lang = session.get("lang")
     session.clear()
+    if lang:
+        session["lang"] = lang
     return redirect(url_for("login"))
 
 
@@ -356,8 +362,11 @@ def register():
                 conn.commit()
                 user_id = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()["id"]
                 conn.close()
+                lang = session.get("lang")
                 session.clear()
                 session["user_id"] = user_id
+                if lang:
+                    session["lang"] = lang
                 session.permanent = True
                 return redirect(url_for("index"))
         return render_template("register.html", error=error)
@@ -1002,7 +1011,9 @@ def build_feed(conn, user_id, type_filter, status_filter, offset=0, limit=FEED_P
             entries.append(entry)
 
     if show_changelog:
+        lang = g.get("lang", "zh")
         for i, c in enumerate(CHANGELOG):
+            c = localize_entry(c, lang)
             entries.append(
                 {
                     "kind": "changelog",
@@ -1528,7 +1539,7 @@ def day_view(date_str):
     ).fetchall()
     conn.close()
 
-    day_changelog = [c for c in CHANGELOG if c["date"] == date_str]
+    day_changelog = [localize_entry(c, g.lang) for c in CHANGELOG if c["date"] == date_str]
 
     total_minutes = sum(row["minutes_spent"] or 0 for row in logs) + sum(
         row["minutes_spent"] or 0 for row in moments
@@ -1546,7 +1557,11 @@ def day_view(date_str):
         moment_types=MOMENT_TYPES,
         total_minutes=total_minutes,
         activity_count=len(logs) + len(moments) + len(day_changelog) + len(new_items),
-        weekday_label=f"星期{WEEKDAY_CN[day.weekday()]}",
+        date_heading=(
+            f"{day.strftime('%B')} {day.day}, {day.strftime('%A')}"
+            if g.lang == "en"
+            else f"{day.month}月{day.day}日 星期{WEEKDAY_CN[day.weekday()]}"
+        ),
         prev_date=(day - timedelta(days=1)).isoformat(),
         next_date=(day + timedelta(days=1)).isoformat(),
         is_today=(day == date.today()),

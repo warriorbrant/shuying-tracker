@@ -17,7 +17,7 @@
       <input type="hidden" name="next" value="{{ request.full_path }}">
       <select name="status" class="status-select" data-status="{{ item.status }}" onchange="this.form.submit()">
         {% for s in statuses %}
-          <option value="{{ s }}" {{ 'selected' if item.status == s }}>{{ s }}</option>
+          <option value="{{ s }}" {{ 'selected' if item.status == s }}>{{ tr(s) }}</option>
         {% endfor %}
       </select>
     </form>
@@ -25,63 +25,63 @@
 
     {% if item.total_units %}
     <div class="progress-bar"><div class="progress-fill" style="width: {{ pct }}%"></div></div>
-    <div class="progress-text">{{ current_progress | round(1) }} / {{ item.total_units }} {{ item.unit_label }}（{{ pct }}%）</div>
+    <div class="progress-text">{{ tr('{p} / {t} {u}（{pct}%）', p=current_progress | round(1), t=item.total_units, u=item.unit_label, pct=pct) }}</div>
     {% endif %}
 
     <div class="stats">
-      <span>⏱ 总用时 {{ total_minutes }} 分钟</span>
-      <span>📝 {{ log_count }} 条记录</span>
+      <span>{{ tr('⏱ 总用时 {m} 分钟', m=total_minutes) }}</span>
+      <span>{{ tr('📝 {n} 条记录', n=log_count) }}</span>
     </div>
 
     {% if item.review %}
       <div class="review">
-        <h3>总评 / 感想</h3>
+        <h3>{{ tr('总评 / 感想') }}</h3>
         <p>{{ item.review }}</p>
       </div>
     {% endif %}
 
     <div class="actions">
-      <a class="btn-link" href="{{ url_for('item_edit', item_id=item.id) }}">编辑条目</a>
-      <a class="btn-share" href="{{ url_for('item_share_image', item_id=item.id, download=1) }}">📤 一键生成分享图</a>
-      <a class="btn-link" href="{{ url_for('item_share_image', item_id=item.id) }}" target="_blank">先预览</a>
+      <a class="btn-link" href="{{ url_for('item_edit', item_id=item.id) }}">{{ tr('编辑条目') }}</a>
+      <a class="btn-share" href="{{ url_for('item_share_image', item_id=item.id, download=1) }}">{{ tr('📤 一键生成分享图') }}</a>
+      <a class="btn-link" href="{{ url_for('item_share_image', item_id=item.id) }}" target="_blank">{{ tr('先预览') }}</a>
       <form method="post" action="{{ url_for('item_delete', item_id=item.id) }}"
-            onsubmit="return confirm('确定删除《{{ item.title }}》及其所有记录吗？此操作不可撤销。');">
-        <button type="submit" class="btn-danger">删除条目</button>
+            onsubmit="return confirm({{ tr('确定删除《{title}》及其所有记录吗？此操作不可撤销。', title=item.title) | tojson }});">
+        <button type="submit" class="btn-danger">{{ tr('删除条目') }}</button>
       </form>
     </div>
-    <p class="hint">生成的图片可直接上传到小红书发笔记（小红书暂不支持网页一键跳转发布）。</p>
+    <p class="hint">{{ tr('生成的图片可直接上传到小红书发笔记（小红书暂不支持网页一键跳转发布）。') }}</p>
   </div>
 </div>
 
 <section class="log-section">
-  <h2>添加今日进度</h2>
+  <h2>{{ tr('添加今日进度') }}</h2>
   <form class="form log-form" method="post" action="{{ url_for('log_add', item_id=item.id) }}">
     <div class="row">
       <label>
-        日期
+        {{ tr('日期') }}
         <input type="date" name="log_date" value="{{ today }}" required>
       </label>
       <label>
-        用时（分钟）
+        {{ tr('用时（分钟）') }}
         <input type="number" name="minutes_spent" min="0" value="0" required>
       </label>
       <label>
-        进度到第几{{ item.unit_label or '页' }}
+        {{ tr('进度到第几{u}', u=item.unit_label or tr('页')) }}
         <input type="number" name="progress_at" min="0" step="0.5" value="{{ current_progress if current_progress else '' }}">
       </label>
     </div>
     <label>
-      备注 / 感想
-      <textarea name="comment" rows="2" placeholder="今天读到/看到哪里，有什么想法…"></textarea>
+      {{ tr('备注 / 感想') }}
+      <textarea name="comment" rows="2" placeholder="{{ tr('今天读到/看到哪里，有什么想法…') }}"></textarea>
     </label>
-    <button type="submit">保存记录</button>
+    <button type="submit">{{ tr('保存记录') }}</button>
   </form>
 </section>
 
 <section class="log-section">
-  <h2>历史记录</h2>
+  <h2>{{ tr('历史记录') }}</h2>
   {% if not logs %}
-    <p class="empty">还没有记录。</p>
+    <p class="empty">{{ tr('还没有记录。') }}</p>
   {% else %}
   <ul class="log-list" id="log-list">
     {% include "_log_items.html" %}
@@ -90,7 +90,7 @@
     <div id="log-sentinel" data-infinite-scroll
          data-list-id="log-list" data-loading-id="log-loading"
          data-url="{{ url_for('item_logs_more', item_id=item.id) }}" data-offset="{{ logs|length }}"></div>
-    <p id="log-loading" class="hint feed-loading">加载中…</p>
+    <p id="log-loading" class="hint feed-loading">{{ tr('加载中…') }}</p>
   {% endif %}
   {% endif %}
 </section>

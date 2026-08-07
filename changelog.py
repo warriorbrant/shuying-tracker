@@ -2135,4 +2135,33 @@ CHANGELOG = [
         "lines_changed": 320,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "英文版第二步：日常使用页面（首页动态流、加书、写动态）也能切英文了",
+        "title_en": "English site, step 2: day-to-day pages (feed, add, moments) now switch",
+        "summary": (
+            "接着上一步，把登录后天天在用的页面也翻了：首页动态瀑布流、单条目详情页、加书/加剧/记录动态"
+            "的表单、按天查看、全站搜索。翻的还是界面文字（按钮、标签、提示语、状态名如「想看/进行中/已"
+            "完成」），感想、评论、动态内容这些自己写的东西一如既往不翻译。顺手修了两个小问题：一是首页"
+            "动态流和按天查看里混进来的「网站更新」卡片之前没跟着切语言，现在也会显示对应语言的标题和摘要；"
+            "二是发现登录/注册/退出的时候后端会清空整个 session，之前设置的语言偏好也被一起清掉了——测试"
+            "的时候切成英文、登出再登入，页面又变回中文才发现——现在这三个地方都会在清空前把语言偏好先存"
+            "一下、清完再放回去。"
+        ),
+        "summary_en": (
+            "Continuing from step 1: translated the pages used every day once logged in — the main "
+            "feed, item detail, the add-book/add-show/log-a-moment forms, the day view, and site "
+            "search. Same scope as before: UI chrome only (buttons, labels, hints, status names like "
+            "\"want to / in progress / done\") — reviews, comments, and moment content you actually "
+            "wrote are never touched. Fixed two small things along the way: the \"site update\" cards "
+            "that show up in the main feed and day view weren't switching language before, now they "
+            "show the matching title/summary; and login/register/logout were calling session.clear(), "
+            "which wiped the language preference along with everything else -- caught it while testing "
+            "when switching to English, logging out, and back in reset the site to Chinese. All three "
+            "now stash the language choice before clearing and restore it after."
+        ),
+        "image": None,
+        "lines_changed": 260,
+        "estimated": False,
+    },
 ]
