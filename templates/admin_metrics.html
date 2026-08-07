@@ -1,27 +1,27 @@
 {% extends "base.html" %}
-{% block title %}性能指标 - 知行合一AI实验室{% endblock %}
+{% block title %}{{ tr('性能指标 - 知行合一AI实验室') }}{% endblock %}
 {% block content %}
-<h1>性能指标</h1>
+<h1>{{ tr('性能指标') }}</h1>
 <p class="hint">
-  延迟和吞吐量数据只存在内存里，服务重启会清零，不做历史存档。
-  命中 CDN 边缘缓存的静态资源不会打到这里的源站，这里看到的是实际到达服务器的请求。
+  {{ tr('延迟和吞吐量数据只存在内存里，服务重启会清零，不做历史存档。') }}
+  {{ tr('命中 CDN 边缘缓存的静态资源不会打到这里的源站，这里看到的是实际到达服务器的请求。') }}
 </p>
 
 <div class="metrics-grid">
   <div class="metrics-card">
-    <h2>最近 60 秒</h2>
+    <h2>{{ tr('最近 60 秒') }}</h2>
     <div class="metric-row"><span>QPS</span><strong id="m60-tps">-</strong></div>
-    <div class="metric-row"><span>请求数</span><strong id="m60-count">-</strong></div>
-    <div class="metric-row"><span>平均延迟</span><strong id="m60-avg">-</strong></div>
+    <div class="metric-row"><span>{{ tr('请求数') }}</span><strong id="m60-count">-</strong></div>
+    <div class="metric-row"><span>{{ tr('平均延迟') }}</span><strong id="m60-avg">-</strong></div>
     <div class="metric-row"><span>P50</span><strong id="m60-p50">-</strong></div>
     <div class="metric-row"><span>P95</span><strong id="m60-p95">-</strong></div>
     <div class="metric-row"><span>P99</span><strong id="m60-p99">-</strong></div>
   </div>
   <div class="metrics-card">
-    <h2>最近 5 分钟</h2>
+    <h2>{{ tr('最近 5 分钟') }}</h2>
     <div class="metric-row"><span>QPS</span><strong id="m5m-tps">-</strong></div>
-    <div class="metric-row"><span>请求数</span><strong id="m5m-count">-</strong></div>
-    <div class="metric-row"><span>平均延迟</span><strong id="m5m-avg">-</strong></div>
+    <div class="metric-row"><span>{{ tr('请求数') }}</span><strong id="m5m-count">-</strong></div>
+    <div class="metric-row"><span>{{ tr('平均延迟') }}</span><strong id="m5m-avg">-</strong></div>
     <div class="metric-row"><span>P50</span><strong id="m5m-p50">-</strong></div>
     <div class="metric-row"><span>P95</span><strong id="m5m-p95">-</strong></div>
     <div class="metric-row"><span>P99</span><strong id="m5m-p99">-</strong></div>
@@ -29,19 +29,19 @@
 </div>
 
 <div class="metrics-card">
-  <h2>状态码分布（最近 5 分钟）</h2>
+  <h2>{{ tr('状态码分布（最近 5 分钟）') }}</h2>
   <div id="m5m-status" class="status-breakdown">-</div>
 </div>
 
 <div class="metrics-card">
-  <h2>按接口统计（最近 5 分钟，按请求量排序）</h2>
+  <h2>{{ tr('按接口统计（最近 5 分钟，按请求量排序）') }}</h2>
   <table class="metrics-table">
-    <thead><tr><th>接口</th><th>请求数</th><th>平均延迟</th></tr></thead>
+    <thead><tr><th>{{ tr('接口') }}</th><th>{{ tr('请求数') }}</th><th>{{ tr('平均延迟') }}</th></tr></thead>
     <tbody id="m5m-endpoints"></tbody>
   </table>
 </div>
 
-<p class="hint">运行时长：<span id="uptime">-</span> · 每 3 秒自动刷新</p>
+<p class="hint">{{ tr('运行时长：') }}<span id="uptime">-</span>{{ tr(' · 每 3 秒自动刷新') }}</p>
 {% endblock %}
 
 {% block scripts %}
@@ -53,9 +53,9 @@ function fmtUptime(s) {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  if (h) return `${h}小时${m}分钟`;
-  if (m) return `${m}分${sec}秒`;
-  return `${sec}秒`;
+  if (h) return {{ tr('{h}小时{m}分钟') | tojson }}.replace('{h}', h).replace('{m}', m);
+  if (m) return {{ tr('{m}分{s}秒') | tojson }}.replace('{m}', m).replace('{s}', sec);
+  return {{ tr('{s}秒') | tojson }}.replace('{s}', sec);
 }
 
 function fillWindow(prefix, s) {

@@ -275,4 +275,158 @@ TR = {
     "输入点什么开始搜索：书名、作者、每日感想、动态内容都能搜到。":
         "Type something to search — titles, authors, daily notes, and moments are all searchable.",
     "没有找到匹配「{q}」的内容。": "Nothing matches “{q}”.",
+
+    # --- novel_form.html ---
+    "编辑小说": "Edit Novel",
+    "新建小说": "New Novel",
+    "书名": "Title",
+    "简介": "Summary",
+    "封面图片（可选）": "Cover image (optional)",
+    "🔒 锁定整本小说（未登录访客所有章节都看不了）": "🔒 Lock the whole novel (no chapter visible to logged-out visitors)",
+    "查看小说页": "View novel page",
+    "确定删除《{title}》及其所有章节、人物、视频吗？此操作不可撤销。":
+        "Delete “{title}” and all its chapters, characters, and videos? This can't be undone.",
+    "删除小说": "Delete novel",
+    "分卷（共 {n} 卷）": "Volumes ({n})",
+    "确定删除《{title}》这一卷吗？卷里的章节不会被删除，只是变成未分卷。":
+        "Delete the volume “{title}”? Its chapters won't be deleted, just unassigned.",
+    "新的一卷叫什么，例如「第一卷 风起」": "Name the new volume, e.g. “Volume 1: Winds Rise”",
+    "新增卷": "New Volume",
+    "章节（共 {n} 章 · 共 {w} 字）": "Chapters ({n} · {w} words)",
+    "+ 新增章节": "+ New Chapter",
+    "确定删除这一章吗？": "Delete this chapter?",
+    "🔒 锁定选中章节": "🔒 Lock selected",
+    "🔓 解锁选中章节": "🔓 Unlock selected",
+    "移到未分卷": "Move to unassigned",
+    "移到 第 {n} 卷 · {title}": "Move to Volume {n} · {title}",
+    "批量移卷": "Move",
+    "勾选章节前面的框，再点上面的按钮批量锁定/解锁，或者选一卷批量移过去。":
+        "Check the boxes next to chapters, then use the buttons above to lock/unlock in bulk, or pick a volume to move them into.",
+    "替换 / 编辑": "Replace / Edit",
+    "确定删除这个角色吗？": "Delete this character?",
+    "角色名": "Character name",
+    "概念图（可选，AI 生成或自己画的都行）": "Concept art (optional — AI-generated or hand-drawn, either works)",
+    "角色简介（可选）": "Description (optional)",
+    "添加角色": "Add Character",
+    "时长约 {s} 秒": "~{s}s",
+    "确定删除这个视频吗？": "Delete this video?",
+    "视频标题（可选）": "Video title (optional)",
+    "来源": "Source",
+    "上传文件（最长 5 分钟，会自动压缩）": "Upload a file (up to 5 min, auto-compressed)",
+    "粘贴链接（B站 / YouTube）": "Paste a link (Bilibili / YouTube)",
+    "视频文件": "Video file",
+    "视频链接": "Video link",
+    "https://www.bilibili.com/video/BV... 或 https://youtu.be/...":
+        "https://www.bilibili.com/video/BV... or https://youtu.be/...",
+    "添加视频": "Add Video",
+    "「在分享图中显示」勾选的会出现在小说分享图里，建议选 5-10 本；已选 {n} 本":
+        "Checking “show in share image” includes it in the novel's share card — 5-10 is a good range; {n} selected so far",
+    "（超过 10 本时分享图只取前 10 本）": " (only the first 10 are used if you pick more than 10)",
+    "豆瓣 →": "Douban →",
+    "在分享图中显示": "Show in share image",
+    "确定从参考书目移除吗？（不会删除这本书本身）": "Remove from references? (the book itself won't be deleted)",
+    "移除": "Remove",
+    "搜索书名添加（从已经添加过的书里找）": "Search to add (from books you've already added)",
+    "输入书名或作者…": "Type a title or author…",
+    "没有想要的书？": "Don't see the book you want? ",
+    "先去添加一本 →": "Add one first →",
+    "（添加完回到这里搜索）": " (then come back and search here)",
+    "没有匹配的书（可能已经加过了）": "No matching books (may already be added)",
+
+    # --- novel_chapter_form.html ---
+    "编辑章节": "Edit Chapter",
+    "新增章节": "New Chapter",
+    "章节标题": "Chapter title",
+    "正文": "Content",
+    "所属卷（可选）": "Volume (optional)",
+    "不属于任何卷": "No volume",
+    "🔒 锁定本章（未登录访客看不了这一章）": "🔒 Lock this chapter (not visible to logged-out visitors)",
+    "本章出场人物（搜索添加）": "Characters in this chapter (search to add)",
+    "移除": "Remove",
+    "输入人物名，或点一下看全部…": "Type a character name, or click to see all…",
+    "本章视频（搜索添加）": "Videos in this chapter (search to add)",
+    "视频 #{n}": "Video #{n}",
+    "输入视频标题，或点一下看全部…": "Type a video title, or click to see all…",
+    "没有可添加的了": "Nothing left to add",
+
+    # --- novel_character_form.html ---
+    "编辑角色": "Edit Character",
+    "替换图片或改名后，所有已经关联这个角色的章节会自动同步显示最新的样子，不用逐章重新设置。":
+        "Replace the image or rename it and every chapter already linked to this character updates automatically — no need to redo it chapter by chapter.",
+    "替换概念图（可选，留空保持原图）": "Replace concept art (optional, leave blank to keep the current one)",
+
+    # --- admin_users.html ---
+    "账号管理": "Accounts",
+    "给 {u} 的一次性重置链接（24 小时内有效，用一次就失效），复制发给对方：":
+        "One-time reset link for {u} (valid 24h, single use) — copy it and send it to them:",
+    "已有账号（共 {n} 个）": "Accounts ({n})",
+    "· 🛡️ 管理员": " · 🛡️ Admin",
+    "· {d} 创建": " · created {d}",
+    "新密码（至少6位）": "New password (min 6 chars)",
+    "直接重置": "Reset directly",
+    "生成重置链接": "Generate reset link",
+    "新增账号": "Add Account",
+    "用户名": "Username",
+    "密码": "Password",
+    "设为管理员（能管理账号、绕过所有人的锁定内容）": "Make admin (can manage accounts, bypass everyone's locked content)",
+    "自助注册": "Self-Registration",
+    "允许任何人自己注册账号": "Allow anyone to register their own account",
+    "默认关闭，新账号只能在上面手动加；打开之后 /register 页面才能用。":
+        "Off by default — new accounts can only be added manually above; turning this on makes /register usable.",
+    "数据备份": "Data Backup",
+    "下载整个网站数据目录的原样打包（数据库文件 + 所有上传的图片/视频），不区分账号，是最完整的一份快照。文件可能比较大，下载需要一点时间。":
+        "Download a raw copy of the whole data directory (database file + every uploaded/generated "
+        "image and video), not scoped to any account — the most complete snapshot available. The file "
+        "can be large, so it may take a moment.",
+    "⬇️ 下载完整备份": "⬇️ Download Full Backup",
+    "{u} 的密码已经重置": "{u}'s password has been reset",
+
+    # --- admin_metrics.html ---
+    "性能指标 - 知行合一AI实验室": "Metrics - Unity of Knowledge & Action AI Lab",
+    "性能指标": "Metrics",
+    "延迟和吞吐量数据只存在内存里，服务重启会清零，不做历史存档。":
+        "Latency and throughput data lives in memory only — it resets on every restart, no history is kept.",
+    "命中 CDN 边缘缓存的静态资源不会打到这里的源站，这里看到的是实际到达服务器的请求。":
+        "Static assets served from the CDN edge never reach the origin — what you see here is requests that actually hit the server.",
+    "最近 60 秒": "Last 60s",
+    "请求数": "Requests",
+    "平均延迟": "Avg latency",
+    "最近 5 分钟": "Last 5 min",
+    "状态码分布（最近 5 分钟）": "Status codes (last 5 min)",
+    "按接口统计（最近 5 分钟，按请求量排序）": "By endpoint (last 5 min, sorted by volume)",
+    "接口": "Endpoint",
+    "运行时长：": "Uptime: ",
+    " · 每 3 秒自动刷新": " · auto-refreshes every 3s",
+    "{h}小时{m}分钟": "{h}h {m}m",
+    "{m}分{s}秒": "{m}m {s}s",
+    "{s}秒": "{s}s",
+
+    # --- moment_scan.html ---
+    "截图识别导入": "Screenshot Import",
+    "从朋友圈截图批量导入": "Bulk Import from Screenshots",
+    "在手机上把你自己发的朋友圈截图（文字+图片都行），传到电脑上传上来。":
+        "Take a screenshot of your own posts (text or images both work) and upload them from your computer.",
+    "AI 会自动识别文字、判断类型、草拟内容，你确认修改后再保存，不会跳过审核直接入库。":
+        "AI reads the text, guesses the type, and drafts the content — you review and edit before saving, nothing is saved without your confirmation.",
+    "还没有配置 AI 识图功能。请在项目目录下新建一个 <code>.env</code> 文件（可以参考 <code>.env.example</code>），":
+        "AI screenshot recognition isn't configured yet. Create a <code>.env</code> file in the project directory (see <code>.env.example</code>), ",
+    "填入一行 <code>ANTHROPIC_API_KEY=你的key</code>，保存后重启服务即可生效。":
+        "add a line <code>ANTHROPIC_API_KEY=your_key</code>, save, and restart the server.",
+    "选择截图（可多选）": "Choose screenshots (multiple allowed)",
+    "开始识别": "Start Recognition",
+    "改为手动添加": "Add manually instead",
+    "还没有配置 ANTHROPIC_API_KEY，请先在 .env 文件里填好再重试。": "ANTHROPIC_API_KEY isn't configured yet — set it in .env and try again.",
+    "请至少选择一张截图。": "Select at least one screenshot.",
+
+    # --- moment_scan_review.html ---
+    "确认识别结果": "Review Results",
+    "检查一下 AI 识别的内容，改一改不准确的地方；不想要的取消勾选「保存这条」，最后点保存全部。":
+        "Check what the AI recognized and fix anything off — uncheck “Save this” for ones you don't want, then save all.",
+    "截图预览": "Screenshot preview",
+    "保存这条": "Save this",
+    "标题": "Title",
+    "内容": "Content",
+    "保存全部": "Save All",
+    "重新上传": "Upload Again",
+    "没有识别出任何内容。": "Nothing was recognized.",
 }

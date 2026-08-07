@@ -1,70 +1,70 @@
 {% extends "base.html" %}
-{% block title %}{{ '编辑章节' if chapter else '新增章节' }}{% endblock %}
+{% block title %}{{ tr('编辑章节') if chapter else tr('新增章节') }}{% endblock %}
 {% block content %}
 
-<h1>{{ '编辑章节' if chapter else '新增章节' }} · {{ novel.title }}</h1>
+<h1>{{ tr('编辑章节') if chapter else tr('新增章节') }} · {{ novel.title }}</h1>
 
 <form class="form form-wide" method="post">
   <label>
-    章节标题
+    {{ tr('章节标题') }}
     <input type="text" name="title" required value="{{ chapter.title if chapter else '' }}">
   </label>
 
   <label>
-    正文
+    {{ tr('正文') }}
     <textarea name="content" rows="24" class="chapter-content-input">{{ chapter.content if chapter else '' }}</textarea>
   </label>
 
   <label>
-    所属卷（可选）
+    {{ tr('所属卷（可选）') }}
     <select name="volume_id">
-      <option value="">不属于任何卷</option>
+      <option value="">{{ tr('不属于任何卷') }}</option>
       {% for v in volumes %}
-        <option value="{{ v.id }}" {{ 'selected' if chapter and chapter.volume_id == v.id }}>第 {{ v.volume_no }} 卷 · {{ v.title }}</option>
+        <option value="{{ v.id }}" {{ 'selected' if chapter and chapter.volume_id == v.id }}>{{ tr('第 {n} 卷 · {title}', n=v.volume_no, title=v.title) }}</option>
       {% endfor %}
     </select>
   </label>
 
   <label class="checkbox-label">
     <input type="checkbox" name="is_locked" {{ 'checked' if chapter and chapter.is_locked }}>
-    🔒 锁定本章（未登录访客看不了这一章）
+    {{ tr('🔒 锁定本章（未登录访客看不了这一章）') }}
   </label>
 
-  <label>本章出场人物（搜索添加）</label>
+  <label>{{ tr('本章出场人物（搜索添加）') }}</label>
   <div id="selectedCharacters" class="chip-list">
     {% for ch in preselected_characters %}
     <span class="chip">
       {% if ch.image_path %}<img src="{{ url_for('serve_novel_media', filename=ch.image_path) }}" alt="">{% endif %}
       {{ ch.name }}
-      <button type="button" class="chip-remove" aria-label="移除">×</button>
+      <button type="button" class="chip-remove" aria-label="{{ tr('移除') }}">×</button>
       <input type="hidden" name="character_ids" value="{{ ch.id }}">
     </span>
     {% endfor %}
   </div>
   <div class="ref-search-box">
-    <input type="text" id="charSearch" autocomplete="off" placeholder="输入人物名，或点一下看全部…">
+    <input type="text" id="charSearch" autocomplete="off" placeholder="{{ tr('输入人物名，或点一下看全部…') }}">
     <div id="charResults" class="ref-results"></div>
   </div>
 
-  <label>本章视频（搜索添加）</label>
+  <label>{{ tr('本章视频（搜索添加）') }}</label>
   <div id="selectedVideos" class="chip-list">
     {% for v in preselected_videos %}
     <span class="chip">
       {% if v.source_type == 'upload' and v.thumbnail_path %}<img src="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}" alt="">{% endif %}
-      {{ v.title or ('视频 #' ~ v.id) }}
-      <button type="button" class="chip-remove" aria-label="移除">×</button>
+      {{ v.title or tr('视频 #{n}', n=v.id) }}
+      <button type="button" class="chip-remove" aria-label="{{ tr('移除') }}">×</button>
       <input type="hidden" name="video_ids" value="{{ v.id }}">
     </span>
     {% endfor %}
   </div>
   <div class="ref-search-box">
-    <input type="text" id="videoSearch" autocomplete="off" placeholder="输入视频标题，或点一下看全部…">
+    <input type="text" id="videoSearch" autocomplete="off" placeholder="{{ tr('输入视频标题，或点一下看全部…') }}">
     <div id="videoResults" class="ref-results"></div>
   </div>
 
   <div class="actions">
-    <button type="submit">保存</button>
-    <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">取消</a>
+    <button type="submit">{{ tr('保存') }}</button>
+    <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">{{ tr('取消') }}</a>
   </div>
 </form>
 
@@ -116,7 +116,7 @@
       if (!shown.length) {
         var e = document.createElement('div');
         e.className = 'ref-result-empty';
-        e.textContent = '没有可添加的了';
+        e.textContent = {{ tr('没有可添加的了') | tojson }};
         results.appendChild(e);
         return;
       }

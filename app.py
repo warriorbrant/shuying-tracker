@@ -460,7 +460,7 @@ def admin_reset_password(user_id):
     )
     conn.commit()
     conn.close()
-    return redirect(url_for("admin_users", info=f"{user['username']} 的密码已经重置"))
+    return redirect(url_for("admin_users", info=tr("{u} 的密码已经重置", u=user["username"])))
 
 
 @app.route("/admin/users/<int:user_id>/reset-link", methods=["POST"])

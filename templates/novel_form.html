@@ -1,52 +1,52 @@
 {% extends "base.html" %}
-{% block title %}{{ '编辑小说' if novel else '新建小说' }}{% endblock %}
+{% block title %}{{ tr('编辑小说') if novel else tr('新建小说') }}{% endblock %}
 {% block content %}
 
-<h1>{{ '编辑小说' if novel else '新建小说' }}</h1>
+<h1>{{ tr('编辑小说') if novel else tr('新建小说') }}</h1>
 
 {% if error %}<p class="hint hint-error">{{ error }}</p>{% endif %}
 
 <form class="form" method="post" enctype="multipart/form-data">
   <label>
-    书名
+    {{ tr('书名') }}
     <input type="text" name="title" required value="{{ novel.title if novel else '' }}">
   </label>
 
   <label>
-    简介
+    {{ tr('简介') }}
     <textarea name="summary" rows="3">{{ novel.summary if novel else '' }}</textarea>
   </label>
 
   <div class="row">
     <label>
-      状态
+      {{ tr('状态') }}
       <select name="status">
         {% for s in statuses %}
-          <option value="{{ s }}" {{ 'selected' if (novel.status if novel else '连载中') == s }}>{{ s }}</option>
+          <option value="{{ s }}" {{ 'selected' if (novel.status if novel else '连载中') == s }}>{{ tr(s) }}</option>
         {% endfor %}
       </select>
     </label>
     <label>
-      封面图片（可选）
+      {{ tr('封面图片（可选）') }}
       <input type="file" name="cover_file" accept="image/*">
     </label>
   </div>
 
   <label class="checkbox-label">
     <input type="checkbox" name="is_locked" {{ 'checked' if novel and novel.is_locked }}>
-    🔒 锁定整本小说（未登录访客所有章节都看不了）
+    {{ tr('🔒 锁定整本小说（未登录访客所有章节都看不了）') }}
   </label>
 
   <div class="actions">
-    <button type="submit">保存</button>
+    <button type="submit">{{ tr('保存') }}</button>
     {% if novel %}
-      <a class="btn-link" href="{{ url_for('novel_detail', novel_id=novel.id) }}">查看小说页</a>
+      <a class="btn-link" href="{{ url_for('novel_detail', novel_id=novel.id) }}">{{ tr('查看小说页') }}</a>
       <form method="post" action="{{ url_for('novel_delete', novel_id=novel.id) }}"
-            onsubmit="return confirm('确定删除《{{ novel.title }}》及其所有章节、人物、视频吗？此操作不可撤销。');">
-        <button type="submit" class="btn-danger">删除小说</button>
+            onsubmit="return confirm({{ tr('确定删除《{title}》及其所有章节、人物、视频吗？此操作不可撤销。', title=novel.title) | tojson }});">
+        <button type="submit" class="btn-danger">{{ tr('删除小说') }}</button>
       </form>
     {% else %}
-      <a class="btn-link" href="{{ url_for('novels_list') }}">取消</a>
+      <a class="btn-link" href="{{ url_for('novels_list') }}">{{ tr('取消') }}</a>
     {% endif %}
   </div>
 </form>
@@ -54,37 +54,37 @@
 {% if novel %}
 
 <section class="log-section">
-  <h2>分卷（共 {{ volumes|length }} 卷）</h2>
+  <h2>{{ tr('分卷（共 {n} 卷）', n=volumes|length) }}</h2>
   {% if volumes %}
   <ul class="volume-list">
     {% for v in volumes %}
     <li>
-      <span>第 {{ v.volume_no }} 卷 · {{ v.title }}</span>
+      <span>{{ tr('第 {n} 卷 · {title}', n=v.volume_no, title=v.title) }}</span>
       <form method="post" action="{{ url_for('novel_volume_delete', novel_id=novel.id, volume_id=v.id) }}"
-            onsubmit="return confirm('确定删除《{{ v.title }}》这一卷吗？卷里的章节不会被删除，只是变成未分卷。');" class="inline-delete">
-        <button type="submit" class="btn-danger-sm">删除</button>
+            onsubmit="return confirm({{ tr('确定删除《{title}》这一卷吗？卷里的章节不会被删除，只是变成未分卷。', title=v.title) | tojson }});" class="inline-delete">
+        <button type="submit" class="btn-danger-sm">{{ tr('删除') }}</button>
       </form>
     </li>
     {% endfor %}
   </ul>
   {% endif %}
   <form method="post" action="{{ url_for('novel_volume_new', novel_id=novel.id) }}" class="volume-add-form">
-    <input type="text" name="title" placeholder="新的一卷叫什么，例如「第一卷 风起」" required>
-    <button type="submit">新增卷</button>
+    <input type="text" name="title" placeholder="{{ tr('新的一卷叫什么，例如「第一卷 风起」') }}" required>
+    <button type="submit">{{ tr('新增卷') }}</button>
   </form>
 </section>
 
 <section class="log-section">
   <div class="changelog-header-row">
-    <h2>章节（共 {{ chapters|length }} 章 · 共 {{ total_words }} 字）</h2>
-    <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">+ 新增章节</a>
+    <h2>{{ tr('章节（共 {n} 章 · 共 {w} 字）', n=chapters|length, w=total_words) }}</h2>
+    <a class="btn-link" href="{{ url_for('novel_chapter_new', novel_id=novel.id) }}">{{ tr('+ 新增章节') }}</a>
   </div>
   {% if chapters %}
   {% for group in chapter_groups %}
     {% if group.volume_id %}
-      <h3 class="volume-heading">第 {{ group.volume_no }} 卷 · {{ group.volume_title }}</h3>
+      <h3 class="volume-heading">{{ tr('第 {n} 卷 · {title}', n=group.volume_no, title=group.volume_title) }}</h3>
     {% elif volumes %}
-      <h3 class="volume-heading volume-heading-unassigned">未分卷</h3>
+      <h3 class="volume-heading volume-heading-unassigned">{{ tr('未分卷') }}</h3>
     {% endif %}
     <ul class="chapter-list">
       {% for c in group.chapters %}
@@ -93,40 +93,40 @@
           <input type="checkbox" name="chapter_ids" value="{{ c.id }}" form="bulkLockForm">
         </label>
         <a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=c.id) }}">
-          {% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
-          <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+          {% if c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}{{ tr('第 {n} 章 · {title}', n=c.chapter_no, title=c.title) }}
+          <span class="chapter-meta">{{ tr('{n} 字 · {d}', n=c.word_count or 0, d=c.updated_at[:10]) }}</span>
         </a>
         <form method="post" action="{{ url_for('novel_chapter_delete', novel_id=novel.id, chapter_id=c.id) }}"
-              onsubmit="return confirm('确定删除这一章吗？');" class="inline-delete">
-          <button type="submit" class="btn-danger-sm">删除</button>
+              onsubmit="return confirm({{ tr('确定删除这一章吗？') | tojson }});" class="inline-delete">
+          <button type="submit" class="btn-danger-sm">{{ tr('删除') }}</button>
         </form>
       </li>
       {% endfor %}
     </ul>
   {% endfor %}
   <form id="bulkLockForm" method="post" action="{{ url_for('novel_chapters_bulk_lock', novel_id=novel.id) }}" class="bulk-lock-actions">
-    <button type="submit" name="action" value="lock">🔒 锁定选中章节</button>
-    <button type="submit" name="action" value="unlock">🔓 解锁选中章节</button>
+    <button type="submit" name="action" value="lock">{{ tr('🔒 锁定选中章节') }}</button>
+    <button type="submit" name="action" value="unlock">{{ tr('🔓 解锁选中章节') }}</button>
   </form>
   {% if volumes %}
   <form id="bulkVolumeForm" method="post" action="{{ url_for('novel_chapters_bulk_volume', novel_id=novel.id) }}" class="bulk-lock-actions">
     <select name="volume_id">
-      <option value="">移到未分卷</option>
+      <option value="">{{ tr('移到未分卷') }}</option>
       {% for v in volumes %}
-        <option value="{{ v.id }}">移到 第 {{ v.volume_no }} 卷 · {{ v.title }}</option>
+        <option value="{{ v.id }}">{{ tr('移到 第 {n} 卷 · {title}', n=v.volume_no, title=v.title) }}</option>
       {% endfor %}
     </select>
-    <button type="submit">批量移卷</button>
+    <button type="submit">{{ tr('批量移卷') }}</button>
   </form>
   {% endif %}
-  <p class="hint">勾选章节前面的框，再点上面的按钮批量锁定/解锁，或者选一卷批量移过去。</p>
+  <p class="hint">{{ tr('勾选章节前面的框，再点上面的按钮批量锁定/解锁，或者选一卷批量移过去。') }}</p>
   {% else %}
-  <p class="hint">还没有章节。</p>
+  <p class="hint">{{ tr('还没有章节。') }}</p>
   {% endif %}
 </section>
 
 <section class="log-section">
-  <h2>人物角色</h2>
+  <h2>{{ tr('人物角色') }}</h2>
   {% if characters %}
   <div class="character-grid">
     {% for ch in characters %}
@@ -139,10 +139,10 @@
       <h3>{{ ch.name }}</h3>
       {% if ch.description %}<p>{{ ch.description }}</p>{% endif %}
       <div class="character-card-actions">
-        <a class="btn-link" href="{{ url_for('novel_character_edit', novel_id=novel.id, character_id=ch.id) }}">替换 / 编辑</a>
+        <a class="btn-link" href="{{ url_for('novel_character_edit', novel_id=novel.id, character_id=ch.id) }}">{{ tr('替换 / 编辑') }}</a>
         <form method="post" action="{{ url_for('novel_character_delete', novel_id=novel.id, character_id=ch.id) }}"
-              onsubmit="return confirm('确定删除这个角色吗？');">
-          <button type="submit" class="btn-danger-sm">删除</button>
+              onsubmit="return confirm({{ tr('确定删除这个角色吗？') | tojson }});">
+          <button type="submit" class="btn-danger-sm">{{ tr('删除') }}</button>
         </form>
       </div>
     </div>
@@ -153,26 +153,26 @@
   <form class="form" method="post" action="{{ url_for('novel_character_new', novel_id=novel.id) }}" enctype="multipart/form-data">
     <div class="row">
       <label>
-        角色名
+        {{ tr('角色名') }}
         <input type="text" name="name" required>
       </label>
       <label>
-        概念图（可选，AI 生成或自己画的都行）
+        {{ tr('概念图（可选，AI 生成或自己画的都行）') }}
         <input type="file" name="image_file" accept="image/*">
       </label>
     </div>
     <label>
-      角色简介（可选）
+      {{ tr('角色简介（可选）') }}
       <textarea name="description" rows="2"></textarea>
     </label>
     <div class="actions">
-      <button type="submit">添加角色</button>
+      <button type="submit">{{ tr('添加角色') }}</button>
     </div>
   </form>
 </section>
 
 <section class="log-section">
-  <h2>相关视频</h2>
+  <h2>{{ tr('相关视频') }}</h2>
   {% if videos %}
   <div class="video-grid">
     {% for v in videos %}
@@ -183,18 +183,18 @@
           {% if v.thumbnail_path %}poster="{{ url_for('serve_novel_media', filename=v.thumbnail_path) }}"{% endif %}>
           <source src="{{ url_for('serve_novel_media', filename=v.video_path) }}" type="video/mp4">
         </video>
-        <p class="hint">时长约 {{ v.duration_seconds }} 秒</p>
+        <p class="hint">{{ tr('时长约 {s} 秒', s=v.duration_seconds) }}</p>
       {% else %}
         {% set embed = parse_video_embed(v.video_url) %}
         {% if embed %}
           <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
         {% else %}
-          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">{{ tr('在新窗口打开视频 →') }}</a>
         {% endif %}
       {% endif %}
       <form method="post" action="{{ url_for('novel_video_delete', novel_id=novel.id, video_id=v.id) }}"
-            onsubmit="return confirm('确定删除这个视频吗？');">
-        <button type="submit" class="btn-danger-sm">删除</button>
+            onsubmit="return confirm({{ tr('确定删除这个视频吗？') | tojson }});">
+        <button type="submit" class="btn-danger-sm">{{ tr('删除') }}</button>
       </form>
     </div>
     {% endfor %}
@@ -203,26 +203,26 @@
 
   <form class="form" method="post" action="{{ url_for('novel_video_new', novel_id=novel.id) }}" enctype="multipart/form-data" id="videoForm">
     <label>
-      视频标题（可选）
+      {{ tr('视频标题（可选）') }}
       <input type="text" name="title">
     </label>
     <label>
-      来源
+      {{ tr('来源') }}
       <select name="source_type" id="videoSourceType">
-        <option value="upload">上传文件（最长 5 分钟，会自动压缩）</option>
-        <option value="link">粘贴链接（B站 / YouTube）</option>
+        <option value="upload">{{ tr('上传文件（最长 5 分钟，会自动压缩）') }}</option>
+        <option value="link">{{ tr('粘贴链接（B站 / YouTube）') }}</option>
       </select>
     </label>
     <label id="videoFileLabel">
-      视频文件
+      {{ tr('视频文件') }}
       <input type="file" name="video_file" accept="video/*">
     </label>
     <label id="videoUrlLabel" style="display:none;">
-      视频链接
-      <input type="url" name="video_url" placeholder="https://www.bilibili.com/video/BV... 或 https://youtu.be/...">
+      {{ tr('视频链接') }}
+      <input type="url" name="video_url" placeholder="{{ tr('https://www.bilibili.com/video/BV... 或 https://youtu.be/...') }}">
     </label>
     <div class="actions">
-      <button type="submit">添加视频</button>
+      <button type="submit">{{ tr('添加视频') }}</button>
     </div>
   </form>
 </section>
@@ -255,10 +255,10 @@ document.getElementById('videoSourceType').addEventListener('change', function()
 </script>
 
 <section class="log-section">
-  <h2>参考书目</h2>
+  <h2>{{ tr('参考书目') }}</h2>
   {% if references %}
   {% set share_count = references | selectattr('in_share') | list | length %}
-  <p class="hint">「在分享图中显示」勾选的会出现在小说分享图里，建议选 5-10 本；已选 {{ share_count }} 本{% if share_count > 10 %}（超过 10 本时分享图只取前 10 本）{% endif %}。</p>
+  <p class="hint">{{ tr('「在分享图中显示」勾选的会出现在小说分享图里，建议选 5-10 本；已选 {n} 本', n=share_count) }}{% if share_count > 10 %}{{ tr('（超过 10 本时分享图只取前 10 本）') }}{% endif %}{{ tr('。') }}</p>
   <div class="novel-grid reference-grid">
     {% for ref in references %}
     <div class="novel-card">
@@ -271,16 +271,16 @@ document.getElementById('videoSourceType').addEventListener('change', function()
       </div>
       <div class="novel-card-body">
         <h3>{{ ref.title }}</h3>
-        {% if ref.douban_url %}<a class="btn-link" href="{{ ref.douban_url }}" target="_blank" rel="noopener">豆瓣 →</a>{% endif %}
+        {% if ref.douban_url %}<a class="btn-link" href="{{ ref.douban_url }}" target="_blank" rel="noopener">{{ tr('豆瓣 →') }}</a>{% endif %}
         <form method="post" action="{{ url_for('novel_reference_toggle_share', novel_id=novel.id, item_id=ref.id) }}">
           <label class="ref-share-toggle">
             <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if ref.in_share }}>
-            在分享图中显示
+            {{ tr('在分享图中显示') }}
           </label>
         </form>
         <form method="post" action="{{ url_for('novel_reference_delete', novel_id=novel.id, item_id=ref.id) }}"
-              onsubmit="return confirm('确定从参考书目移除吗？（不会删除这本书本身）');">
-          <button type="submit" class="btn-danger-sm">移除</button>
+              onsubmit="return confirm({{ tr('确定从参考书目移除吗？（不会删除这本书本身）') | tojson }});">
+          <button type="submit" class="btn-danger-sm">{{ tr('移除') }}</button>
         </form>
       </div>
     </div>
@@ -289,12 +289,12 @@ document.getElementById('videoSourceType').addEventListener('change', function()
   {% endif %}
 
   <div class="form ref-add">
-    <label for="refSearch">搜索书名添加（从已经添加过的书里找）</label>
+    <label for="refSearch">{{ tr('搜索书名添加（从已经添加过的书里找）') }}</label>
     <div class="ref-search-box">
-      <input type="text" id="refSearch" autocomplete="off" placeholder="输入书名或作者…">
+      <input type="text" id="refSearch" autocomplete="off" placeholder="{{ tr('输入书名或作者…') }}">
       <div id="refResults" class="ref-results"></div>
     </div>
-    <p class="hint">没有想要的书？<a href="{{ url_for('item_new', type='book') }}">先去添加一本 →</a>（添加完回到这里搜索）</p>
+    <p class="hint">{{ tr('没有想要的书？') }}<a href="{{ url_for('item_new', type='book') }}">{{ tr('先去添加一本 →') }}</a>{{ tr('（添加完回到这里搜索）') }}</p>
   </div>
 
   <form method="post" action="{{ url_for('novel_reference_new', novel_id=novel.id) }}" id="refAddForm">
@@ -320,7 +320,7 @@ document.getElementById('videoSourceType').addEventListener('change', function()
           if (!data.length) {
             var empty = document.createElement('div');
             empty.className = 'ref-result-empty';
-            empty.textContent = '没有匹配的书（可能已经加过了）';
+            empty.textContent = {{ tr('没有匹配的书（可能已经加过了）') | tojson }};
             results.appendChild(empty);
             return;
           }

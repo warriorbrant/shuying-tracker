@@ -2164,4 +2164,29 @@ CHANGELOG = [
         "lines_changed": 260,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "英文版收尾：小说创作表单和后台管理页也翻完了，全站中英双语上线",
+        "title_en": "English site finished: novel forms and admin pages translated, full bilingual rollout",
+        "summary": (
+            "多语言改造的最后一步：小说编辑页（写小说这个表单本身字段最多，光这一个页面就有一百多处"
+            "文字）、章节编辑、人物角色编辑，还有后台的账号管理、性能指标、截图识别导入这几个管理页面"
+            "都翻完了。到这里，从公开首页到日常记录到小说创作到后台管理，界面文字全部支持中英切换，导航"
+            "栏点一下就能整站切换并记住。三步加起来大概翻了 850 处左右的界面文字，自己写的内容（书影"
+            "感想、动态、小说正文）从头到尾都没有被机器翻译过，也不会被翻译——这条原则贯穿了整个改造。"
+        ),
+        "summary_en": (
+            "The final step of the i18n rollout: the novel edit form (the single most text-heavy "
+            "page in the app, over a hundred strings on its own), chapter editing, character editing, "
+            "plus the admin pages — account management, metrics, and screenshot import. That closes it "
+            "out: from the public homepage to daily logging to novel writing to the admin backend, every "
+            "page's UI now switches between Chinese and English with the nav toggle, remembered "
+            "site-wide. All three steps together translated roughly 850 UI strings. Content you actually "
+            "wrote — book reviews, moments, novel chapters — was never machine-translated at any point "
+            "and never will be; that was the rule for the whole project."
+        ),
+        "image": None,
+        "lines_changed": 380,
+        "estimated": False,
+    },
 ]

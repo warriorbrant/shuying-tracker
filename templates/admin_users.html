@@ -1,31 +1,31 @@
 {% extends "base.html" %}
-{% block title %}账号管理{% endblock %}
+{% block title %}{{ tr('账号管理') }}{% endblock %}
 {% block content %}
 
-<h1>账号管理</h1>
+<h1>{{ tr('账号管理') }}</h1>
 
-{% if error %}<p class="hint hint-error">{{ error }}</p>{% endif %}
-{% if info %}<p class="hint hint-ok">{{ info }}</p>{% endif %}
+{% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
+{% if info %}<p class="hint hint-ok">{{ tr(info) }}</p>{% endif %}
 {% if reset_link %}
 <p class="hint hint-ok">
-  给 {{ reset_username }} 的一次性重置链接（24 小时内有效，用一次就失效），复制发给对方：<br>
+  {{ tr('给 {u} 的一次性重置链接（24 小时内有效，用一次就失效），复制发给对方：', u=reset_username) }}<br>
   <code class="reset-link-code">{{ reset_link }}</code>
 </p>
 {% endif %}
 
 <section class="log-section">
-  <h2>已有账号（共 {{ users|length }} 个）</h2>
+  <h2>{{ tr('已有账号（共 {n} 个）', n=users|length) }}</h2>
   <ul class="volume-list">
     {% for u in users %}
     <li class="admin-user-row">
-      <span>{{ u.username }}{% if u.is_admin %} · 🛡️ 管理员{% endif %} · {{ u.created_at[:10] }} 创建</span>
+      <span>{{ u.username }}{% if u.is_admin %}{{ tr('· 🛡️ 管理员') }}{% endif %}{{ tr('· {d} 创建', d=u.created_at[:10]) }}</span>
       <div class="admin-user-actions">
         <form method="post" action="{{ url_for('admin_reset_password', user_id=u.id) }}" class="inline-reset-form">
-          <input type="password" name="password" placeholder="新密码（至少6位）" minlength="6" required autocomplete="new-password">
-          <button type="submit" class="btn-secondary-sm">直接重置</button>
+          <input type="password" name="password" placeholder="{{ tr('新密码（至少6位）') }}" minlength="6" required autocomplete="new-password">
+          <button type="submit" class="btn-secondary-sm">{{ tr('直接重置') }}</button>
         </form>
         <form method="post" action="{{ url_for('admin_generate_reset_link', user_id=u.id) }}" class="inline-delete">
-          <button type="submit" class="btn-secondary-sm">生成重置链接</button>
+          <button type="submit" class="btn-secondary-sm">{{ tr('生成重置链接') }}</button>
         </form>
       </div>
     </li>
@@ -34,42 +34,42 @@
 </section>
 
 <section class="log-section">
-  <h2>新增账号</h2>
+  <h2>{{ tr('新增账号') }}</h2>
   <form class="form" method="post" action="{{ url_for('admin_users_new') }}">
     <label>
-      用户名
+      {{ tr('用户名') }}
       <input type="text" name="username" required autocomplete="off">
     </label>
     <label>
-      密码
+      {{ tr('密码') }}
       <input type="password" name="password" required autocomplete="new-password">
     </label>
     <label class="checkbox-label">
       <input type="checkbox" name="is_admin">
-      设为管理员（能管理账号、绕过所有人的锁定内容）
+      {{ tr('设为管理员（能管理账号、绕过所有人的锁定内容）') }}
     </label>
     <div class="actions">
-      <button type="submit">新增账号</button>
+      <button type="submit">{{ tr('新增账号') }}</button>
     </div>
   </form>
 </section>
 
 <section class="log-section">
-  <h2>自助注册</h2>
+  <h2>{{ tr('自助注册') }}</h2>
   <form method="post" action="{{ url_for('admin_toggle_registration') }}">
     <label class="checkbox-label">
       <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if allow_registration }}>
-      允许任何人自己注册账号
+      {{ tr('允许任何人自己注册账号') }}
     </label>
   </form>
-  <p class="hint">默认关闭，新账号只能在上面手动加；打开之后 /register 页面才能用。</p>
+  <p class="hint">{{ tr('默认关闭，新账号只能在上面手动加；打开之后 /register 页面才能用。') }}</p>
 </section>
 
 <section class="log-section">
-  <h2>数据备份</h2>
-  <p class="hint">下载整个网站数据目录的原样打包（数据库文件 + 所有上传的图片/视频），不区分账号，是最完整的一份快照。文件可能比较大，下载需要一点时间。</p>
+  <h2>{{ tr('数据备份') }}</h2>
+  <p class="hint">{{ tr('下载整个网站数据目录的原样打包（数据库文件 + 所有上传的图片/视频），不区分账号，是最完整的一份快照。文件可能比较大，下载需要一点时间。') }}</p>
   <div class="actions">
-    <a class="btn-share" href="{{ url_for('admin_backup') }}">⬇️ 下载完整备份</a>
+    <a class="btn-share" href="{{ url_for('admin_backup') }}">{{ tr('⬇️ 下载完整备份') }}</a>
   </div>
 </section>
 
