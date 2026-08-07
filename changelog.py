@@ -2542,4 +2542,28 @@ CHANGELOG = [
         "lines_changed": 190,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "功能一览页更精美了：渐变光晕背景、卡片依次浮现，每张卡片还加了小演示动画",
+        "title_en": "Features page gets a visual upgrade: gradient hero, staggered card entrance, and a mini demo animation per card",
+        "summary": (
+            "功能一览页原来只有纯文字加 emoji，现在加了一圈动态渐变光晕的 hero 背景、卡片进场时依次"
+            "浮现的动画，最主要是每张卡片顶部加了个纯 CSS/SVG 做的小动画，直观演示这个功能长什么样："
+            "交易盈亏是一条自己画出来的走势线、消费追踪是几根红绿交替生长的柱状图、小说创作是逐字浮现"
+            "的文字加一个闪烁光标、分享动态是几条依次淡入的动态卡片。全是纯 CSS 动画，没用任何前端库，"
+            "也照顾了「减少动画」的系统设置，开了这个选项就直接定格在动画结束的状态。"
+        ),
+        "summary_en": (
+            "The Features page used to be plain text with emoji. Added a softly drifting gradient glow "
+            "behind the hero title, a staggered fade-in for the cards on load, and -- the main thing -- a "
+            "small looping demo animation on top of each card that shows what the feature actually looks "
+            "like: a self-drawing line for trading P&L, alternating red/green bars growing for expense "
+            "tracking, text wiping in with a blinking cursor for novel writing, and a few feed rows fading "
+            "in one after another for life moments. All pure CSS/SVG, no library added, and it respects "
+            "the OS-level \"reduce motion\" setting by snapping straight to the animation's end state."
+        ),
+        "image": None,
+        "lines_changed": 260,
+        "estimated": False,
+    },
 ]
