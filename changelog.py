@@ -2520,4 +2520,26 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "新增「功能一览」页面，介绍交易/消费/小说/分享动态四大功能，可一键生成分享图",
+        "title_en": "New Features showcase page for trading/expenses/novels/moments, with a one-click share image",
+        "summary": (
+            "加了一个 /showcase 页面，用来跟别人介绍这个网站都能做什么：交易盈亏、消费追踪、小说创作、"
+            "分享动态四张卡片，各配一句话说明和跳转链接。跟站内其他页面一样需要登录才能看。下面有「生成"
+            "分享图」按钮，会做一张海报风格的图片（标题+四个功能编号列表+水印），方便发给朋友看而不用"
+            "截图。导航栏加了「✨ 功能一览」的入口。"
+        ),
+        "summary_en": (
+            "Added a /showcase page that introduces what the site can do: four cards for trading P&L, "
+            "expense tracking, novel writing, and life moments, each with a one-line description and a "
+            "link to try it. Gated behind login like every other page here. There's a \"Generate Share "
+            "Image\" button below that renders a poster-style PNG (title, numbered feature list, "
+            "watermark) so it's easy to send to someone instead of taking a screenshot. Added a "
+            "\"✨ Features\" link to the nav."
+        ),
+        "image": None,
+        "lines_changed": 190,
+        "estimated": False,
+    },
 ]

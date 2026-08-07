@@ -1014,3 +1014,63 @@ def build_expense_bar_share_card(year, year_bar_chart):
     card.save(buf, format="PNG")
     buf.seek(0)
     return buf
+
+
+def build_showcase_card(features):
+    """A poster-style card introducing the app's main features, for the user
+    to share when showing the site to someone else. `features` is a list of
+    (title, description) pairs. Unlike the data cards above there are no
+    numbers to hide here -- it's just marketing copy -- so nothing is
+    omitted. Emoji are deliberately left out of the drawn text (unlike the
+    HTML page, which uses them freely): the CJK fonts this module falls back
+    to don't carry color emoji glyphs and would render them as blank boxes,
+    so numbered badges stand in for icons instead."""
+    W = 1080
+    pad = 64
+    header_h = 210
+    row_h = 190
+    footer_h = 90
+    H = header_h + row_h * len(features) + footer_h
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    title_font = _font(56, bold=True)
+    subtitle_font = _font(28)
+    draw.text((pad, pad), "知行合一AI实验室", font=title_font, fill=TEXT)
+    draw.text((pad, pad + 74), "交易 · 消费 · 创作 · 生活点滴，都在这一个地方", font=subtitle_font, fill=MUTED)
+    draw.line([(pad, header_h - 20), (W - pad, header_h - 20)], fill=BORDER, width=2)
+
+    badge_r = 34
+    title_font2 = _font(34, bold=True)
+    desc_font = _font(24)
+    num_font = _font(30, bold=True)
+
+    for i, (title, desc) in enumerate(features):
+        y0 = header_h + i * row_h
+        cy = y0 + row_h / 2
+        cx = pad + badge_r
+        draw.ellipse([cx - badge_r, cy - badge_r, cx + badge_r, cy + badge_r], fill=ACCENT_SOFT)
+        num = str(i + 1)
+        bbox = draw.textbbox((0, 0), num, font=num_font)
+        nw, nh = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        draw.text((cx - nw / 2 - bbox[0], cy - nh / 2 - bbox[1]), num, font=num_font, fill=ACCENT)
+
+        text_x = pad + badge_r * 2 + 32
+        draw.text((text_x, cy - 40), title, font=title_font2, fill=TEXT)
+        for j, line in enumerate(_wrap(draw, desc, desc_font, W - pad - text_x)):
+            draw.text((text_x, cy + 4 + j * 32), line, font=desc_font, fill=MUTED)
+
+        if i < len(features) - 1:
+            draw.line([(pad, y0 + row_h), (W - pad, y0 + row_h)], fill=BORDER, width=1)
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 56), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('功能一览') }}{% endblock %}
+{% block content %}
+
+<section class="showcase-hero">
+  <h1>{{ tr('知行合一AI实验室') }}</h1>
+  <p class="showcase-tagline">{{ tr('交易 · 消费 · 创作 · 生活点滴，都在这一个地方') }}</p>
+</section>
+
+<section class="showcase-grid">
+  {% for f in features %}
+  <div class="showcase-card">
+    <div class="showcase-emoji">{{ f.emoji }}</div>
+    <h2>{{ f.title_en if current_lang == 'en' else f.title }}</h2>
+    <p>{{ f.desc_en if current_lang == 'en' else f.desc }}</p>
+    <a class="btn-link" href="{{ url_for(f.endpoint) }}">{{ tr('去看看 →') }}</a>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="log-section">
+  <div class="actions">
+    <a class="btn-share" href="{{ url_for('showcase_share_image', download=1) }}">{{ tr('📤 生成分享图') }}</a>
+    <a class="btn-link" href="{{ url_for('showcase_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
+  </div>
+  <p class="hint">{{ tr('分享图是一张介绍这几个功能的图片，方便发给别人看。') }}</p>
+</section>
+
+{% endblock %}

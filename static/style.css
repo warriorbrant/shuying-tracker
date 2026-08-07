@@ -2084,3 +2084,63 @@ label.checkbox-label {
 @media (max-width: 640px) {
   .character-standee img { height: 210px; max-width: 170px; }
 }
+
+.showcase-hero {
+  text-align: center;
+  padding: 56px 20px 40px;
+  background: linear-gradient(180deg, var(--accent-soft), transparent);
+  border-radius: var(--radius);
+  margin-bottom: 28px;
+}
+
+.showcase-hero h1 {
+  margin: 0 0 10px;
+  font-size: 2rem;
+  color: var(--text);
+}
+
+.showcase-tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.showcase-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.showcase-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(43, 41, 37, 0.08);
+}
+
+.showcase-emoji {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.showcase-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.showcase-card p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  min-height: 4.5em;
+}

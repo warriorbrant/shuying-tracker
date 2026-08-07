@@ -55,6 +55,7 @@ from share_card import (
     build_expense_bar_share_card,
     build_novel_share_card,
     build_share_card,
+    build_showcase_card,
     build_trading_share_card,
 )
 
@@ -2074,6 +2075,68 @@ def expenses_share_image():
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"expenses-{year}-{today.isoformat()}.png" if download else None,
+        max_age=0,
+    )
+
+
+# Marketing copy for the /showcase page -- kept as one shared list so the
+# HTML page and the Pillow-rendered share card can't drift out of sync with
+# each other. Bilingual pairs bundled directly here (title/title_en,
+# desc/desc_en) rather than routed through tr()/translations.py, matching
+# how changelog.py already handles this kind of hand-written prose. Emoji is
+# used only in the HTML template; build_showcase_card deliberately leaves it
+# out of the drawn image (see its docstring).
+SHOWCASE_FEATURES = [
+    {
+        "endpoint": "trading", "emoji": "📈",
+        "title": "交易盈亏", "title_en": "Trading P&L",
+        "desc": "导入券商交易记录，自动生成每日盈亏日历、累计盈亏走势图，交易费用也单独算清楚。",
+        "desc_en": "Import broker exports and get an auto-generated daily P&L calendar, a cumulative "
+                   "equity curve, and fees broken out separately.",
+    },
+    {
+        "endpoint": "expenses", "emoji": "💰",
+        "title": "消费追踪", "title_en": "Expense Tracking",
+        "desc": "上传银行流水 PDF 就能识别，生成消费日历、收支分类、消费商户排行，一张图看懂钱花哪了。",
+        "desc_en": "Upload a bank statement PDF and it's parsed automatically into a spending calendar, "
+                   "income/expense breakdown, and a top-merchants ranking.",
+    },
+    {
+        "endpoint": "novels_list", "emoji": "📖",
+        "title": "小说创作", "title_en": "Novel Writing",
+        "desc": "在线写小说、发章节、加角色和视频，边写边发，读者可以直接在网页上追更。",
+        "desc_en": "Write and publish novels chapter by chapter, with characters and video, right from "
+                   "the browser -- readers follow along on the same site.",
+    },
+    {
+        "endpoint": "moment_new", "emoji": "📝",
+        "title": "分享动态", "title_en": "Life Moments",
+        "desc": "记录看书追剧、运动健身、生活点滴，还能把手机截图丢给 AI 自动识别导入。",
+        "desc_en": "Log day-to-day life -- books, shows, workouts, thoughts -- or just hand a screenshot "
+                   "to AI and let it fill the entry in for you.",
+    },
+]
+
+
+@app.route("/showcase")
+def showcase():
+    return render_template("showcase.html", features=SHOWCASE_FEATURES)
+
+
+@app.route("/showcase/share.png")
+def showcase_share_image():
+    en = g.lang == "en"
+    pairs = [
+        (f["title_en"] if en else f["title"], f["desc_en"] if en else f["desc"])
+        for f in SHOWCASE_FEATURES
+    ]
+    buf = build_showcase_card(pairs)
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"showcase-{date.today().isoformat()}.png" if download else None,
         max_age=0,
     )
 
