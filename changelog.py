@@ -2108,4 +2108,31 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "英文版第一步：公开页面（首页、小说、登录）能切成英文了",
+        "title_en": "English site, step 1: public pages (home, novels, login) now switch",
+        "summary": (
+            "导航栏加了一个 中文/EN 切换按钮，点一下整站记住，下次访问不用再切。这一步先翻了访客能看到的"
+            "公开页面：公开首页（含技术架构图）、登录/注册/重置密码、小说列表和小说阅读页——界面文字（导航、"
+            "按钮、提示语）换成英文，但书影读后感、动态、小说正文这些自己写的内容永远不翻译，还是原文显示。"
+            "机制上是一个新的 translations.py 里的字典，键就是中文原文本身，没翻译到的字符串会自动原样"
+            "显示中文，不会出现空白或报错。日常使用的核心页面（首页动态流、加书加剧、写小说）还没翻，下一步"
+            "继续。"
+        ),
+        "summary_en": (
+            "Added a 中文/EN toggle to the nav — one click and it's remembered site-wide, no need to "
+            "flip it again on the next visit. This first pass covers the pages a visitor without an "
+            "account would actually see: the public homepage (including the architecture diagram), "
+            "login/register/reset-password, and the novel list + reader — UI chrome (nav, buttons, "
+            "hints) switches to English, but anything you actually wrote yourself (book notes, moments, "
+            "novel chapters) is never machine-translated and always stays as written. Under the hood: a "
+            "new translations.py dict keyed by the Chinese source text itself, so anything not yet added "
+            "just falls back to showing the original Chinese instead of breaking or going blank. The "
+            "day-to-day pages (main feed, add book/show, write a novel) aren't translated yet — next up."
+        ),
+        "image": None,
+        "lines_changed": 320,
+        "estimated": False,
+    },
 ]

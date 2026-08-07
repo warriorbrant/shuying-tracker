@@ -4,21 +4,21 @@
 
 <div class="changelog-header-row">
   <h1>{{ novel.title }}</h1>
-  <a class="lang-switch" href="{{ url_for('novel_detail', novel_id=novel.id) }}">目录</a>
+  <a class="lang-switch" href="{{ url_for('novel_detail', novel_id=novel.id) }}">{{ tr('目录') }}</a>
 </div>
 
 <article class="chapter-reader">
-  <h2>第 {{ chapter.chapter_no }} 章 · {{ chapter.title }}</h2>
-  <p class="chapter-meta">{{ chapter.content|length }} 字 · 更新于 {{ chapter.updated_at[:10] }}</p>
+  <h2>{{ tr('第 {n} 章 · {title}', n=chapter.chapter_no, title=chapter.title) }}</h2>
+  <p class="chapter-meta">{{ tr('{n} 字 · {d}', n=chapter.content|length, d=chapter.updated_at[:10]) }}</p>
   {% if current_user %}
   <div class="actions">
-    <a class="btn-share" href="{{ share_url }}">📤 生成本章分享图</a>
-    <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
+    <a class="btn-share" href="{{ share_url }}">{{ tr('📤 生成本章分享图') }}</a>
+    <a class="btn-link" href="{{ preview_url }}" target="_blank">{{ tr('先预览') }}</a>
   </div>
   <div class="tts-controls" id="ttsControls">
-    <button type="button" class="btn-share" id="ttsToggle">▶ 朗读本章</button>
-    <button type="button" class="btn-secondary" id="ttsStop">⏹ 停止</button>
-    <label class="tts-rate-label">语速
+    <button type="button" class="btn-share" id="ttsToggle">{{ tr('▶ 朗读本章') }}</button>
+    <button type="button" class="btn-secondary" id="ttsStop">{{ tr('⏹ 停止') }}</button>
+    <label class="tts-rate-label">{{ tr('语速') }}
       <select id="ttsRate">
         <option value="0.75">0.75x</option>
         <option value="1" selected>1x</option>
@@ -29,7 +29,7 @@
     {% if next_chapter %}
     <label class="checkbox-label tts-autonext">
       <input type="checkbox" id="ttsAutoNext">
-      自动连播下一章
+      {{ tr('自动连播下一章') }}
     </label>
     {% endif %}
   </div>
@@ -57,8 +57,8 @@
 
   {% if locked %}
   <div class="chapter-lock-banner">
-    <p>🔒 本章已锁定，登录后可查看完整正文</p>
-    <a class="btn-share" href="{{ url_for('login', next=request.path) }}">登录查看完整内容</a>
+    <p>{{ tr('🔒 本章已锁定，登录后可查看完整正文') }}</p>
+    <a class="btn-share" href="{{ url_for('login', next=request.path) }}">{{ tr('登录查看完整内容') }}</a>
   </div>
   {% endif %}
 
@@ -78,7 +78,7 @@
 
 {% if videos %}
 <section class="log-section">
-  <h2>本章视频</h2>
+  <h2>{{ tr('本章视频') }}</h2>
   <div class="video-grid">
     {% for v in videos %}
     <div class="video-card">
@@ -93,7 +93,7 @@
         {% if embed %}
           <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
         {% else %}
-          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">{{ tr('在新窗口打开视频 →') }}</a>
         {% endif %}
       {% endif %}
     </div>
@@ -104,17 +104,17 @@
 
 <div class="chapter-nav">
   {% if prev_chapter %}
-    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=prev_chapter.id) }}">← 上一章</a>
+    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=prev_chapter.id) }}">{{ tr('← 上一章') }}</a>
   {% else %}
     <span></span>
   {% endif %}
   {% if next_chapter %}
-    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) }}">下一章 →</a>
+    <a class="btn-link" href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) }}">{{ tr('下一章 →') }}</a>
   {% endif %}
 </div>
 
 {% if current_user %}
-<p class="hint"><a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=chapter.id) }}">编辑这一章</a></p>
+<p class="hint"><a href="{{ url_for('novel_chapter_edit', novel_id=novel.id, chapter_id=chapter.id) }}">{{ tr('编辑这一章') }}</a></p>
 {% endif %}
 
 {% endblock %}
@@ -178,7 +178,7 @@
   var nextChapterUrl = {{ (url_for('novel_chapter_read', novel_id=novel.id, chapter_id=next_chapter.id) if next_chapter else None) | tojson }};
 
   function updateUI() {
-    toggleBtn.textContent = !speaking ? '▶ 朗读本章' : (paused ? '▶ 继续' : '⏸ 暂停');
+    toggleBtn.textContent = !speaking ? {{ tr('▶ 朗读本章') | tojson }} : (paused ? {{ tr('▶ 继续') | tojson }} : {{ tr('⏸ 暂停') | tojson }});
   }
 
   function speakNext() {

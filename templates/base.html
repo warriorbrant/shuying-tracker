@@ -1,39 +1,40 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="{{ 'en' if current_lang == 'en' else 'zh-CN' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}我的知行合一AI实验室{% endblock %}</title>
+  <title>{% block title %}{{ tr('我的知行合一AI实验室') }}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#b5654a">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="知行合一AI实验室">
+  <meta name="apple-mobile-web-app-title" content="{{ tr('知行合一AI实验室') }}">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('index') }}">📚🎬 知行合一AI实验室</a>
+    <a class="brand" href="{{ url_for('index') }}">{{ tr('📚🎬 知行合一AI实验室') }}</a>
     <nav>
       {% if current_user %}
-        <a href="{{ url_for('add_new') }}">+ 添加</a>
-        <a href="{{ url_for('moment_scan') }}">+ 截图导入</a>
-        <a href="{{ url_for('search') }}">🔍 搜索</a>
-        <a href="{{ url_for('admin_metrics_page') }}">📊 性能指标</a>
+        <a href="{{ url_for('add_new') }}">{{ tr('+ 添加') }}</a>
+        <a href="{{ url_for('moment_scan') }}">{{ tr('+ 截图导入') }}</a>
+        <a href="{{ url_for('search') }}">{{ tr('🔍 搜索') }}</a>
+        <a href="{{ url_for('admin_metrics_page') }}">{{ tr('📊 性能指标') }}</a>
         {% if current_user.is_admin %}
-          <a href="{{ url_for('admin_users') }}">🛡️ 账号管理</a>
+          <a href="{{ url_for('admin_users') }}">{{ tr('🛡️ 账号管理') }}</a>
         {% endif %}
       {% endif %}
-      <a href="{{ url_for('novels_list') }}">📖 小说</a>
-      <a href="{{ url_for('changelog') }}">更新日志</a>
+      <a href="{{ url_for('novels_list') }}">{{ tr('📖 小说') }}</a>
+      <a href="{{ url_for('changelog') }}">{{ tr('更新日志') }}</a>
+      <a class="lang-switch" href="{{ lang_toggle_url }}">{{ '中文' if current_lang == 'en' else 'EN' }}</a>
       {% if current_user %}
       <span class="current-username">{{ current_user.username }}</span>
       <form class="logout-form" method="post" action="{{ url_for('logout') }}">
-        <button type="submit" class="logout-btn">退出登录</button>
+        <button type="submit" class="logout-btn">{{ tr('退出登录') }}</button>
       </form>
       {% else %}
-      <a href="{{ url_for('login', next=request.path) }}" class="login-link">登录</a>
+      <a href="{{ url_for('login', next=request.path) }}" class="login-link">{{ tr('登录') }}</a>
       {% endif %}
     </nav>
   </header>

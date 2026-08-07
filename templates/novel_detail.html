@@ -12,52 +12,52 @@
   </div>
   <div class="detail-info">
     <h1>{{ novel.title }}</h1>
-    <span class="lines-badge">{{ novel.status }}</span>
-    {% if novel.is_locked %}<span class="lines-badge">🔒 已锁定</span>{% endif %}
-    <span class="lines-badge">共 {{ total_words }} 字</span>
-    <span class="lines-badge">最后更新 {{ novel.updated_at[:10] }}</span>
+    <span class="lines-badge">{{ tr(novel.status) }}</span>
+    {% if novel.is_locked %}<span class="lines-badge">{{ tr('🔒 已锁定') }}</span>{% endif %}
+    <span class="lines-badge">{{ tr('共 {n} 字', n=total_words) }}</span>
+    <span class="lines-badge">{{ tr('最后更新 {d}', d=novel.updated_at[:10]) }}</span>
     {% if novel.summary %}<p class="review">{{ novel.summary }}</p>{% endif %}
 
     <div class="actions">
-      <a class="btn-share" href="{{ share_url }}">📤 一键生成分享图</a>
-      <a class="btn-link" href="{{ preview_url }}" target="_blank">先预览</a>
+      <a class="btn-share" href="{{ share_url }}">{{ tr('📤 一键生成分享图') }}</a>
+      <a class="btn-link" href="{{ preview_url }}" target="_blank">{{ tr('先预览') }}</a>
       {% if current_user %}
-        <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">编辑小说</a>
-        <a class="btn-link" href="{{ url_for('novel_export_docx', novel_id=novel.id) }}">导出 Word</a>
-        <a class="btn-link" href="{{ url_for('novel_export_pdf', novel_id=novel.id) }}">导出 PDF</a>
+        <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">{{ tr('编辑小说') }}</a>
+        <a class="btn-link" href="{{ url_for('novel_export_docx', novel_id=novel.id) }}">{{ tr('导出 Word') }}</a>
+        <a class="btn-link" href="{{ url_for('novel_export_pdf', novel_id=novel.id) }}">{{ tr('导出 PDF') }}</a>
       {% endif %}
     </div>
   </div>
 </div>
 
 <section class="log-section">
-  <h2>目录（共 {{ chapters|length }} 章）</h2>
+  <h2>{{ tr('目录（共 {n} 章）', n=chapters|length) }}</h2>
   {% if chapters %}
   {% for group in chapter_groups %}
     {% if group.volume_id %}
-      <h3 class="volume-heading">第 {{ group.volume_no }} 卷 · {{ group.volume_title }}</h3>
+      <h3 class="volume-heading">{{ tr('第 {n} 卷 · {title}', n=group.volume_no, title=group.volume_title) }}</h3>
     {% elif volumes %}
-      <h3 class="volume-heading volume-heading-unassigned">未分卷</h3>
+      <h3 class="volume-heading volume-heading-unassigned">{{ tr('未分卷') }}</h3>
     {% endif %}
     <ul class="chapter-list">
       {% for c in group.chapters %}
       <li>
         <a href="{{ url_for('novel_chapter_read', novel_id=novel.id, chapter_id=c.id) }}">
-          {% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}第 {{ c.chapter_no }} 章 · {{ c.title }}
-          <span class="chapter-meta">{{ c.word_count or 0 }} 字 · {{ c.updated_at[:10] }}</span>
+          {% if novel.is_locked or c.is_locked %}<span class="lock-badge">🔒</span>{% endif %}{{ tr('第 {n} 章 · {title}', n=c.chapter_no, title=c.title) }}
+          <span class="chapter-meta">{{ tr('{n} 字 · {d}', n=c.word_count or 0, d=c.updated_at[:10]) }}</span>
         </a>
       </li>
       {% endfor %}
     </ul>
   {% endfor %}
   {% else %}
-  <p class="hint">还没有章节。</p>
+  <p class="hint">{{ tr('还没有章节。') }}</p>
   {% endif %}
 </section>
 
 {% if characters %}
 <section class="log-section">
-  <h2>人物角色</h2>
+  <h2>{{ tr('人物角色') }}</h2>
   <div class="character-grid">
     {% for ch in characters %}
     <div class="character-card">
@@ -76,7 +76,7 @@
 
 {% if videos %}
 <section class="log-section">
-  <h2>相关视频</h2>
+  <h2>{{ tr('相关视频') }}</h2>
   <div class="video-grid">
     {% for v in videos %}
     <div class="video-card">
@@ -91,7 +91,7 @@
         {% if embed %}
           <iframe class="video-embed" src="{{ embed.embed_url }}" frameborder="0" allowfullscreen loading="lazy"></iframe>
         {% else %}
-          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">在新窗口打开视频 →</a>
+          <a class="btn-link" href="{{ v.video_url }}" target="_blank" rel="noopener">{{ tr('在新窗口打开视频 →') }}</a>
         {% endif %}
       {% endif %}
     </div>
@@ -102,7 +102,7 @@
 
 {% if references %}
 <section class="log-section">
-  <h2>参考书目</h2>
+  <h2>{{ tr('参考书目') }}</h2>
   <div class="novel-grid reference-grid">
     {% for ref in references %}
     {% set tag = "a" if ref.douban_url else "div" %}

@@ -34,6 +34,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import metrics
 from ai_scan import ScanError, analyze_screenshot, is_configured
 from changelog import CHANGELOG
+from translations import TR
 from db import DATA_DIR, DB_PATH, get_db, init_db
 from douban import DoubanFetchError, fetch_douban_info
 from novel_export import build_novel_docx, build_novel_pdf
@@ -184,6 +185,52 @@ def get_current_user():
 @app.context_processor
 def inject_auth_state():
     return {"current_user": get_current_user()}
+
+
+@app.before_request
+def set_language():
+    # Site-wide language preference, remembered across visits via the session
+    # cookie. ?lang=en|zh on any page both applies immediately and sticks for
+    # later navigation; without it, falls back to whatever was last chosen (or
+    # zh for a first-time visitor). Separate from CHANGELOG_STRINGS's own
+    # per-page ?lang= handling, which stays query-param-only on purpose (share
+    # images are fixed artifacts, not something a "current preference" should
+    # silently affect).
+    requested = request.args.get("lang")
+    if requested in ("zh", "en"):
+        session["lang"] = requested
+        session.permanent = True
+    g.lang = session.get("lang", "zh")
+
+
+def tr(text, **kwargs):
+    """Look up `text` in the site-wide UI dictionary (translations.py) when the
+    visitor's language is English; otherwise (or if untranslated) return it
+    unchanged. Keyed by the original Chinese string itself, not an invented
+    key name — see translations.py for why. Pass kwargs for strings with
+    {placeholder} spots (e.g. counts) — applied to whichever string (Chinese
+    or English) ends up selected, so both sides use the same {name} syntax."""
+    if g.get("lang", "zh") == "en":
+        text = TR.get(text, text)
+    return text.format(**kwargs) if kwargs else text
+
+
+app.jinja_env.globals["tr"] = tr
+
+
+@app.context_processor
+def inject_lang():
+    lang = g.get("lang", "zh")
+    # Preserve whatever query params the current page already has (date
+    # filters, search terms, pagination…) and just flip `lang`, so the one
+    # nav-level toggle works correctly everywhere instead of dropping state.
+    args = request.args.to_dict(flat=True)
+    args["lang"] = "zh" if lang == "en" else "en"
+    try:
+        toggle_url = url_for(request.endpoint, **(request.view_args or {}), **args)
+    except Exception:
+        toggle_url = request.path + "?lang=" + args["lang"]
+    return {"current_lang": lang, "lang_toggle_url": toggle_url}
 
 
 @app.context_processor
@@ -982,9 +1029,7 @@ def build_feed(conn, user_id, type_filter, status_filter, offset=0, limit=FEED_P
 
 @app.route("/changelog")
 def changelog():
-    lang = request.args.get("lang", "zh")
-    if lang not in CHANGELOG_STRINGS:
-        lang = "zh"
+    lang = g.lang
     t = CHANGELOG_STRINGS[lang]
     # Show one day at a time, chosen via the date picker; default to today, or the
     # most recent update day when today has no entries yet. A search query takes
@@ -1034,9 +1079,7 @@ def changelog():
 
 @app.route("/changelog/more")
 def changelog_more():
-    lang = request.args.get("lang", "zh")
-    if lang not in CHANGELOG_STRINGS:
-        lang = "zh"
+    lang = g.lang
     offset = to_int(request.args.get("offset"), 0) or 0
 
     days, has_more = group_changelog_by_day(CHANGELOG, lang=lang, offset=offset, limit=CHANGELOG_PAGE_DAYS)
@@ -1105,9 +1148,7 @@ def index():
 
 
 def public_landing():
-    lang = request.args.get("lang", "zh")
-    if lang not in CHANGELOG_STRINGS:
-        lang = "zh"
+    lang = g.lang
     t = CHANGELOG_STRINGS[lang]
 
     # Public homepage shows only today's changelog entries. On days with no update

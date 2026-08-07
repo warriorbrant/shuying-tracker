@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="{{ 'en' if current_lang == 'en' else 'zh-CN' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>登录 · 知行合一AI实验室</title>
+  <title>{{ tr('登录 · 知行合一AI实验室') }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ asset_version }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#b5654a">
@@ -12,22 +12,25 @@
 <body>
   <main class="login-wrap">
     <form class="form login-form-box" method="post">
-      <h1 class="login-title">📚🎬 知行合一AI实验室</h1>
+      <div class="changelog-header-row">
+        <h1 class="login-title">{{ tr('📚🎬 知行合一AI实验室') }}</h1>
+        <a class="lang-switch" href="{{ lang_toggle_url }}">{{ '中文' if current_lang == 'en' else 'EN' }}</a>
+      </div>
       <input type="hidden" name="next" value="{{ next }}">
       <label>
-        用户名
+        {{ tr('用户名') }}
         <input type="text" name="username" autofocus required autocomplete="username">
       </label>
       <label>
-        密码
+        {{ tr('密码') }}
         <input type="password" name="password" required autocomplete="current-password">
       </label>
-      {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
-      <button type="submit">登录</button>
+      {% if error %}<p class="login-error">{{ tr(error) }}</p>{% endif %}
+      <button type="submit">{{ tr('登录') }}</button>
       {% if registration_open %}
-        <a class="login-back" href="{{ url_for('register') }}">还没有账号？去注册 →</a>
+        <a class="login-back" href="{{ url_for('register') }}">{{ tr('还没有账号？去注册 →') }}</a>
       {% endif %}
-      <a class="login-back" href="{{ url_for('index') }}">← 返回公开主页</a>
+      <a class="login-back" href="{{ url_for('index') }}">{{ tr('← 返回公开主页') }}</a>
     </form>
   </main>
 </body>

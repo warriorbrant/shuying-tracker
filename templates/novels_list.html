@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% block title %}小说{% endblock %}
+{% block title %}{{ tr('小说') }}{% endblock %}
 {% block content %}
 
 <div class="changelog-header-row">
-  <h1>小说</h1>
+  <h1>{{ tr('小说') }}</h1>
   {% if current_user %}
-    <a class="btn-link" href="{{ url_for('novel_new') }}">+ 新建小说</a>
+    <a class="btn-link" href="{{ url_for('novel_new') }}">{{ tr('+ 新建小说') }}</a>
   {% endif %}
 </div>
-<p class="hint">不需要登录也能看，角色概念图和 AI 生成的相关视频都放在小说详情页里。</p>
+<p class="hint">{{ tr('不需要登录也能看，角色概念图和 AI 生成的相关视频都放在小说详情页里。') }}</p>
 
 {% if novels %}
 <div class="novel-grid">
@@ -23,15 +23,15 @@
     </div>
     <div class="novel-card-body">
       <h3>{{ novel.title }}</h3>
-      <span class="lines-badge">{{ novel.status }}</span>
-      <p class="novel-card-meta">共 {{ word_counts.get(novel.id, 0) }} 字 · 更新于 {{ novel.updated_at[:10] }}</p>
+      <span class="lines-badge">{{ tr(novel.status) }}</span>
+      <p class="novel-card-meta">{{ tr('共 ') }}{{ word_counts.get(novel.id, 0) }}{{ tr(' 字 · 更新于 ') }}{{ novel.updated_at[:10] }}</p>
       {% if novel.summary %}<p>{{ novel.summary }}</p>{% endif %}
     </div>
   </a>
   {% endfor %}
 </div>
 {% else %}
-<p class="hint">还没有小说，{% if current_user %}<a href="{{ url_for('novel_new') }}">写第一篇</a>{% else %}敬请期待{% endif %}。</p>
+<p class="hint">{{ tr('还没有小说，') }}{% if current_user %}<a href="{{ url_for('novel_new') }}">{{ tr('写第一篇') }}</a>{% else %}{{ tr('敬请期待') }}{% endif %}{{ tr('。') }}</p>
 {% endif %}
 
 {% endblock %}
