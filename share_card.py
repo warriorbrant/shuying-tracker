@@ -896,11 +896,13 @@ def build_novel_share_card(novel, chapters, references, total_words=0):
 
 def build_trading_share_card(series, stats):
     """series: list of {"date","pnl","cumulative"} from trading.build_cumulative_series.
-    stats: dict from trading.summarize_daily_pnl. Shows every figure -- unlike
-    the expense bar card, nothing here is asked to stay private."""
+    stats: dict from trading.summarize_daily_pnl (kept as a param even though its
+    figures aren't drawn, so callers don't need to change). Like the expense bar
+    card, this deliberately omits every dollar figure and the win/loss day
+    counts -- just the title, the shape of the curve, and date labels."""
     W = 1080
     pad = 64
-    header_h = 260
+    header_h = 150
     chart_h = 560
     footer_h = 70
     H = header_h + chart_h + footer_h + pad
@@ -909,21 +911,8 @@ def build_trading_share_card(series, stats):
     draw = ImageDraw.Draw(card)
 
     title_font = _font(52, bold=True)
-    subtitle_font = _font(34, bold=True)
-    stat_font = _font(26)
 
     draw.text((pad, pad), "累计盈亏走势", font=title_font, fill=TEXT)
-
-    total = stats.get("total", 0.0)
-    total_color = POSITIVE_COLOR if total >= 0 else NEGATIVE_COLOR
-    sign = "+" if total >= 0 else "-"
-    draw.text((pad, pad + 80), f"{sign}${abs(total):,.2f}", font=subtitle_font, fill=total_color)
-    draw.text(
-        (pad, pad + 80 + 56),
-        f"{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日",
-        font=stat_font,
-        fill=MUTED,
-    )
 
     chart_top = header_h
     chart_left = pad

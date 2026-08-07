@@ -2479,4 +2479,23 @@ CHANGELOG = [
         "lines_changed": 220,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "交易盈亏走势的分享图也去掉了具体数字",
+        "title_en": "Trading equity curve share image also drops the numbers now",
+        "summary": (
+            "跟消费柱状图分享图一样的处理：走势图分享出去的图片不再显示累计盈亏总额、也不显示盈利/亏损"
+            "天数，只留标题、走势曲线本身和日期。两张分享图现在原则一致——图形状可以给别人看，具体数字"
+            "不用。"
+        ),
+        "summary_en": (
+            "Same treatment as the spending bar chart's share image: the equity curve share image no "
+            "longer shows the total P&L figure or the win/loss day counts -- just the title, the curve "
+            "itself, and dates. Both share images now follow the same rule: the shape is fine to share, "
+            "the exact numbers aren't."
+        ),
+        "image": None,
+        "lines_changed": 25,
+        "estimated": False,
+    },
 ]
