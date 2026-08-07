@@ -154,6 +154,30 @@ CREATE TABLE IF NOT EXISTS password_resets (
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
+-- Raw broker transaction rows, imported from CSV (currently: Schwab's export
+-- format). Realized daily P&L is computed on the fly from these (FIFO-match
+-- each closing trade against its opening trade(s) per symbol) rather than
+-- stored, so it's always consistent and re-uploading never needs a recompute
+-- step. dedup_key lets the same file be re-uploaded (or a fresh export that
+-- overlaps an earlier one) without creating duplicate rows -- there's no
+-- transaction id in the source data, so it's a hash of the row's own fields.
+CREATE TABLE IF NOT EXISTS trades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    trade_date TEXT NOT NULL,
+    action TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    quantity REAL,
+    price REAL,
+    fees REAL,
+    amount REAL NOT NULL,
+    dedup_key TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE(user_id, dedup_key)
+);
+CREATE INDEX IF NOT EXISTS idx_trades_user_date ON trades(user_id, trade_date);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).

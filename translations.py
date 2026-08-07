@@ -20,6 +20,7 @@ TR = {
     "📊 性能指标": "📊 Metrics",
     "🛡️ 账号管理": "🛡️ Accounts",
     "📖 小说": "📖 Novels",
+    "📈 交易": "📈 Trading",
     "更新日志": "Changelog",
     "退出登录": "Log out",
     "登录": "Log in",
@@ -429,4 +430,40 @@ TR = {
     "保存全部": "Save All",
     "重新上传": "Upload Again",
     "没有识别出任何内容。": "Nothing was recognized.",
+
+    # --- trading (error/info flash messages set from Python) ---
+    "请选择一个 CSV 文件": "Choose a CSV file",
+    "文件解析失败，确认是券商导出的交易记录 CSV": "Couldn't parse the file — make sure it's a broker-exported transaction CSV",
+    "导入完成：新增 {n} 条，跳过 {s} 条重复。": "Import done: {n} added, {s} duplicates skipped.",
+    "已清空所有导入的交易记录。": "All imported trades have been cleared.",
+
+    # --- trading.html ---
+    "交易盈亏": "Trading P&L",
+    "导入交易记录": "Import Transactions",
+    "目前支持 Schwab 导出的「Transactions」CSV。可以随时导入新的导出文件追加记录，已经导入过的交易会自动跳过，不会重复计算。":
+        "Currently supports Schwab's \"Transactions\" CSV export. Import a fresh export any time to add more — "
+        "trades already imported are automatically skipped, never double-counted.",
+    "上传": "Upload",
+    "确定清空所有已导入的交易记录吗？此操作不可撤销。": "Clear all imported trades? This can't be undone.",
+    "清空所有记录": "Clear All",
+    "还没有导入任何交易记录，上传上面的 CSV 开始看盈亏日历和走势图。":
+        "No trades imported yet — upload a CSV above to see the P&L calendar and chart.",
+    "累计已实现盈亏": "Total realized P&L",
+    "盈利天数": "Winning days",
+    "亏损天数": "Losing days",
+    "最佳单日 ({d})": "Best day ({d})",
+    "最差单日 ({d})": "Worst day ({d})",
+    "目前仍持有的仓位": "Open positions",
+    "有 {n} 笔平仓在导入的记录里找不到对应的开仓，可能是导入范围之前建的仓——这部分暂时按 $0 盈亏处理，不会拉低或拉高总盈亏。":
+        "{n} closing trade(s) have no matching opening trade in the imported data — likely positions opened "
+        "before the imported range. Treated as $0 P&L for now, so they don't skew the total either way.",
+    "累计盈亏走势": "Cumulative P&L",
+    "累计盈亏走势图": "Cumulative P&L chart",
+    "上月": "Prev",
+    "下月": "Next",
+    "周一": "Mon",
+    "周二": "Tue",
+    "周三": "Wed",
+    "周四": "Thu",
+    "周五": "Fri",
 }

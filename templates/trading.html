@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('交易盈亏') }}{% endblock %}
+{% block content %}
+
+<h1>{{ tr('交易盈亏') }}</h1>
+
+{% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
+{% if info %}<p class="hint hint-ok">{{ info }}</p>{% endif %}
+
+<section class="log-section">
+  <h2>{{ tr('导入交易记录') }}</h2>
+  <p class="hint">{{ tr('目前支持 Schwab 导出的「Transactions」CSV。可以随时导入新的导出文件追加记录，已经导入过的交易会自动跳过，不会重复计算。') }}</p>
+  <form class="form ref-add" method="post" action="{{ url_for('trading_upload') }}" enctype="multipart/form-data">
+    <div class="row">
+      <input type="file" name="csv_file" accept=".csv" required>
+      <button type="submit">{{ tr('上传') }}</button>
+    </div>
+  </form>
+  {% if has_trades %}
+  <form method="post" action="{{ url_for('trading_clear') }}"
+        onsubmit="return confirm({{ tr('确定清空所有已导入的交易记录吗？此操作不可撤销。') | tojson }});" class="inline-delete">
+    <button type="submit" class="btn-danger-sm">{{ tr('清空所有记录') }}</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if not has_trades %}
+<p class="empty">{{ tr('还没有导入任何交易记录，上传上面的 CSV 开始看盈亏日历和走势图。') }}</p>
+{% else %}
+
+<section class="log-section">
+  <div class="metrics-grid">
+    <div class="metrics-card">
+      <div class="metric-row"><span>{{ tr('累计已实现盈亏') }}</span><strong class="{{ 'pnl-positive' if stats.total >= 0 else 'pnl-negative' }}">{{ stats.total | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('盈利天数') }}</span><strong class="pnl-positive">{{ stats.win_days }}</strong></div>
+      <div class="metric-row"><span>{{ tr('亏损天数') }}</span><strong class="pnl-negative">{{ stats.loss_days }}</strong></div>
+    </div>
+    <div class="metrics-card">
+      {% if stats.best_day %}
+      <div class="metric-row"><span>{{ tr('最佳单日 ({d})', d=stats.best_day[0]) }}</span><strong class="pnl-positive">{{ stats.best_day[1] | money }}</strong></div>
+      {% endif %}
+      {% if stats.worst_day %}
+      <div class="metric-row"><span>{{ tr('最差单日 ({d})', d=stats.worst_day[0]) }}</span><strong class="pnl-negative">{{ stats.worst_day[1] | money }}</strong></div>
+      {% endif %}
+      {% if match_meta.open_positions %}
+      <div class="metric-row"><span>{{ tr('目前仍持有的仓位') }}</span><strong>{{ match_meta.open_positions }}</strong></div>
+      {% endif %}
+    </div>
+  </div>
+  {% if match_meta.unmatched_closes %}
+  <p class="hint">{{ tr('有 {n} 笔平仓在导入的记录里找不到对应的开仓，可能是导入范围之前建的仓——这部分暂时按 $0 盈亏处理，不会拉低或拉高总盈亏。', n=match_meta.unmatched_closes) }}</p>
+  {% endif %}
+</section>
+
+<section class="log-section">
+  <h2>{{ tr('累计盈亏走势') }}</h2>
+  {% if chart %}
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
+    <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>
+    <polyline points="{{ chart.points_str }}" class="pnl-chart-line {{ 'pnl-line-positive' if chart.positive else 'pnl-line-negative' }}" fill="none"></polyline>
+    <circle cx="{{ chart.final_x }}" cy="{{ chart.final_y }}" r="4" class="{{ 'pnl-dot-positive' if chart.positive else 'pnl-dot-negative' }}"></circle>
+    {% for lbl in chart.x_labels %}
+      <text x="{{ lbl.x }}" y="{{ chart.height - 12 }}" class="pnl-chart-axis-label" text-anchor="middle">{{ lbl.label }}</text>
+    {% endfor %}
+  </svg>
+  {% endif %}
+</section>
+
+<section class="log-section">
+  <div class="changelog-header-row">
+    <h2>{{ month_heading }}</h2>
+    <div class="pnl-month-nav">
+      <a class="btn-link" href="{{ url_for('trading', year=prev_year, month=prev_month) }}">← {{ tr('上月') }}</a>
+      <a class="btn-link" href="{{ url_for('trading', year=next_year, month=next_month) }}">{{ tr('下月') }} →</a>
+    </div>
+  </div>
+  <div class="pnl-calendar">
+    <div class="pnl-calendar-row pnl-calendar-header">
+      <span>{{ tr('周一') }}</span><span>{{ tr('周二') }}</span><span>{{ tr('周三') }}</span><span>{{ tr('周四') }}</span><span>{{ tr('周五') }}</span>
+    </div>
+    {% for week in weeks %}
+    <div class="pnl-calendar-row">
+      {% for cell in week %}
+        {% if cell is none %}
+          <div class="pnl-day pnl-day-empty"></div>
+        {% elif cell.pnl is none %}
+          <div class="pnl-day">
+            <span class="pnl-day-num">{{ cell.day }}</span>
+          </div>
+        {% else %}
+          <div class="pnl-day {{ 'pnl-day-win' if cell.pnl > 0 else 'pnl-day-loss' if cell.pnl < 0 else '' }}" title="{{ cell.date }}">
+            <span class="pnl-day-num">{{ cell.day }}</span>
+            <span class="pnl-day-amount">{{ cell.pnl | money }}</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endif %}
+
+{% endblock %}

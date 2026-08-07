@@ -38,6 +38,14 @@ from translations import TR
 from db import DATA_DIR, DB_PATH, get_db, init_db
 from douban import DoubanFetchError, fetch_douban_info
 from novel_export import build_novel_docx, build_novel_pdf
+from trading import (
+    build_cumulative_series,
+    build_month_calendar,
+    build_pnl_chart,
+    compute_daily_pnl,
+    parse_schwab_csv,
+    summarize_daily_pnl,
+)
 from share_card import (
     build_changelog_share_card,
     build_chapter_share_card,
@@ -216,6 +224,16 @@ def tr(text, **kwargs):
 
 
 app.jinja_env.globals["tr"] = tr
+
+
+def fmt_money(v):
+    if v is None:
+        return "-"
+    sign = "-" if v < 0 else "+" if v > 0 else ""
+    return f"{sign}${abs(v):,.2f}"
+
+
+app.jinja_env.filters["money"] = fmt_money
 
 
 @app.context_processor
@@ -1771,6 +1789,100 @@ def log_delete(log_id):
     if item_id:
         return redirect(url_for("item_detail", item_id=item_id))
     return redirect(url_for("index"))
+
+
+@app.route("/trading")
+def trading():
+    today = date.today()
+    year = to_int(request.args.get("year"), today.year) or today.year
+    month = to_int(request.args.get("month"), today.month) or today.month
+    if month < 1 or month > 12:
+        month = today.month
+
+    conn = get_db()
+    trades_rows = conn.execute(
+        "SELECT * FROM trades WHERE user_id = ? ORDER BY trade_date, id", (g.user["id"],)
+    ).fetchall()
+    conn.close()
+    trades_list = [dict(r) for r in trades_rows]
+
+    daily_pnl, match_meta = compute_daily_pnl(trades_list)
+    stats = summarize_daily_pnl(daily_pnl)
+    weeks = build_month_calendar(year, month, daily_pnl)
+    series = build_cumulative_series(daily_pnl)
+    chart = build_pnl_chart(series)
+
+    prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
+    next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
+
+    month_heading = (
+        date(year, month, 1).strftime("%B %Y") + " P&L Calendar"
+        if g.lang == "en"
+        else f"{year} 年 {month} 月盈亏日历"
+    )
+
+    return render_template(
+        "trading.html",
+        has_trades=bool(trades_list),
+        cur_year=year,
+        cur_month=month,
+        month_heading=month_heading,
+        weeks=weeks,
+        chart=chart,
+        stats=stats,
+        match_meta=match_meta,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
+        today=today.isoformat(),
+        error=request.args.get("error"),
+        info=request.args.get("info"),
+    )
+
+
+@app.route("/trading/upload", methods=["POST"])
+def trading_upload():
+    file = request.files.get("csv_file")
+    if not file or not file.filename:
+        return redirect(url_for("trading", error="请选择一个 CSV 文件"))
+
+    try:
+        rows, warnings = parse_schwab_csv(file.read())
+    except Exception:
+        return redirect(url_for("trading", error="文件解析失败，确认是券商导出的交易记录 CSV"))
+
+    conn = get_db()
+    inserted = 0
+    for row in rows:
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO trades "
+            "(user_id, trade_date, action, symbol, description, quantity, price, fees, amount, dedup_key) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                g.user["id"], row["trade_date"], row["action"], row["symbol"], row["description"],
+                row["quantity"], row["price"], row["fees"], row["amount"], row["dedup_key"],
+            ),
+        )
+        if cur.rowcount:
+            inserted += 1
+    conn.commit()
+    conn.close()
+
+    skipped = len(rows) - inserted
+    info = tr("导入完成：新增 {n} 条，跳过 {s} 条重复。", n=inserted, s=skipped)
+    if warnings:
+        info += " " + " ".join(warnings)
+    return redirect(url_for("trading", info=info))
+
+
+@app.route("/trading/clear", methods=["POST"])
+def trading_clear():
+    conn = get_db()
+    conn.execute("DELETE FROM trades WHERE user_id = ?", (g.user["id"],))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("trading", info=tr("已清空所有导入的交易记录。")))
 
 
 NOVEL_STATUSES = ["连载中", "已完结", "暂停"]

@@ -1422,6 +1422,108 @@ button {
   font-size: 0.78rem;
 }
 
+/* trading P&L calendar + chart */
+.pnl-positive { color: #3d7a51; }
+.pnl-negative { color: #a34a3d; }
+
+.pnl-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.pnl-chart-zero {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.pnl-chart-line {
+  stroke-width: 2;
+}
+
+.pnl-line-positive { stroke: #3d7a51; }
+.pnl-line-negative { stroke: #a34a3d; }
+.pnl-dot-positive { fill: #3d7a51; }
+.pnl-dot-negative { fill: #a34a3d; }
+
+.pnl-chart-axis-label {
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.pnl-month-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.pnl-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pnl-calendar-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.pnl-calendar-header span {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pnl-day {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  background: var(--card-bg);
+}
+
+.pnl-day-empty {
+  border: none;
+  background: none;
+}
+
+.pnl-day-num {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.pnl-day-amount {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.pnl-day-win {
+  background: #dcece0;
+  border-color: #8fc79e;
+}
+
+.pnl-day-win .pnl-day-amount { color: #2d6b3f; }
+
+.pnl-day-loss {
+  background: #f1dcd8;
+  border-color: #d99a8c;
+}
+
+.pnl-day-loss .pnl-day-amount { color: #a34a3d; }
+
+@media (max-width: 640px) {
+  .pnl-day { font-size: 0.6rem; padding: 4px; }
+  .pnl-day-amount { font-size: 0.58rem; }
+}
+
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

@@ -2189,4 +2189,38 @@ CHANGELOG = [
         "lines_changed": 380,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "新功能：上传券商交易记录，自动算出每日盈亏日历和走势图",
+        "title_en": "New feature: upload broker transactions, get a P&L calendar and equity curve",
+        "summary": (
+            "新加了 /trading 页面：上传 Schwab 导出的「Transactions」CSV，网站自动算出每天的已实现盈亏，"
+            "画成盈亏日历（周一到周五，绿涨红跌）和累计盈亏走势图。文件里其实没有直接的盈亏列——每一行只是"
+            "一笔买/卖的现金流水，得自己把开仓和平仓配对算盈亏。做法是按 FIFO（先进先出）把每个交易品种"
+            "（期权用完整合约代码，股票用代码本身）的买入和卖出配对，盈亏记在平仓那天。可以随时上传新导出的"
+            "文件追加记录，同一笔交易重复上传会自动跳过，不会重复计算——因为 Schwab 不给交易 ID，去重靠"
+            "把这一行的日期/操作/代码/数量/价格/金额一起算个指纹。开发过程中一开始整个算错了：CSV 里是从"
+            "最新到最旧倒着排的，配对逻辑却假设是正着来的，导致几乎所有平仓都找不到对应的开仓——把顺序倒"
+            "过来之后重新用真实数据验证，跟手算的结果完全对上了。这部分是登录后才能看的私密页面。"
+        ),
+        "summary_en": (
+            "Added a /trading page: upload a Schwab \"Transactions\" CSV export and the site works out "
+            "realized P&L for every day, drawn as a P&L calendar (Monday-Friday, green for gains / red "
+            "for losses) plus a cumulative equity-curve chart. The file doesn't actually have a P&L "
+            "column -- each row is just the cash flow of one buy or sell -- so opening and closing "
+            "trades have to be matched up to get a real profit/loss. Matching is FIFO per exact symbol "
+            "(options use the full contract string, so different strikes/expiries never get mixed "
+            "together), with the realized P&L attributed to the day the position closes. New exports "
+            "can be uploaded any time to add more history -- the same trade uploaded twice is skipped "
+            "automatically, since there's no transaction id in Schwab's export to key off of, so "
+            "dedup uses a fingerprint of the row's own date/action/symbol/quantity/price/amount instead. "
+            "Hit a real bug early on: the CSV lists transactions newest-first, but the matching logic "
+            "assumed oldest-first, so almost every closing trade failed to find its opening trade -- "
+            "reversed the order and re-verified against the real data, which then matched a hand-traced "
+            "calculation exactly. This page requires login, like the rest of the personal tracker."
+        ),
+        "image": None,
+        "lines_changed": 654,
+        "estimated": False,
+    },
 ]
