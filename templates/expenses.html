@@ -74,11 +74,9 @@
             <span class="pnl-day-num">{{ cell.day }}</span>
           </div>
         {% else %}
-          {% set net = cell.totals.income - cell.totals.expense %}
-          <div class="pnl-day {{ 'pnl-day-win' if net >= 0 else 'pnl-day-loss' }}" title="{{ cell.date }}">
+          <div class="pnl-day pnl-day-loss" title="{{ cell.date }}">
             <span class="pnl-day-num">{{ cell.day }}</span>
-            {% if cell.totals.expense %}<span class="pnl-day-amount">{{ (-cell.totals.expense) | money }}</span>{% endif %}
-            {% if cell.totals.income %}<span class="exp-day-income">{{ cell.totals.income | money }}</span>{% endif %}
+            <span class="pnl-day-amount">{{ (-cell.totals.expense) | money }}</span>
           </div>
         {% endif %}
       {% endfor %}
@@ -88,17 +86,14 @@
 </section>
 
 <section class="log-section">
-  <h2>{{ tr('各月收支汇总') }}</h2>
+  <h2>{{ tr('各月消费汇总') }}</h2>
   <ul class="pnl-month-list">
     {% for m in month_summary %}
     <li>
       <a class="pnl-month-row {{ 'pnl-month-active' if m.year == cur_year and m.month == cur_month else '' }}"
          href="{{ url_for('expenses', year=m.year, month=m.month) }}">
         <span>{{ m.label }}</span>
-        <span>
-          <strong class="pnl-negative">{{ (-m.expense) | money }}</strong>
-          <strong class="pnl-positive">{{ m.income | money }}</strong>
-        </span>
+        <strong class="pnl-negative">{{ (-m.expense) | money }}</strong>
       </a>
     </li>
     {% endfor %}

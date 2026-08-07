@@ -460,7 +460,7 @@ TR = {
     "最新余额": "Latest balance",
     "周日": "Sun",
     "周六": "Sat",
-    "各月收支汇总": "Monthly Summary",
+    "各月消费汇总": "Monthly Spending",
 
     # --- trading.html ---
     "交易盈亏": "Trading P&L",

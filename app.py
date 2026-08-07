@@ -1911,8 +1911,9 @@ def expenses():
     conn.close()
     tx_list = [dict(r) for r in rows]
 
-    daily_totals = bank.build_daily_totals(tx_list)
     stats = bank.summarize(tx_list)
+    spending_only = bank.filter_spending(tx_list)
+    daily_totals = bank.build_daily_totals(spending_only)
     weeks = bank.build_month_calendar(year, month, daily_totals)
     month_summary = bank.build_month_summary(daily_totals)
 

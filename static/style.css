@@ -1578,19 +1578,6 @@ button {
   font-weight: 600;
 }
 
-.exp-day-income {
-  font-size: 0.6rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  align-self: flex-end;
-  text-align: right;
-  color: #2d6b3f;
-}
-
-@media (max-width: 640px) {
-  .exp-day-income { font-size: 0.5rem; }
-}
-
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

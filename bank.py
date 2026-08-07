@@ -163,6 +163,20 @@ def summarize(transactions):
     }
 
 
+# The bank's own "摘要" (category) label for an actual purchase, as opposed
+# to a transfer to another account (银证转账 -- often just money moved to a
+# brokerage account the person also owns, not spending), wealth-management
+# purchases (理财), bill payments (缴费), deposits (银联入账), etc. The
+# calendar and monthly summary are scoped to just this -- "how much did I
+# actually spend on things" -- while the overview stats cards above them
+# keep showing the full picture across every category for context.
+SPENDING_CATEGORY = "消费"
+
+
+def filter_spending(transactions):
+    return [t for t in transactions if t["category"] == SPENDING_CATEGORY]
+
+
 def build_daily_totals(transactions):
     """{date: {"expense": float, "income": float}}"""
     daily = defaultdict(lambda: {"expense": 0.0, "income": 0.0})

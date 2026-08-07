@@ -2290,4 +2290,29 @@ CHANGELOG = [
         "lines_changed": 504,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "消费日历和月度汇总改成只看「消费」，不再混进转账/理财",
+        "title_en": "Spending calendar and monthly summary now scoped to actual purchases only",
+        "summary": (
+            "之前消费日历和各月汇总是把所有支出类交易都算进去的，结果被「银证转账」（转去证券账户的钱，"
+            "本质是挪到自己另一个账户，不是真的花掉了）这种大额记录严重带偏——银证转账一项就占了总支出的"
+            "大头，完全掩盖了日常消费的真实情况。改成只统计银行摘要里标为「消费」的那部分（也就是实际的"
+            "购物/消费记录），转账、理财、缴费这些不算进日历和月度汇总里；顶部的总支出/总收入统计卡片还是"
+            "看全部交易，两边刚好一个管全貌、一个管日常消费习惯。"
+        ),
+        "summary_en": (
+            "The spending calendar and monthly summary used to count every expense-type transaction, which "
+            "got badly skewed by \"银证转账\" (transfers to a brokerage account -- really just money moved to "
+            "another account of my own, not actually spent) -- that one category alone dominated total "
+            "expenses and completely obscured what daily spending actually looked like. Now the calendar and "
+            "monthly summary are scoped to just the bank's own \"消费\" (purchase) label; transfers, "
+            "wealth-management buys, and bill payments are excluded from those two views. The overview stats "
+            "cards at the top still cover every transaction, so one gives the full picture and the other "
+            "tracks actual spending habits."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]
