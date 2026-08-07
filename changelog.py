@@ -2436,4 +2436,24 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "点月份不用刷新页面了，日消费日历挪到了最下面",
+        "title_en": "Clicking a month no longer reloads the page; day calendar moved to the bottom",
+        "summary": (
+            "页面顺序调整成：年度消费汇总（柱状图 + 12 个月方格）在上面，某个月的日消费日历挪到最下面。"
+            "点方格里的月份不再刷新整个页面——12 个月的日历其实一次性都渲染好了、只是藏起来了，点哪个月"
+            "就用 JS 把对应那块显示出来、平滑滚到底部，其余 11 个月继续藏着，没有发起新的请求。"
+        ),
+        "summary_en": (
+            "Reordered the page: the yearly summary (bar chart + 12-month grid) now sits above the "
+            "day-level calendar, which moved to the bottom. Clicking a month in the grid no longer reloads "
+            "the page -- all 12 months' day calendars are actually rendered up front and just hidden; "
+            "clicking a month reveals that one via JS and smooth-scrolls down to it, with the other 11 "
+            "staying hidden, no server round-trip involved."
+        ),
+        "image": None,
+        "lines_changed": 100,
+        "estimated": False,
+    },
 ]

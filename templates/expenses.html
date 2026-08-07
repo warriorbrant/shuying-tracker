@@ -62,44 +62,11 @@
 
 <section class="log-section">
   <div class="changelog-header-row">
-    <h2>{{ month_heading }}</h2>
-    <div class="pnl-month-nav">
-      <a class="btn-link" href="{{ url_for('expenses', year=prev_year, month=prev_month) }}">← {{ tr('上月') }}</a>
-      <a class="btn-link" href="{{ url_for('expenses', year=next_year, month=next_month) }}">{{ tr('下月') }} →</a>
-    </div>
-  </div>
-  <div class="exp-calendar">
-    <div class="exp-calendar-row exp-calendar-header">
-      <span>{{ tr('周日') }}</span><span>{{ tr('周一') }}</span><span>{{ tr('周二') }}</span><span>{{ tr('周三') }}</span><span>{{ tr('周四') }}</span><span>{{ tr('周五') }}</span><span>{{ tr('周六') }}</span>
-    </div>
-    {% for week in weeks %}
-    <div class="exp-calendar-row">
-      {% for cell in week %}
-        {% if cell is none %}
-          <div class="pnl-day pnl-day-empty"></div>
-        {% elif cell.spend is none %}
-          <div class="pnl-day">
-            <span class="pnl-day-num">{{ cell.day }}</span>
-          </div>
-        {% else %}
-          <div class="pnl-day {{ 'pnl-day-loss' if cell.spend > 0 else 'pnl-day-win' }}" title="{{ cell.date }}">
-            <span class="pnl-day-num">{{ cell.day }}</span>
-            <span class="pnl-day-amount">{{ (-cell.spend) | money }}</span>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
-</section>
-
-<section class="log-section">
-  <div class="changelog-header-row">
     <h2>{{ tr('{y} 年消费汇总', y=summary_year) }}</h2>
     <div class="pnl-month-nav">
       {% for y in years %}
         <a class="year-tab {{ 'year-tab-active' if y == summary_year else '' }}"
-           href="{{ url_for('expenses', year=cur_year, month=cur_month, summary_year=y) }}">{{ y }}</a>
+           href="{{ url_for('expenses', year=y) }}">{{ y }}</a>
       {% endfor %}
     </div>
   </div>
@@ -147,15 +114,15 @@
     {% endfor %}
   </svg>
 
-  <div class="exp-year-grid">
+  <div class="exp-year-grid" id="monthGrid">
     {% for m in year_calendar %}
       {% if m.spend is none %}
         <div class="pnl-day">
           <span class="pnl-day-num">{{ m.label }}</span>
         </div>
       {% else %}
-        <a class="pnl-day exp-year-month {{ 'pnl-day-loss' if m.spend > 0 else 'pnl-day-win' }}"
-           href="{{ url_for('expenses', year=summary_year, month=m.month) }}">
+        <a class="pnl-day exp-year-month js-month-link {{ 'pnl-day-loss' if m.spend > 0 else 'pnl-day-win' }} {{ 'exp-year-month-active' if m.month == cur_month }}"
+           href="#day-cal-{{ m.month }}" data-month="{{ m.month }}">
           <span class="pnl-day-num">{{ m.label }}</span>
           <span class="pnl-day-amount">{{ (-m.spend) | money }}</span>
         </a>
@@ -164,6 +131,62 @@
   </div>
 </section>
 
+<section class="log-section" id="dayCalendarSection">
+  {% for mc in month_calendars %}
+  <div id="day-cal-{{ mc.month }}" class="day-cal-block{{ '' if mc.month == cur_month else ' day-cal-hidden' }}">
+    <h2>{{ mc.heading }}</h2>
+    <div class="exp-calendar">
+      <div class="exp-calendar-row exp-calendar-header">
+        <span>{{ tr('周日') }}</span><span>{{ tr('周一') }}</span><span>{{ tr('周二') }}</span><span>{{ tr('周三') }}</span><span>{{ tr('周四') }}</span><span>{{ tr('周五') }}</span><span>{{ tr('周六') }}</span>
+      </div>
+      {% for week in mc.weeks %}
+      <div class="exp-calendar-row">
+        {% for cell in week %}
+          {% if cell is none %}
+            <div class="pnl-day pnl-day-empty"></div>
+          {% elif cell.spend is none %}
+            <div class="pnl-day">
+              <span class="pnl-day-num">{{ cell.day }}</span>
+            </div>
+          {% else %}
+            <div class="pnl-day {{ 'pnl-day-loss' if cell.spend > 0 else 'pnl-day-win' }}" title="{{ cell.date }}">
+              <span class="pnl-day-num">{{ cell.day }}</span>
+              <span class="pnl-day-amount">{{ (-cell.spend) | money }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var grid = document.getElementById('monthGrid');
+  if (!grid) return;
+  grid.addEventListener('click', function (e) {
+    var link = e.target.closest('.js-month-link');
+    if (!link) return;
+    e.preventDefault();
+    var month = link.dataset.month;
+    var target = document.getElementById('day-cal-' + month);
+    if (!target) return;
+
+    document.querySelectorAll('.day-cal-block').forEach(function (block) {
+      block.classList.toggle('day-cal-hidden', block !== target);
+    });
+    document.querySelectorAll('.js-month-link').forEach(function (l) {
+      l.classList.toggle('exp-year-month-active', l === link);
+    });
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+</script>
 {% endblock %}

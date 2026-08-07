@@ -1629,6 +1629,23 @@ button {
   fill: var(--muted);
 }
 
+.exp-year-month-active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.day-cal-hidden {
+  display: none;
+}
+
+.day-cal-block h2 {
+  margin-top: 24px;
+}
+
+.day-cal-block:first-child h2 {
+  margin-top: 0;
+}
+
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

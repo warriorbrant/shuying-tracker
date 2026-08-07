@@ -1899,10 +1899,6 @@ def trading_clear():
 @app.route("/expenses")
 def expenses():
     today = date.today()
-    year = to_int(request.args.get("year"), today.year) or today.year
-    month = to_int(request.args.get("month"), today.month) or today.month
-    if month < 1 or month > 12:
-        month = today.month
 
     conn = get_db()
     rows = conn.execute(
@@ -1913,14 +1909,18 @@ def expenses():
 
     stats = bank.summarize(tx_list)
     daily_spending = bank.build_daily_spending(tx_list)
-    weeks = bank.build_month_calendar(year, month, daily_spending)
 
     years = bank.list_years(daily_spending)
     if not years:
         years = [today.year]
-    summary_year = to_int(request.args.get("summary_year"), year) or year
+    summary_year = to_int(request.args.get("year"), today.year) or today.year
     if summary_year not in years:
         summary_year = years[0]
+
+    cur_month = to_int(request.args.get("month"), today.month) or today.month
+    if cur_month < 1 or cur_month > 12:
+        cur_month = today.month
+
     year_calendar = bank.build_year_calendar(summary_year, daily_spending)
     year_spend_total = bank.year_total(summary_year, daily_spending)
     for m in year_calendar:
@@ -1928,22 +1928,27 @@ def expenses():
     year_bar_chart = bank.build_year_bar_chart(year_calendar)
     year_stats = bank.summarize([t for t in tx_list if t["tx_date"][:4] == str(summary_year)])
 
-    prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
-    next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
-
-    month_heading = (
-        date(year, month, 1).strftime("%B %Y") + " Spending Calendar"
-        if g.lang == "en"
-        else f"{year} 年 {month} 月消费日历"
-    )
+    # All 12 months' day-calendars for the selected year are rendered into the
+    # page at once (cheap -- just a few hundred small cells) and toggled with
+    # JS when a month is clicked in the grid above, instead of round-tripping
+    # to the server for every month switch.
+    month_calendars = []
+    for m in range(1, 13):
+        month_calendars.append({
+            "month": m,
+            "weeks": bank.build_month_calendar(summary_year, m, daily_spending),
+            "heading": (
+                date(summary_year, m, 1).strftime("%B %Y") + " Spending Calendar"
+                if g.lang == "en"
+                else f"{summary_year} 年 {m} 月消费日历"
+            ),
+        })
 
     return render_template(
         "expenses.html",
         has_transactions=bool(tx_list),
-        cur_year=year,
-        cur_month=month,
-        month_heading=month_heading,
-        weeks=weeks,
+        cur_month=cur_month,
+        month_calendars=month_calendars,
         years=years,
         summary_year=summary_year,
         year_calendar=year_calendar,
@@ -1951,10 +1956,6 @@ def expenses():
         year_spend_total=year_spend_total,
         year_stats=year_stats,
         stats=stats,
-        prev_year=prev_year,
-        prev_month=prev_month,
-        next_year=next_year,
-        next_month=next_month,
         error=request.args.get("error"),
         info=request.args.get("info"),
     )
