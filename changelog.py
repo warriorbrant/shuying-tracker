@@ -2418,4 +2418,22 @@ CHANGELOG = [
         "lines_changed": 40,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "年度消费汇总加了按月柱状图",
+        "title_en": "Added a monthly bar chart to the yearly summary",
+        "summary": (
+            "12 个月的方格上面加了一个柱状图：花钱的月份柱子往上长（红色），退款比消费还多的月份柱子往下"
+            "长（绿色），一眼就能看出哪几个月花得多。柱状图和下面的方格用的是同一份数据，没有另外算一遍。"
+        ),
+        "summary_en": (
+            "Added a bar chart above the 12-month grid: a net-cost month's bar grows upward (red), a "
+            "net-refund month's grows downward (green) from a zero baseline, so the months that cost the "
+            "most jump out at a glance. Built from the exact same data as the grid below it, not a separate "
+            "computation."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]

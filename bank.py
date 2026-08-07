@@ -235,3 +235,45 @@ def build_year_calendar(year, daily_spending):
 
 def year_total(year, daily_spending):
     return sum(spend for d, spend in daily_spending.items() if int(d[:4]) == year)
+
+
+def build_year_bar_chart(year_calendar, width=760, height=280, padding_x=30, padding_y=28):
+    """12 bars (Jan-Dec) from the same data as build_year_calendar. Bars grow
+    up from a zero baseline for a net-cost month (red) and down for a
+    net-refund month (green), so it reads the same way the calendar cells'
+    colors already do."""
+    values = [m["spend"] or 0 for m in year_calendar]
+    max_v = max(values + [0])
+    min_v = min(values + [0])
+    span = (max_v - min_v) or 1
+    plot_w = width - padding_x * 2
+    plot_h = height - padding_y * 2
+    n = len(year_calendar)
+    gap = 6
+    bar_w = (plot_w - gap * (n - 1)) / n
+
+    def y_for(v):
+        return padding_y + plot_h * (1 - (v - min_v) / span)
+
+    zero_y = y_for(0)
+    bars = []
+    for i, m in enumerate(year_calendar):
+        x = padding_x + i * (bar_w + gap)
+        v = m["spend"]
+        if v is None:
+            bars.append({"x": x, "y": zero_y, "width": bar_w, "height": 0, "value": None, "label": m["label"]})
+            continue
+        y_top = y_for(max(v, 0))
+        y_bottom = y_for(min(v, 0))
+        bars.append({
+            "x": x,
+            "y": y_top,
+            "width": bar_w,
+            "height": max(y_bottom - y_top, 1.5),
+            "value": v,
+            "is_cost": v > 0,
+            "label": m["label"],
+            "label_y": (y_top - 6) if v > 0 else (y_bottom + 14),
+        })
+
+    return {"width": width, "height": height, "zero_y": zero_y, "bars": bars}

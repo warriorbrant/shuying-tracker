@@ -1614,6 +1614,21 @@ button {
   .exp-year-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+.exp-bar-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.exp-bar-cost { fill: #a34a3d; }
+.exp-bar-refund { fill: #3d7a51; }
+
+.exp-bar-value {
+  font-size: 9px;
+  fill: var(--muted);
+}
+
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

@@ -134,6 +134,19 @@
   </div>
 
   <p class="hint">{{ tr('全年消费合计：') }}<strong class="{{ 'pnl-negative' if year_spend_total > 0 else 'pnl-positive' }}">{{ (-year_spend_total) | money }}</strong></p>
+
+  <svg viewBox="0 0 {{ year_bar_chart.width }} {{ year_bar_chart.height }}" class="exp-bar-chart" role="img" aria-label="{{ tr('按月消费柱状图') }}">
+    <line x1="0" y1="{{ year_bar_chart.zero_y }}" x2="{{ year_bar_chart.width }}" y2="{{ year_bar_chart.zero_y }}" class="pnl-chart-zero"></line>
+    {% for bar in year_bar_chart.bars %}
+      {% if bar.value is not none %}
+        <rect x="{{ bar.x }}" y="{{ bar.y }}" width="{{ bar.width }}" height="{{ bar.height }}"
+              class="{{ 'exp-bar-cost' if bar.is_cost else 'exp-bar-refund' }}" rx="2"></rect>
+        <text x="{{ bar.x + bar.width / 2 }}" y="{{ bar.label_y }}" text-anchor="middle" class="exp-bar-value">{{ (-bar.value) | money }}</text>
+      {% endif %}
+      <text x="{{ bar.x + bar.width / 2 }}" y="{{ year_bar_chart.height - 8 }}" text-anchor="middle" class="pnl-chart-axis-label">{{ bar.label }}</text>
+    {% endfor %}
+  </svg>
+
   <div class="exp-year-grid">
     {% for m in year_calendar %}
       {% if m.spend is none %}

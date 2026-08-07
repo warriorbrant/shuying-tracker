@@ -466,6 +466,7 @@ TR = {
     "各月消费汇总": "Monthly Spending",
     "{y} 年消费汇总": "{y} Spending Summary",
     "全年消费合计：": "Year net spending: ",
+    "按月消费柱状图": "Monthly spending bar chart",
 
     # --- trading.html ---
     "交易盈亏": "Trading P&L",
