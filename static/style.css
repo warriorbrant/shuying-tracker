@@ -1557,6 +1557,40 @@ button {
   background: var(--accent-soft);
 }
 
+/* expense tracking: 7-day calendar (unlike trading's Mon-Fri, bank activity
+   isn't confined to weekdays) */
+.exp-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exp-calendar-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.exp-calendar-header span {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.exp-day-income {
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  align-self: flex-end;
+  text-align: right;
+  color: #2d6b3f;
+}
+
+@media (max-width: 640px) {
+  .exp-day-income { font-size: 0.5rem; }
+}
+
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

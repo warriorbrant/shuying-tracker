@@ -178,6 +178,26 @@ CREATE TABLE IF NOT EXISTS trades (
 );
 CREATE INDEX IF NOT EXISTS idx_trades_user_date ON trades(user_id, trade_date);
 
+-- ICBC bank statement rows, imported from password-protected PDF exports.
+-- Same dedup-on-reupload approach as `trades` (no bank-provided transaction
+-- id either): a fingerprint of the row's own fields.
+CREATE TABLE IF NOT EXISTS bank_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    tx_date TEXT NOT NULL,
+    tx_time TEXT DEFAULT '',
+    category TEXT DEFAULT '',
+    amount REAL NOT NULL,
+    balance REAL,
+    counterparty_name TEXT DEFAULT '',
+    counterparty_account TEXT DEFAULT '',
+    channel TEXT DEFAULT '',
+    dedup_key TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE(user_id, dedup_key)
+);
+CREATE INDEX IF NOT EXISTS idx_bank_transactions_user_date ON bank_transactions(user_id, tx_date);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).

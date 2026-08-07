@@ -2249,4 +2249,45 @@ CHANGELOG = [
         "lines_changed": 180,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "新功能：上传银行卡流水 PDF，追踪日常消费",
+        "title_en": "New feature: upload a bank statement PDF, track everyday spending",
+        "summary": (
+            "新加了 /expenses 页面：上传工商银行「历史明细」PDF（需要密码，网银下载的时候会给），"
+            "自动生成消费日历（周日到周六，红色是净支出、绿色是净流入）、支出分类小计（消费/银证转账/理财/"
+            "缴费……直接用银行给的摘要分类，不用自己再分一遍）、按月的收支汇总。这份 PDF 比想象中难啃：文字"
+            "层里混了一层防伪水印——一串随机数字字母，跟真实数据渲染在同一层文字流里，直接转文字或者简单"
+            "按坐标分列都会把水印字符插进真实数据中间（账号里多个数字、日期前面多个字母，甚至有的水印数字"
+            "插在真实数字正中间）。排查了每个字符的渲染属性才找到区分方法：水印是斜着旋转过的（文字矩阵里"
+            "有非零的旋转分量），真实数据都是端正不旋转的，按这个过滤掉水印字符，表格就干净了——一开始还"
+            "错怪了另一层小字号文字（以为字号小的是水印，结果那其实是真实的商户名称，只是渲染得比较小）。"
+            "另外这家银行给的两次导出，一次带对方户名对方账号两列，一次不带，本来按全字段做的去重会把同一"
+            "笔交易在两份文件里当成两条不同记录，改成只用日期时间金额余额渠道这几列都有的字段来去重就解决了。"
+        ),
+        "summary_en": (
+            "Added an /expenses page: upload an ICBC \"历史明细\" (statement) PDF -- password-protected, the "
+            "bank gives you the password when you download it from online banking -- and it generates a "
+            "spending calendar (Sunday-Saturday, red for a net outflow day / green for net inflow), an "
+            "expense breakdown by category (using the bank's own labels -- purchases, transfers to a "
+            "brokerage, wealth management, bill payments... no need to re-categorize by hand), and a "
+            "monthly income/expense summary. The PDF turned out harder than expected: its text layer has an "
+            "anti-forgery watermark baked in -- a string of random digits/letters rendered into the *same* "
+            "text stream as the real data, so naive text extraction or even simple column-position splitting "
+            "inserts watermark characters into the middle of real values (an extra digit in an account "
+            "number, stray letters in front of a date, sometimes a digit landing dead center of a real "
+            "number). Had to inspect each character's actual rendering properties to find something reliable "
+            "to filter on: the watermark is rotated diagonally (its text matrix has nonzero rotation terms) "
+            "while every real character sits upright -- filtering on that cleaned the table up completely. "
+            "First guess was wrong, too: assumed a tiny font size meant watermark, but that turned out to be "
+            "real merchant names just rendered small. Separately, the bank's two export variants -- one with "
+            "counterparty name/account columns, one without -- meant the original all-fields dedup key made "
+            "the same real transaction look like two different rows depending on which export it came from; "
+            "switched to a dedup key built only from the columns both variants always have (date, time, "
+            "amount, balance, channel), which fixed it."
+        ),
+        "image": None,
+        "lines_changed": 504,
+        "estimated": False,
+    },
 ]

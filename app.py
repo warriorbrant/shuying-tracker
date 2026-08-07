@@ -47,6 +47,7 @@ from trading import (
     parse_schwab_csv,
     summarize_daily_pnl,
 )
+import bank
 from share_card import (
     build_changelog_share_card,
     build_chapter_share_card,
@@ -1893,6 +1894,107 @@ def trading_clear():
     conn.commit()
     conn.close()
     return redirect(url_for("trading", info=tr("已清空所有导入的交易记录。")))
+
+
+@app.route("/expenses")
+def expenses():
+    today = date.today()
+    year = to_int(request.args.get("year"), today.year) or today.year
+    month = to_int(request.args.get("month"), today.month) or today.month
+    if month < 1 or month > 12:
+        month = today.month
+
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM bank_transactions WHERE user_id = ? ORDER BY tx_date, tx_time, id", (g.user["id"],)
+    ).fetchall()
+    conn.close()
+    tx_list = [dict(r) for r in rows]
+
+    daily_totals = bank.build_daily_totals(tx_list)
+    stats = bank.summarize(tx_list)
+    weeks = bank.build_month_calendar(year, month, daily_totals)
+    month_summary = bank.build_month_summary(daily_totals)
+
+    prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
+    next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
+
+    month_heading = (
+        date(year, month, 1).strftime("%B %Y") + " Spending Calendar"
+        if g.lang == "en"
+        else f"{year} 年 {month} 月消费日历"
+    )
+    for m in month_summary:
+        m["label"] = (
+            date(m["year"], m["month"], 1).strftime("%b %Y")
+            if g.lang == "en"
+            else f"{m['year']} 年 {m['month']} 月"
+        )
+
+    return render_template(
+        "expenses.html",
+        has_transactions=bool(tx_list),
+        cur_year=year,
+        cur_month=month,
+        month_heading=month_heading,
+        weeks=weeks,
+        month_summary=month_summary,
+        stats=stats,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
+        error=request.args.get("error"),
+        info=request.args.get("info"),
+    )
+
+
+@app.route("/expenses/upload", methods=["POST"])
+def expenses_upload():
+    file = request.files.get("pdf_file")
+    password = request.form.get("password", "")
+    if not file or not file.filename:
+        return redirect(url_for("expenses", error="请选择一个 PDF 文件"))
+
+    try:
+        rows, warnings = bank.parse_icbc_pdf(file.read(), password)
+    except ValueError:
+        return redirect(url_for("expenses", error="打不开这个文件，确认密码是否正确、文件是否为工商银行历史明细 PDF"))
+    except Exception:
+        return redirect(url_for("expenses", error="文件解析失败，确认是工商银行导出的历史明细 PDF"))
+
+    conn = get_db()
+    inserted = 0
+    for row in rows:
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO bank_transactions "
+            "(user_id, tx_date, tx_time, category, amount, balance, counterparty_name, "
+            "counterparty_account, channel, dedup_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                g.user["id"], row["tx_date"], row["tx_time"], row["category"], row["amount"],
+                row["balance"], row["counterparty_name"], row["counterparty_account"],
+                row["channel"], row["dedup_key"],
+            ),
+        )
+        if cur.rowcount:
+            inserted += 1
+    conn.commit()
+    conn.close()
+
+    skipped = len(rows) - inserted
+    info = tr("导入完成：新增 {n} 条，跳过 {s} 条重复。", n=inserted, s=skipped)
+    if warnings:
+        info += " " + " ".join(warnings)
+    return redirect(url_for("expenses", info=info))
+
+
+@app.route("/expenses/clear", methods=["POST"])
+def expenses_clear():
+    conn = get_db()
+    conn.execute("DELETE FROM bank_transactions WHERE user_id = ?", (g.user["id"],))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("expenses", info=tr("已清空所有导入的流水记录。")))
 
 
 NOVEL_STATUSES = ["连载中", "已完结", "暂停"]

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('消费追踪') }}{% endblock %}
+{% block content %}
+
+<h1>{{ tr('消费追踪') }}</h1>
+
+{% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
+{% if info %}<p class="hint hint-ok">{{ info }}</p>{% endif %}
+
+<section class="log-section">
+  <h2>{{ tr('导入银行流水') }}</h2>
+  <p class="hint">{{ tr('目前支持工商银行「历史明细」PDF（需要密码）。可以随时导入新的导出文件追加记录，已经导入过的交易会自动跳过，不会重复计算。') }}</p>
+  <form class="form ref-add" method="post" action="{{ url_for('expenses_upload') }}" enctype="multipart/form-data">
+    <div class="row">
+      <input type="file" name="pdf_file" accept=".pdf" required>
+      <input type="password" name="password" placeholder="{{ tr('PDF 密码') }}" autocomplete="off" required>
+      <button type="submit">{{ tr('上传') }}</button>
+    </div>
+  </form>
+  {% if has_transactions %}
+  <form method="post" action="{{ url_for('expenses_clear') }}"
+        onsubmit="return confirm({{ tr('确定清空所有已导入的流水记录吗？此操作不可撤销。') | tojson }});" class="inline-delete">
+    <button type="submit" class="btn-danger-sm">{{ tr('清空所有记录') }}</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if not has_transactions %}
+<p class="empty">{{ tr('还没有导入任何流水记录，上传上面的 PDF 开始看消费日历。') }}</p>
+{% else %}
+
+<section class="log-section">
+  <div class="metrics-grid">
+    <div class="metrics-card">
+      <div class="metric-row"><span>{{ tr('总支出') }}</span><strong class="pnl-negative">{{ (-stats.total_expense) | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('总收入') }}</span><strong class="pnl-positive">{{ stats.total_income | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('净流入') }}</span><strong class="{{ 'pnl-positive' if stats.net >= 0 else 'pnl-negative' }}">{{ stats.net | money }}</strong></div>
+    </div>
+    <div class="metrics-card">
+      <h2>{{ tr('支出分类') }}</h2>
+      {% for cat, amt in stats.category_breakdown[:6] %}
+      <div class="metric-row"><span>{{ cat }}</span><strong class="pnl-negative">{{ (-amt) | money }}</strong></div>
+      {% else %}
+      <p class="hint">{{ tr('还没有支出记录。') }}</p>
+      {% endfor %}
+    </div>
+    {% if stats.last_balance is not none %}
+    <div class="metrics-card">
+      <div class="metric-row"><span>{{ tr('最新余额') }}</span><strong>{{ stats.last_balance | money }}</strong></div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="log-section">
+  <div class="changelog-header-row">
+    <h2>{{ month_heading }}</h2>
+    <div class="pnl-month-nav">
+      <a class="btn-link" href="{{ url_for('expenses', year=prev_year, month=prev_month) }}">← {{ tr('上月') }}</a>
+      <a class="btn-link" href="{{ url_for('expenses', year=next_year, month=next_month) }}">{{ tr('下月') }} →</a>
+    </div>
+  </div>
+  <div class="exp-calendar">
+    <div class="exp-calendar-row exp-calendar-header">
+      <span>{{ tr('周日') }}</span><span>{{ tr('周一') }}</span><span>{{ tr('周二') }}</span><span>{{ tr('周三') }}</span><span>{{ tr('周四') }}</span><span>{{ tr('周五') }}</span><span>{{ tr('周六') }}</span>
+    </div>
+    {% for week in weeks %}
+    <div class="exp-calendar-row">
+      {% for cell in week %}
+        {% if cell is none %}
+          <div class="pnl-day pnl-day-empty"></div>
+        {% elif cell.totals is none %}
+          <div class="pnl-day">
+            <span class="pnl-day-num">{{ cell.day }}</span>
+          </div>
+        {% else %}
+          {% set net = cell.totals.income - cell.totals.expense %}
+          <div class="pnl-day {{ 'pnl-day-win' if net >= 0 else 'pnl-day-loss' }}" title="{{ cell.date }}">
+            <span class="pnl-day-num">{{ cell.day }}</span>
+            {% if cell.totals.expense %}<span class="pnl-day-amount">{{ (-cell.totals.expense) | money }}</span>{% endif %}
+            {% if cell.totals.income %}<span class="exp-day-income">{{ cell.totals.income | money }}</span>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="log-section">
+  <h2>{{ tr('各月收支汇总') }}</h2>
+  <ul class="pnl-month-list">
+    {% for m in month_summary %}
+    <li>
+      <a class="pnl-month-row {{ 'pnl-month-active' if m.year == cur_year and m.month == cur_month else '' }}"
+         href="{{ url_for('expenses', year=m.year, month=m.month) }}">
+        <span>{{ m.label }}</span>
+        <span>
+          <strong class="pnl-negative">{{ (-m.expense) | money }}</strong>
+          <strong class="pnl-positive">{{ m.income | money }}</strong>
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% endif %}
+
+{% endblock %}

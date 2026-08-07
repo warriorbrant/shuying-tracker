@@ -21,6 +21,7 @@ TR = {
     "🛡️ 账号管理": "🛡️ Accounts",
     "📖 小说": "📖 Novels",
     "📈 交易": "📈 Trading",
+    "💰 消费": "💰 Spending",
     "更新日志": "Changelog",
     "退出登录": "Log out",
     "登录": "Log in",
@@ -436,6 +437,30 @@ TR = {
     "文件解析失败，确认是券商导出的交易记录 CSV": "Couldn't parse the file — make sure it's a broker-exported transaction CSV",
     "导入完成：新增 {n} 条，跳过 {s} 条重复。": "Import done: {n} added, {s} duplicates skipped.",
     "已清空所有导入的交易记录。": "All imported trades have been cleared.",
+    "请选择一个 PDF 文件": "Choose a PDF file",
+    "打不开这个文件，确认密码是否正确、文件是否为工商银行历史明细 PDF": "Couldn't open this file — check the password, and make sure it's an ICBC statement PDF",
+    "文件解析失败，确认是工商银行导出的历史明细 PDF": "Couldn't parse the file — make sure it's an ICBC-exported statement PDF",
+    "已清空所有导入的流水记录。": "All imported bank transactions have been cleared.",
+
+    # --- expenses.html ---
+    "消费追踪": "Spending Tracker",
+    "导入银行流水": "Import Bank Statement",
+    "目前支持工商银行「历史明细」PDF（需要密码）。可以随时导入新的导出文件追加记录，已经导入过的交易会自动跳过，不会重复计算。":
+        "Currently supports ICBC's \"历史明细\" (statement) PDF (needs the password). Import a fresh export "
+        "any time to add more — transactions already imported are automatically skipped, never double-counted.",
+    "PDF 密码": "PDF password",
+    "确定清空所有已导入的流水记录吗？此操作不可撤销。": "Clear all imported bank transactions? This can't be undone.",
+    "还没有导入任何流水记录，上传上面的 PDF 开始看消费日历。":
+        "No transactions imported yet — upload a PDF above to see the spending calendar.",
+    "总支出": "Total expense",
+    "总收入": "Total income",
+    "净流入": "Net flow",
+    "支出分类": "By category",
+    "还没有支出记录。": "No expenses yet.",
+    "最新余额": "Latest balance",
+    "周日": "Sun",
+    "周六": "Sat",
+    "各月收支汇总": "Monthly Summary",
 
     # --- trading.html ---
     "交易盈亏": "Trading P&L",
