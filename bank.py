@@ -170,12 +170,16 @@ def summarize(transactions):
     category_breakdown = sorted(
         ((c, v) for c, v in by_category.items() if v > 0), key=lambda kv: kv[1], reverse=True
     )
+    income_breakdown = sorted(
+        ((c, -v) for c, v in by_category.items() if v < 0), key=lambda kv: kv[1], reverse=True
+    )
 
     return {
         "total_expense": total_expense,
         "total_income": total_income,
         "net": total_income - total_expense,
         "last_balance": last_balance,
+        "income_breakdown": income_breakdown,
         "category_breakdown": category_breakdown,
     }
 

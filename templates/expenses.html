@@ -44,6 +44,14 @@
       <p class="hint">{{ tr('还没有支出记录。') }}</p>
       {% endfor %}
     </div>
+    <div class="metrics-card">
+      <h2>{{ tr('收入分类') }}</h2>
+      {% for cat, amt in stats.income_breakdown[:6] %}
+      <div class="metric-row"><span>{{ cat }}</span><strong class="pnl-positive">{{ amt | money }}</strong></div>
+      {% else %}
+      <p class="hint">{{ tr('还没有收入记录。') }}</p>
+      {% endfor %}
+    </div>
     {% if stats.last_balance is not none %}
     <div class="metrics-card">
       <div class="metric-row"><span>{{ tr('最新余额') }}</span><strong>{{ stats.last_balance | money }}</strong></div>

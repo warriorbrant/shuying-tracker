@@ -2362,4 +2362,21 @@ CHANGELOG = [
         "lines_changed": 30,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "消费追踪页加了收入分类",
+        "title_en": "Added an income breakdown to the spending tracker",
+        "summary": (
+            "统计卡片里跟「支出分类」并排加了一个「收入分类」，把银联入账、利息这些净流入的类目按金额从大"
+            "到小列出来，跟支出那边是同一套已经处理过退款的净额计算逻辑，不用另外写。"
+        ),
+        "summary_en": (
+            "Added an \"Income by Category\" card next to the existing spending breakdown, listing net-"
+            "inflow categories (deposits, interest, etc.) sorted by amount -- reuses the same refund-aware "
+            "netting logic already built for the spending side, so no separate computation was needed."
+        ),
+        "image": None,
+        "lines_changed": 20,
+        "estimated": False,
+    },
 ]
