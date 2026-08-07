@@ -463,6 +463,8 @@ TR = {
     "周日": "Sun",
     "周六": "Sat",
     "各月消费汇总": "Monthly Spending",
+    "{y} 年消费汇总": "{y} Spending Summary",
+    "全年合计：": "Year total: ",
 
     # --- trading.html ---
     "交易盈亏": "Trading P&L",

@@ -1914,7 +1914,17 @@ def expenses():
     stats = bank.summarize(tx_list)
     daily_spending = bank.build_daily_spending(tx_list)
     weeks = bank.build_month_calendar(year, month, daily_spending)
-    month_summary = bank.build_month_summary(daily_spending)
+
+    years = bank.list_years(daily_spending)
+    if not years:
+        years = [today.year]
+    summary_year = to_int(request.args.get("summary_year"), year) or year
+    if summary_year not in years:
+        summary_year = years[0]
+    year_calendar = bank.build_year_calendar(summary_year, daily_spending)
+    year_spend_total = bank.year_total(summary_year, daily_spending)
+    for m in year_calendar:
+        m["label"] = date(2000, m["month"], 1).strftime("%b") if g.lang == "en" else f"{m['month']} 月"
 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
     next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
@@ -1924,12 +1934,6 @@ def expenses():
         if g.lang == "en"
         else f"{year} 年 {month} 月消费日历"
     )
-    for m in month_summary:
-        m["label"] = (
-            date(m["year"], m["month"], 1).strftime("%b %Y")
-            if g.lang == "en"
-            else f"{m['year']} 年 {m['month']} 月"
-        )
 
     return render_template(
         "expenses.html",
@@ -1938,7 +1942,10 @@ def expenses():
         cur_month=month,
         month_heading=month_heading,
         weeks=weeks,
-        month_summary=month_summary,
+        years=years,
+        summary_year=summary_year,
+        year_calendar=year_calendar,
+        year_spend_total=year_spend_total,
         stats=stats,
         prev_year=prev_year,
         prev_month=prev_month,

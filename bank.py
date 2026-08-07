@@ -213,12 +213,25 @@ def build_month_calendar(year, month, daily_spending):
     return weeks
 
 
-def build_month_summary(daily_spending):
-    totals = defaultdict(float)
+def list_years(daily_spending):
+    """Every year with at least one day of spending data, most recent first."""
+    return sorted({int(d[:4]) for d in daily_spending.keys()}, reverse=True)
+
+
+def build_year_calendar(year, daily_spending):
+    """12 cells, Jan-Dec, each the month's net spend (None if no data that
+    month) -- a year-at-a-glance view to sit alongside the day-level
+    calendar rather than a flat list, so multiple years of history are easy
+    to page through and compare."""
+    monthly = defaultdict(float)
+    has_data = set()
     for d, spend in daily_spending.items():
-        totals[d[:7]] += spend
-    months = []
-    for ym in sorted(totals.keys(), reverse=True):
-        y, m = ym.split("-")
-        months.append({"year": int(y), "month": int(m), "spend": totals[ym]})
-    return months
+        if int(d[:4]) == year:
+            mm = int(d[5:7])
+            monthly[mm] += spend
+            has_data.add(mm)
+    return [{"month": m, "spend": monthly[m] if m in has_data else None} for m in range(1, 13)]
+
+
+def year_total(year, daily_spending):
+    return sum(spend for d, spend in daily_spending.items() if int(d[:4]) == year)

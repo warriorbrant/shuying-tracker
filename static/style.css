@@ -1578,6 +1578,42 @@ button {
   font-weight: 600;
 }
 
+.year-tab {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.year-tab:hover {
+  border-color: var(--accent);
+}
+
+.year-tab-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.exp-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.exp-year-month {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .exp-year-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 .reset-link-code {
   display: inline-block;
   word-break: break-all;

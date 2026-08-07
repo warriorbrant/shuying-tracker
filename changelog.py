@@ -2379,4 +2379,23 @@ CHANGELOG = [
         "lines_changed": 20,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "各月消费汇总改成 12 个月的年度日历，可以切换年份看 2025/2026",
+        "title_en": "Monthly summary is now a 12-month year calendar with a year switcher",
+        "summary": (
+            "原来的「各月消费汇总」是个平铺的列表，改成跟日历一样的年度视图：12 个月排成一个格子，"
+            "每个月净消费多少一眼看出来，点哪个月直接跳到那个月的消费日历；上面加了年份切换（比如 2025/"
+            "2026），每年也有自己的全年合计。"
+        ),
+        "summary_en": (
+            "The old \"monthly spending summary\" was a flat list; now it's a proper year-at-a-glance "
+            "calendar -- 12 months laid out in a grid, net spend per month visible immediately, click any "
+            "month to jump straight to its day-level calendar. Added a year switcher (e.g. 2025/2026) above "
+            "it, each year showing its own full-year total."
+        ),
+        "image": None,
+        "lines_changed": 90,
+        "estimated": False,
+    },
 ]

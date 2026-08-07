@@ -94,18 +94,31 @@
 </section>
 
 <section class="log-section">
-  <h2>{{ tr('各月消费汇总') }}</h2>
-  <ul class="pnl-month-list">
-    {% for m in month_summary %}
-    <li>
-      <a class="pnl-month-row {{ 'pnl-month-active' if m.year == cur_year and m.month == cur_month else '' }}"
-         href="{{ url_for('expenses', year=m.year, month=m.month) }}">
-        <span>{{ m.label }}</span>
-        <strong class="{{ 'pnl-negative' if m.spend > 0 else 'pnl-positive' }}">{{ (-m.spend) | money }}</strong>
-      </a>
-    </li>
+  <div class="changelog-header-row">
+    <h2>{{ tr('{y} 年消费汇总', y=summary_year) }}</h2>
+    <div class="pnl-month-nav">
+      {% for y in years %}
+        <a class="year-tab {{ 'year-tab-active' if y == summary_year else '' }}"
+           href="{{ url_for('expenses', year=cur_year, month=cur_month, summary_year=y) }}">{{ y }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  <p class="hint">{{ tr('全年合计：') }}<strong class="{{ 'pnl-negative' if year_spend_total > 0 else 'pnl-positive' }}">{{ (-year_spend_total) | money }}</strong></p>
+  <div class="exp-year-grid">
+    {% for m in year_calendar %}
+      {% if m.spend is none %}
+        <div class="pnl-day">
+          <span class="pnl-day-num">{{ m.label }}</span>
+        </div>
+      {% else %}
+        <a class="pnl-day exp-year-month {{ 'pnl-day-loss' if m.spend > 0 else 'pnl-day-win' }}"
+           href="{{ url_for('expenses', year=summary_year, month=m.month) }}">
+          <span class="pnl-day-num">{{ m.label }}</span>
+          <span class="pnl-day-amount">{{ (-m.spend) | money }}</span>
+        </a>
+      {% endif %}
     {% endfor %}
-  </ul>
+  </div>
 </section>
 
 {% endif %}
