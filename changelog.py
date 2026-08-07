@@ -2223,4 +2223,30 @@ CHANGELOG = [
         "lines_changed": 654,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "交易盈亏页加了手续费统计、日历缩小了、加了各月盈亏汇总",
+        "title_en": "Trading P&L: fee breakdown, smaller calendar, monthly summary",
+        "summary": (
+            "三个小改进：① 统计卡片里新加了「毛利润（未扣手续费）」「手续费合计」「净利润（已扣手续费）」"
+            "三个数——原来那个总盈亏其实已经是扣完手续费的净值，只是没有单独标出来。手续费的算法挺讨巧："
+            "不用去猜期权合约是不是要乘 100（每份合约对应 100 股，价格列和金额列不是一个量级），而是直接"
+            "拿金额列减掉手续费列反推出「不含手续费的金额」，两边一减就是这笔交易的手续费，不管股票还是"
+            "期权都适用。② 盈亏日历的格子改小了。③ 新增「各月盈亏汇总」，按月列出每个月的总盈亏，点哪个月"
+            "就跳到那个月的日历，不用一个月一个月地翻页对比。"
+        ),
+        "summary_en": (
+            "Three small improvements: (1) the stats cards now break out gross P&L (before fees), total "
+            "fees, and net P&L (after fees) -- the old single total was already net of fees, just without "
+            "saying so. The fee math is a neat trick: rather than guessing whether an options contract "
+            "needs the 100x multiplier (price and amount aren't on the same scale for options vs. shares), "
+            "it derives the fee-free amount straight from Amount minus Fees & Comm, so the same logic "
+            "works for stocks and options alike. (2) The P&L calendar cells are more compact now. (3) "
+            "Added a monthly summary list -- every month's total P&L in one place, click any month to jump "
+            "straight to its day calendar instead of paging through one month at a time."
+        ),
+        "image": None,
+        "lines_changed": 180,
+        "estimated": False,
+    },
 ]

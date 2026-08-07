@@ -41,6 +41,7 @@ from novel_export import build_novel_docx, build_novel_pdf
 from trading import (
     build_cumulative_series,
     build_month_calendar,
+    build_month_summary,
     build_pnl_chart,
     compute_daily_pnl,
     parse_schwab_csv,
@@ -1808,7 +1809,9 @@ def trading():
 
     daily_pnl, match_meta = compute_daily_pnl(trades_list)
     stats = summarize_daily_pnl(daily_pnl)
+    stats["gross_total"] = stats["total"] + match_meta["total_fees"]
     weeks = build_month_calendar(year, month, daily_pnl)
+    month_summary = build_month_summary(daily_pnl)
     series = build_cumulative_series(daily_pnl)
     chart = build_pnl_chart(series)
 
@@ -1820,6 +1823,12 @@ def trading():
         if g.lang == "en"
         else f"{year} 年 {month} 月盈亏日历"
     )
+    for m in month_summary:
+        m["label"] = (
+            date(m["year"], m["month"], 1).strftime("%b %Y")
+            if g.lang == "en"
+            else f"{m['year']} 年 {m['month']} 月"
+        )
 
     return render_template(
         "trading.html",
@@ -1828,6 +1837,7 @@ def trading():
         cur_month=month,
         month_heading=month_heading,
         weeks=weeks,
+        month_summary=month_summary,
         chart=chart,
         stats=stats,
         match_meta=match_meta,

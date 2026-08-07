@@ -31,9 +31,16 @@
 <section class="log-section">
   <div class="metrics-grid">
     <div class="metrics-card">
-      <div class="metric-row"><span>{{ tr('累计已实现盈亏') }}</span><strong class="{{ 'pnl-positive' if stats.total >= 0 else 'pnl-negative' }}">{{ stats.total | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('毛利润（未扣手续费）') }}</span><strong class="{{ 'pnl-positive' if stats.gross_total >= 0 else 'pnl-negative' }}">{{ stats.gross_total | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('手续费合计') }}</span><strong>{{ (-match_meta.total_fees) | money }}</strong></div>
+      <div class="metric-row"><span>{{ tr('净利润（已扣手续费）') }}</span><strong class="{{ 'pnl-positive' if stats.total >= 0 else 'pnl-negative' }}">{{ stats.total | money }}</strong></div>
+    </div>
+    <div class="metrics-card">
       <div class="metric-row"><span>{{ tr('盈利天数') }}</span><strong class="pnl-positive">{{ stats.win_days }}</strong></div>
       <div class="metric-row"><span>{{ tr('亏损天数') }}</span><strong class="pnl-negative">{{ stats.loss_days }}</strong></div>
+      {% if match_meta.open_positions %}
+      <div class="metric-row"><span>{{ tr('目前仍持有的仓位') }}</span><strong>{{ match_meta.open_positions }}</strong></div>
+      {% endif %}
     </div>
     <div class="metrics-card">
       {% if stats.best_day %}
@@ -41,9 +48,6 @@
       {% endif %}
       {% if stats.worst_day %}
       <div class="metric-row"><span>{{ tr('最差单日 ({d})', d=stats.worst_day[0]) }}</span><strong class="pnl-negative">{{ stats.worst_day[1] | money }}</strong></div>
-      {% endif %}
-      {% if match_meta.open_positions %}
-      <div class="metric-row"><span>{{ tr('目前仍持有的仓位') }}</span><strong>{{ match_meta.open_positions }}</strong></div>
       {% endif %}
     </div>
   </div>
@@ -97,6 +101,21 @@
     </div>
     {% endfor %}
   </div>
+</section>
+
+<section class="log-section">
+  <h2>{{ tr('各月盈亏汇总') }}</h2>
+  <ul class="pnl-month-list">
+    {% for m in month_summary %}
+    <li>
+      <a class="pnl-month-row {{ 'pnl-month-active' if m.year == cur_year and m.month == cur_month else '' }}"
+         href="{{ url_for('trading', year=m.year, month=m.month) }}">
+        <span>{{ m.label }}</span>
+        <strong class="{{ 'pnl-positive' if m.total >= 0 else 'pnl-negative' }}">{{ m.total | money }}</strong>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
 </section>
 
 {% endif %}

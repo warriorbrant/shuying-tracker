@@ -144,8 +144,18 @@ def parse_schwab_csv(file_bytes):
 
 def compute_daily_pnl(trades):
     """trades: iterable of dict-likes with trade_date/action/symbol/quantity/
-    amount, already sorted chronologically (trade_date, then insertion order).
-    Returns (daily_pnl: {date: float}, meta: {open_positions, unmatched_closes}).
+    amount/fees, already sorted chronologically (trade_date, then insertion
+    order). Returns (daily_pnl: {date: float}, meta: {open_positions,
+    unmatched_closes, total_fees}).
+
+    `amount` already nets in fees (a sell's Amount = trade value - fee; a
+    buy's Amount = -(trade value + fee)), so daily_pnl is P&L *after* fees
+    without any extra work. To separately report fees paid, each lot also
+    tracks its fee-exclusive ("gross") cost/proceeds per unit -- derived
+    from amount and fees directly (not from Price), which sidesteps having
+    to know whether a row is a 100x options contract or a 1x share to get
+    the right per-unit scale. The gap between the gross and net match for a
+    given piece is exactly the (prorated) fees on both legs of that trade.
     """
     daily = defaultdict(float)
     by_symbol = defaultdict(list)
@@ -158,23 +168,30 @@ def compute_daily_pnl(trades):
 
     open_positions = 0
     unmatched_closes = 0
+    total_fees = 0.0
 
     for symbol, txns in by_symbol.items():
-        lots = deque()  # each: [remaining_qty, cost_per_unit]
+        lots = deque()  # each: [remaining_qty, net_cost_per_unit, gross_cost_per_unit]
         for t in txns:
             qty = t["quantity"] or 0
             if qty <= 0:
                 continue
+            fee_per_unit = (t["fees"] or 0) / qty
             if t["action"] in OPEN_ACTIONS:
-                lots.append([qty, abs(t["amount"]) / qty])
+                net_cost = abs(t["amount"]) / qty
+                lots.append([qty, net_cost, net_cost - fee_per_unit])
             elif t["action"] in CLOSE_ACTIONS:
-                proceeds_per_unit = t["amount"] / qty
+                net_proceeds = t["amount"] / qty
+                gross_proceeds = net_proceeds + fee_per_unit
                 remaining = qty
                 pnl = 0.0
                 while remaining > 1e-9 and lots:
-                    lot_qty, lot_cost = lots[0]
+                    lot_qty, lot_net_cost, lot_gross_cost = lots[0]
                     take = min(remaining, lot_qty)
-                    pnl += take * (proceeds_per_unit - lot_cost)
+                    net_piece = take * (net_proceeds - lot_net_cost)
+                    gross_piece = take * (gross_proceeds - lot_gross_cost)
+                    pnl += net_piece
+                    total_fees += gross_piece - net_piece
                     lot_qty -= take
                     remaining -= take
                     if lot_qty <= 1e-9:
@@ -191,7 +208,11 @@ def compute_daily_pnl(trades):
         if lots:
             open_positions += 1
 
-    return dict(daily), {"open_positions": open_positions, "unmatched_closes": unmatched_closes}
+    return dict(daily), {
+        "open_positions": open_positions,
+        "unmatched_closes": unmatched_closes,
+        "total_fees": total_fees,
+    }
 
 
 def summarize_daily_pnl(daily_pnl):
@@ -227,6 +248,21 @@ def build_month_calendar(year, month, daily_pnl):
             cells.append({"day": day, "date": d, "pnl": daily_pnl.get(d)})
         weeks.append(cells)
     return weeks
+
+
+def build_month_summary(daily_pnl):
+    """One row per calendar month that has any trade data, most recent
+    first -- an at-a-glance overview across all imported history, so you
+    don't have to page through the day calendar one month at a time to see
+    which months were good or bad."""
+    totals = defaultdict(float)
+    for d, pnl in daily_pnl.items():
+        totals[d[:7]] += pnl  # "YYYY-MM"
+    months = []
+    for ym in sorted(totals.keys(), reverse=True):
+        y, m = ym.split("-")
+        months.append({"year": int(y), "month": int(m), "total": totals[ym]})
+    return months
 
 
 def build_cumulative_series(daily_pnl):
