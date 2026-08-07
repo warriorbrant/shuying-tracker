@@ -158,6 +158,7 @@ TR = {
     # --- novel_chapter.html (public read view) ---
     "目录": "Contents",
     "📤 生成本章分享图": "📤 Generate share image",
+    "📤 生成分享图": "📤 Generate share image",
     "▶ 朗读本章": "▶ Read aloud",
     "⏹ 停止": "⏹ Stop",
     "语速": "Speed",
@@ -467,6 +468,7 @@ TR = {
     "{y} 年消费汇总": "{y} Spending Summary",
     "全年消费合计：": "Year net spending: ",
     "按月消费柱状图": "Monthly spending bar chart",
+    "分享图不会显示具体金额，只显示每月消费的高低走势。": "The share image doesn't show exact amounts, just the shape of month-to-month spending.",
 
     # --- trading.html ---
     "交易盈亏": "Trading P&L",

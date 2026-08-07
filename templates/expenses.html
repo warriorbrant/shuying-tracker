@@ -102,6 +102,12 @@
 
   <p class="hint">{{ tr('全年消费合计：') }}<strong class="{{ 'pnl-negative' if year_spend_total > 0 else 'pnl-positive' }}">{{ (-year_spend_total) | money }}</strong></p>
 
+  <div class="actions">
+    <a class="btn-share" href="{{ url_for('expenses_share_image', year=summary_year, download=1) }}">{{ tr('📤 生成分享图') }}</a>
+    <a class="btn-link" href="{{ url_for('expenses_share_image', year=summary_year) }}" target="_blank">{{ tr('先预览') }}</a>
+  </div>
+  <p class="hint">{{ tr('分享图不会显示具体金额，只显示每月消费的高低走势。') }}</p>
+
   <svg viewBox="0 0 {{ year_bar_chart.width }} {{ year_bar_chart.height }}" class="exp-bar-chart" role="img" aria-label="{{ tr('按月消费柱状图') }}">
     <line x1="0" y1="{{ year_bar_chart.zero_y }}" x2="{{ year_bar_chart.width }}" y2="{{ year_bar_chart.zero_y }}" class="pnl-chart-zero"></line>
     {% for bar in year_bar_chart.bars %}

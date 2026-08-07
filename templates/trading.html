@@ -57,7 +57,13 @@
 </section>
 
 <section class="log-section">
-  <h2>{{ tr('累计盈亏走势') }}</h2>
+  <div class="changelog-header-row">
+    <h2>{{ tr('累计盈亏走势') }}</h2>
+    <div class="actions">
+      <a class="btn-share" href="{{ url_for('trading_share_image', download=1) }}">{{ tr('📤 生成分享图') }}</a>
+      <a class="btn-link" href="{{ url_for('trading_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
+    </div>
+  </div>
   {% if chart %}
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
     <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>

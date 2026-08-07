@@ -52,8 +52,10 @@ from share_card import (
     build_changelog_share_card,
     build_chapter_share_card,
     build_day_share_card,
+    build_expense_bar_share_card,
     build_novel_share_card,
     build_share_card,
+    build_trading_share_card,
 )
 
 load_dotenv()
@@ -1896,6 +1898,31 @@ def trading_clear():
     return redirect(url_for("trading", info=tr("已清空所有导入的交易记录。")))
 
 
+@app.route("/trading/share.png")
+def trading_share_image():
+    conn = get_db()
+    trades_rows = conn.execute(
+        "SELECT * FROM trades WHERE user_id = ? ORDER BY trade_date, id", (g.user["id"],)
+    ).fetchall()
+    conn.close()
+    trades_list = [dict(r) for r in trades_rows]
+
+    daily_pnl, _ = compute_daily_pnl(trades_list)
+    stats = summarize_daily_pnl(daily_pnl)
+    series = build_cumulative_series(daily_pnl)
+
+    buf = build_trading_share_card(series, stats)
+
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"trading-pnl-{date.today().isoformat()}.png" if download else None,
+        max_age=0,
+    )
+
+
 @app.route("/expenses")
 def expenses():
     today = date.today()
@@ -2007,6 +2034,41 @@ def expenses_clear():
     conn.commit()
     conn.close()
     return redirect(url_for("expenses", info=tr("已清空所有导入的流水记录。")))
+
+
+@app.route("/expenses/share.png")
+def expenses_share_image():
+    today = date.today()
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM bank_transactions WHERE user_id = ? ORDER BY tx_date, tx_time, id", (g.user["id"],)
+    ).fetchall()
+    conn.close()
+    tx_list = [dict(r) for r in rows]
+    daily_spending = bank.build_daily_spending(tx_list)
+
+    years = bank.list_years(daily_spending)
+    if not years:
+        years = [today.year]
+    year = to_int(request.args.get("year"), today.year) or today.year
+    if year not in years:
+        year = years[0]
+
+    year_calendar = bank.build_year_calendar(year, daily_spending)
+    for m in year_calendar:
+        m["label"] = date(2000, m["month"], 1).strftime("%b") if g.lang == "en" else f"{m['month']} 月"
+    year_bar_chart = bank.build_year_bar_chart(year_calendar)
+
+    buf = build_expense_bar_share_card(year, year_bar_chart)
+
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"expenses-{year}-{today.isoformat()}.png" if download else None,
+        max_age=0,
+    )
 
 
 NOVEL_STATUSES = ["连载中", "已完结", "暂停"]

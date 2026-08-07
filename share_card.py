@@ -22,6 +22,9 @@ ACCENT = (181, 101, 74)
 ACCENT_SOFT = (241, 227, 220)
 CARD_BG = (255, 255, 255)
 BORDER = (232, 226, 217)
+# Same green/red as .pnl-positive/.pnl-negative in style.css, kept in sync by eye.
+POSITIVE_COLOR = (61, 122, 81)
+NEGATIVE_COLOR = (163, 74, 61)
 
 HEAT_COLORS = [
     (235, 231, 224),  # level 0 — no activity
@@ -878,6 +881,139 @@ def build_novel_share_card(novel, chapters, references, total_words=0):
     for h, draw_fn in sections:
         draw_fn(card, draw, pad, y)
         y += h + section_gap
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
+def build_trading_share_card(series, stats):
+    """series: list of {"date","pnl","cumulative"} from trading.build_cumulative_series.
+    stats: dict from trading.summarize_daily_pnl. Shows every figure -- unlike
+    the expense bar card, nothing here is asked to stay private."""
+    W = 1080
+    pad = 64
+    header_h = 260
+    chart_h = 560
+    footer_h = 70
+    H = header_h + chart_h + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    title_font = _font(52, bold=True)
+    subtitle_font = _font(34, bold=True)
+    stat_font = _font(26)
+
+    draw.text((pad, pad), "累计盈亏走势", font=title_font, fill=TEXT)
+
+    total = stats.get("total", 0.0)
+    total_color = POSITIVE_COLOR if total >= 0 else NEGATIVE_COLOR
+    sign = "+" if total >= 0 else "-"
+    draw.text((pad, pad + 80), f"{sign}${abs(total):,.2f}", font=subtitle_font, fill=total_color)
+    draw.text(
+        (pad, pad + 80 + 56),
+        f"{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日",
+        font=stat_font,
+        fill=MUTED,
+    )
+
+    chart_top = header_h
+    chart_left = pad
+    chart_right = W - pad
+
+    if series:
+        values = [p["cumulative"] for p in series]
+        min_v = min(values + [0])
+        max_v = max(values + [0])
+        span = (max_v - min_v) or 1
+        n = len(series)
+
+        def x_for(i):
+            return chart_left + (chart_right - chart_left) * i / (n - 1) if n > 1 else (chart_left + chart_right) / 2
+
+        def y_for(v):
+            return chart_top + chart_h * (1 - (v - min_v) / span)
+
+        zero_y = y_for(0)
+        draw.line([(chart_left, zero_y), (chart_right, zero_y)], fill=BORDER, width=2)
+
+        points = [(x_for(i), y_for(p["cumulative"])) for i, p in enumerate(series)]
+        line_color = POSITIVE_COLOR if values[-1] >= 0 else NEGATIVE_COLOR
+        if len(points) > 1:
+            draw.line(points, fill=line_color, width=5, joint="curve")
+        last_x, last_y = points[-1]
+        r = 9
+        draw.ellipse([last_x - r, last_y - r, last_x + r, last_y + r], fill=line_color)
+
+        label_font = _font(22)
+        idxs = sorted(set([0, n - 1] + [n * k // 4 for k in (1, 2, 3)])) if n > 1 else [0]
+        for i in idxs:
+            label = series[i]["date"][5:]
+            x = points[i][0]
+            bbox = draw.textbbox((0, 0), label, font=label_font)
+            tw = bbox[2] - bbox[0]
+            draw.text((x - tw / 2, chart_top + chart_h + 12), label, font=label_font, fill=MUTED)
+    else:
+        empty_font = _font(30)
+        draw.text((pad, chart_top + chart_h / 2 - 15), "还没有交易记录", font=empty_font, fill=MUTED)
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
+def build_expense_bar_share_card(year, year_bar_chart):
+    """year_bar_chart: dict from bank.build_year_bar_chart. Dollar value labels
+    are deliberately left off this card -- it's meant to be shareable without
+    revealing exact spending figures, just the shape of the year's spending
+    month to month (which the caller asked for explicitly)."""
+    W = 1080
+    pad = 64
+    header_h = 130
+    chart_h = 560
+    footer_h = 70
+    H = header_h + chart_h + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    title_font = _font(52, bold=True)
+    draw.text((pad, pad), f"{year} 年消费", font=title_font, fill=TEXT)
+
+    chart_top = header_h
+    hscale = (W - pad * 2) / year_bar_chart["width"]
+    vscale = chart_h / year_bar_chart["height"]
+    label_font = _font(24)
+
+    zero_y = chart_top + year_bar_chart["zero_y"] * vscale
+    draw.line([(pad, zero_y), (W - pad, zero_y)], fill=BORDER, width=2)
+
+    for bar in year_bar_chart["bars"]:
+        x = pad + bar["x"] * hscale
+        w = bar["width"] * hscale
+        if bar["value"] is not None and bar["height"] > 0:
+            y = chart_top + bar["y"] * vscale
+            h = max(bar["height"] * vscale, 3)
+            color = NEGATIVE_COLOR if bar["is_cost"] else POSITIVE_COLOR
+            draw.rounded_rectangle([x, y, x + w, y + h], radius=4, fill=color)
+        bbox = draw.textbbox((0, 0), bar["label"], font=label_font)
+        tw = bbox[2] - bbox[0]
+        draw.text((x + w / 2 - tw / 2, chart_top + chart_h + 12), bar["label"], font=label_font, fill=MUTED)
 
     footer_font = _font(24)
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"

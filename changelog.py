@@ -2456,4 +2456,27 @@ CHANGELOG = [
         "lines_changed": 100,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "交易盈亏走势和消费柱状图都能生成分享图了，柱状图分享不显示金额",
+        "title_en": "Share images for the P&L equity curve and spending bar chart — the bar chart hides amounts",
+        "summary": (
+            "交易盈亏页的走势图、消费追踪页的月度柱状图，现在都能一键生成分享图了，用法跟其他地方的分享图"
+            "一样。消费柱状图分享的时候特意不画金额数字——只保留每月消费高低的形状（红涨绿跌），具体花了"
+            "多少钱不会出现在图片里，交易那边的走势图倒是照常显示所有数字。做的时候有个排版 bug：走势图"
+            "分享图标题下面那行「X 盈利日 · Y 亏损日」跟图表第一个点挤到一起了，调整了上面的留白高度才分开。"
+        ),
+        "summary_en": (
+            "Both the trading page's equity curve and the spending tracker's monthly bar chart can now "
+            "generate a share image, same flow as everywhere else in the app. The spending bar chart "
+            "deliberately skips drawing dollar amounts on the share image -- it keeps just the shape of "
+            "month-to-month spending (red for a cost month, green for a refund month), no exact figures "
+            "end up in the picture. The equity curve share image still shows every number as normal. Hit a "
+            "layout bug while building it: the \"X winning days / Y losing days\" line under the title was "
+            "overlapping the chart's first data point -- fixed by giving the header more vertical room."
+        ),
+        "image": None,
+        "lines_changed": 220,
+        "estimated": False,
+    },
 ]
