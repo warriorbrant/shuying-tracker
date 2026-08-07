@@ -2340,4 +2340,26 @@ CHANGELOG = [
         "lines_changed": 45,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "修复：退款没有被正确抵扣（退款用的是「退款」这个单独的摘要标签，不是「消费」）",
+        "title_en": "Fix: refunds weren't actually netting out (they use their own 退款 label, not 消费)",
+        "summary": (
+            "上一版的假设错了：以为退款跟原始消费用的是同一个「消费」摘要标签，实际用户截图证实退款走的"
+            "是「退款」这个独立标签。之前的代码只对摘要精确等于「消费」的记录做净额处理，退款那笔完全没被"
+            "看见——6 月 3 号买了 3119.8、当场全额退款 3119.8，日历上还是显示花了 3119.8，一分没抵扣。"
+            "现在把「退款」归并到「消费」这个桶里一起结算，同一天买了又全额退，日历直接显示 $0.00。"
+        ),
+        "summary_en": (
+            "The previous fix's assumption was wrong: it assumed a refund shares the same \"消费\" label as "
+            "the purchase it reverses, but a real screenshot from the user showed refunds actually get their "
+            "own separate \"退款\" label. The old code only netted rows whose category was exactly \"消费\", "
+            "so the refund was invisible to it entirely -- a $3119.80 purchase refunded in full the same day "
+            "still showed as $3119.80 spent, not offset at all. Now 退款 is folded into the same bucket as "
+            "消费 everywhere spending is computed, so a same-day full refund correctly nets to $0.00."
+        ),
+        "image": None,
+        "lines_changed": 30,
+        "estimated": False,
+    },
 ]

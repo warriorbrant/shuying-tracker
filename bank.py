@@ -130,20 +130,37 @@ def parse_icbc_pdf(file_bytes, password):
     return rows, warnings
 
 
+# The bank's own "摘要" (category) labels for an actual purchase and its
+# reversal -- confirmed from a real statement that a refund is *not* filed
+# under the same "消费" label as the purchase it offsets, it gets its own
+# "退款" label instead. Both belong to the same underlying concept ("money
+# spent on things, net of anything refunded") and are folded together
+# everywhere below; treating 退款 as its own separate category would leave
+# a purchase and its refund sitting in two different unrelated buckets that
+# never cancel out.
+SPENDING_CATEGORY = "消费"
+REFUND_CATEGORY = "退款"
+
+
+def _spending_bucket(category):
+    """Normalizes 退款 into the 消费 bucket so a purchase and its refund net
+    against each other everywhere spending is tallied, instead of showing up
+    as two unrelated categories that don't offset."""
+    return SPENDING_CATEGORY if category == REFUND_CATEGORY else (category or "其他")
+
+
 def summarize(transactions):
     """transactions: iterable of dict-likes with tx_date/amount/category.
     Returns overall stats + a category breakdown. Netted per category rather
-    than just summing negative amounts, so a refund (a positive amount under
-    the same category as the purchase it reverses -- the bank doesn't give
-    refunds their own category) correctly reduces that category's cost
-    instead of silently padding "income" with money that was never really
-    earned."""
+    than just summing negative amounts, so a refund correctly reduces the
+    cost of the purchase it reverses instead of silently padding "income"
+    with money that was never really earned."""
     by_category = defaultdict(float)  # positive = net cost, negative = net inflow
     last_balance = None
     last_date = None
 
     for t in transactions:
-        by_category[t["category"] or "其他"] += -t["amount"]
+        by_category[_spending_bucket(t["category"])] += -t["amount"]
         if t["balance"] is not None and (last_date is None or t["tx_date"] >= last_date):
             last_date = t["tx_date"]
             last_balance = t["balance"]
@@ -163,24 +180,12 @@ def summarize(transactions):
     }
 
 
-# The bank's own "摘要" (category) label for an actual purchase, as opposed
-# to a transfer to another account (银证转账 -- often just money moved to a
-# brokerage account the person also owns, not spending), wealth-management
-# purchases (理财), bill payments (缴费), deposits (银联入账), etc. The
-# calendar and monthly summary are scoped to just this -- "how much did I
-# actually spend on things" -- while the overview stats cards above them
-# keep showing the full picture across every category for context.
-SPENDING_CATEGORY = "消费"
-
-
 def build_daily_spending(transactions):
-    """{date: net_spend}. Nets refunds against purchases automatically -- a
-    refund is a positive amount under the same 消费 label as the purchase it
-    reverses (banks don't give refunds their own category), so summing the
-    day's raw signed amounts and flipping the sign already accounts for it."""
+    """{date: net_spend}. Nets refunds against purchases automatically -- see
+    _spending_bucket for why 消费 and 退款 are treated as the same thing."""
     daily = defaultdict(float)
     for t in transactions:
-        if t["category"] == SPENDING_CATEGORY:
+        if t["category"] in (SPENDING_CATEGORY, REFUND_CATEGORY):
             daily[t["tx_date"]] += -t["amount"]
     return dict(daily)
 
