@@ -1925,6 +1925,7 @@ def expenses():
     year_spend_total = bank.year_total(summary_year, daily_spending)
     for m in year_calendar:
         m["label"] = date(2000, m["month"], 1).strftime("%b") if g.lang == "en" else f"{m['month']} 月"
+    year_stats = bank.summarize([t for t in tx_list if t["tx_date"][:4] == str(summary_year)])
 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
     next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)
@@ -1946,6 +1947,7 @@ def expenses():
         summary_year=summary_year,
         year_calendar=year_calendar,
         year_spend_total=year_spend_total,
+        year_stats=year_stats,
         stats=stats,
         prev_year=prev_year,
         prev_month=prev_month,

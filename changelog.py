@@ -2398,4 +2398,24 @@ CHANGELOG = [
         "lines_changed": 90,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "每个年份也有自己的一份总支出/总收入/分类统计",
+        "title_en": "Each year now gets its own full stats breakdown",
+        "summary": (
+            "之前顶部那组总支出/总收入/净流入/支出分类/收入分类/最新余额，只有一份全部年份合并在一起的"
+            "统计。现在切到某一年（比如 2025）之后，年度消费汇总那块也会带一份只属于这一年的同款统计——"
+            "复用的是一模一样的计算逻辑，只是先把交易记录按年份过滤了一遍再传进去，没有另外写一套。"
+        ),
+        "summary_en": (
+            "The overview cards at the top (total expense/income/net, category breakdowns, latest balance) "
+            "only ever showed one combined figure across every year of history. Now switching to a "
+            "specific year in the yearly summary section shows that same set of stats scoped to just that "
+            "year -- reuses the exact same calculation, just fed a year-filtered list of transactions "
+            "instead of a separate implementation."
+        ),
+        "image": None,
+        "lines_changed": 40,
+        "estimated": False,
+    },
 ]
