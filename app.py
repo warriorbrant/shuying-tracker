@@ -1912,10 +1912,9 @@ def expenses():
     tx_list = [dict(r) for r in rows]
 
     stats = bank.summarize(tx_list)
-    spending_only = bank.filter_spending(tx_list)
-    daily_totals = bank.build_daily_totals(spending_only)
-    weeks = bank.build_month_calendar(year, month, daily_totals)
-    month_summary = bank.build_month_summary(daily_totals)
+    daily_spending = bank.build_daily_spending(tx_list)
+    weeks = bank.build_month_calendar(year, month, daily_spending)
+    month_summary = bank.build_month_summary(daily_spending)
 
     prev_year, prev_month = (year, month - 1) if month > 1 else (year - 1, 12)
     next_year, next_month = (year, month + 1) if month < 12 else (year + 1, 1)

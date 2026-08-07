@@ -69,14 +69,14 @@
       {% for cell in week %}
         {% if cell is none %}
           <div class="pnl-day pnl-day-empty"></div>
-        {% elif cell.totals is none %}
+        {% elif cell.spend is none %}
           <div class="pnl-day">
             <span class="pnl-day-num">{{ cell.day }}</span>
           </div>
         {% else %}
-          <div class="pnl-day pnl-day-loss" title="{{ cell.date }}">
+          <div class="pnl-day {{ 'pnl-day-loss' if cell.spend > 0 else 'pnl-day-win' }}" title="{{ cell.date }}">
             <span class="pnl-day-num">{{ cell.day }}</span>
-            <span class="pnl-day-amount">{{ (-cell.totals.expense) | money }}</span>
+            <span class="pnl-day-amount">{{ (-cell.spend) | money }}</span>
           </div>
         {% endif %}
       {% endfor %}
@@ -93,7 +93,7 @@
       <a class="pnl-month-row {{ 'pnl-month-active' if m.year == cur_year and m.month == cur_month else '' }}"
          href="{{ url_for('expenses', year=m.year, month=m.month) }}">
         <span>{{ m.label }}</span>
-        <strong class="pnl-negative">{{ (-m.expense) | money }}</strong>
+        <strong class="{{ 'pnl-negative' if m.spend > 0 else 'pnl-positive' }}">{{ (-m.spend) | money }}</strong>
       </a>
     </li>
     {% endfor %}

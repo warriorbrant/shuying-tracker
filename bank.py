@@ -132,27 +132,27 @@ def parse_icbc_pdf(file_bytes, password):
 
 def summarize(transactions):
     """transactions: iterable of dict-likes with tx_date/amount/category.
-    Returns overall stats + a category breakdown (支出 side only, since
-    that's what "spending" means -- income categories like 银联入账 aren't
-    "spending" and would just clutter a spending breakdown)."""
-    total_expense = 0.0
-    total_income = 0.0
-    by_category = defaultdict(float)
+    Returns overall stats + a category breakdown. Netted per category rather
+    than just summing negative amounts, so a refund (a positive amount under
+    the same category as the purchase it reverses -- the bank doesn't give
+    refunds their own category) correctly reduces that category's cost
+    instead of silently padding "income" with money that was never really
+    earned."""
+    by_category = defaultdict(float)  # positive = net cost, negative = net inflow
     last_balance = None
     last_date = None
 
     for t in transactions:
-        amt = t["amount"]
-        if amt < 0:
-            total_expense += -amt
-            by_category[t["category"] or "其他"] += -amt
-        else:
-            total_income += amt
+        by_category[t["category"] or "其他"] += -t["amount"]
         if t["balance"] is not None and (last_date is None or t["tx_date"] >= last_date):
             last_date = t["tx_date"]
             last_balance = t["balance"]
 
-    category_breakdown = sorted(by_category.items(), key=lambda kv: kv[1], reverse=True)
+    total_expense = sum(v for v in by_category.values() if v > 0)
+    total_income = sum(-v for v in by_category.values() if v < 0)
+    category_breakdown = sorted(
+        ((c, v) for c, v in by_category.items() if v > 0), key=lambda kv: kv[1], reverse=True
+    )
 
     return {
         "total_expense": total_expense,
@@ -173,23 +173,19 @@ def summarize(transactions):
 SPENDING_CATEGORY = "消费"
 
 
-def filter_spending(transactions):
-    return [t for t in transactions if t["category"] == SPENDING_CATEGORY]
-
-
-def build_daily_totals(transactions):
-    """{date: {"expense": float, "income": float}}"""
-    daily = defaultdict(lambda: {"expense": 0.0, "income": 0.0})
+def build_daily_spending(transactions):
+    """{date: net_spend}. Nets refunds against purchases automatically -- a
+    refund is a positive amount under the same 消费 label as the purchase it
+    reverses (banks don't give refunds their own category), so summing the
+    day's raw signed amounts and flipping the sign already accounts for it."""
+    daily = defaultdict(float)
     for t in transactions:
-        amt = t["amount"]
-        if amt < 0:
-            daily[t["tx_date"]]["expense"] += -amt
-        else:
-            daily[t["tx_date"]]["income"] += amt
+        if t["category"] == SPENDING_CATEGORY:
+            daily[t["tx_date"]] += -t["amount"]
     return dict(daily)
 
 
-def build_month_calendar(year, month, daily_totals):
+def build_month_calendar(year, month, daily_spending):
     """Full Mon-Sun week, unlike the trading calendar -- bank activity
     (transfers, automatic payments) isn't confined to weekdays."""
     import calendar as calendar_mod
@@ -203,20 +199,17 @@ def build_month_calendar(year, month, daily_totals):
                 cells.append(None)
                 continue
             d = date(year, month, day).isoformat()
-            totals = daily_totals.get(d)
-            cells.append({"day": day, "date": d, "totals": totals})
+            cells.append({"day": day, "date": d, "spend": daily_spending.get(d)})
         weeks.append(cells)
     return weeks
 
 
-def build_month_summary(daily_totals):
-    totals = defaultdict(lambda: {"expense": 0.0, "income": 0.0})
-    for d, t in daily_totals.items():
-        ym = d[:7]
-        totals[ym]["expense"] += t["expense"]
-        totals[ym]["income"] += t["income"]
+def build_month_summary(daily_spending):
+    totals = defaultdict(float)
+    for d, spend in daily_spending.items():
+        totals[d[:7]] += spend
     months = []
     for ym in sorted(totals.keys(), reverse=True):
         y, m = ym.split("-")
-        months.append({"year": int(y), "month": int(m), **totals[ym]})
+        months.append({"year": int(y), "month": int(m), "spend": totals[ym]})
     return months

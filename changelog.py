@@ -2315,4 +2315,29 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-07",
+        "title": "消费统计自动把退款减掉了",
+        "title_en": "Spending totals now net out refunds",
+        "summary": (
+            "银行流水里退款不会单独归一类，就是同一个「消费」摘要下面多一条正数金额的记录。之前的算法"
+            "只看金额正负分「支出」「收入」两堆，退款会被错误地算进「收入」里，跟真正花掉的钱混在一起。"
+            "现在改成同一天/同一类别下直接把签名金额加总再取反，退款自动把对应的消费冲抵掉——买了 100 "
+            "退了 30，日历上直接显示净花了 70；要是退款超过当天买的，那天还会显示成绿色的净流入。顶部"
+            "统计卡片和支出分类小计也用的这套算法，数字全部对得上。"
+        ),
+        "summary_en": (
+            "Refunds don't get their own category in the bank export -- they're just another row under "
+            "the same \"消费\" label, with a positive amount instead of negative. The old logic split "
+            "purely on sign (positive = income, negative = expense), so a refund got miscounted as income "
+            "instead of reducing the purchase it reversed. Now it nets signed amounts per day/category and "
+            "flips the sign once at the end, so a refund automatically offsets the matching spend -- buy "
+            "$100, refund $30, the calendar shows a net $70 spent that day; if refunds outweigh purchases "
+            "on a given day it shows as a net inflow (green) instead. The overview stats and category "
+            "breakdown use the same logic now, so all the numbers agree with each other."
+        ),
+        "image": None,
+        "lines_changed": 45,
+        "estimated": False,
+    },
 ]
