@@ -2498,4 +2498,26 @@ CHANGELOG = [
         "lines_changed": 25,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "消费追踪加了「消费商户 Top 10」——按对方户名统计，而不是银行的摘要分类",
+        "title_en": "Expense tracker adds a Top-10-merchants list, ranked by counterparty name",
+        "summary": (
+            "消费追踪页原有的「支出分类」是按银行流水自带的摘要字段分的（消费/银证转账/理财等），现在"
+            "另外加了一份按对方户名（也就是具体商户/收款方）统计的 Top 10 列表，年度汇总区块和每个月的"
+            "日历下面各有一份。排序按净支出金额从高到低，退款会照旧从对应商户的总额里扣掉，没有对方户名"
+            "的流水（有一种工商银行导出格式没有这一列）归到「其他」，不会凭空消失。"
+        ),
+        "summary_en": (
+            "The expense tracker already had a category breakdown based on the bank's own summary field "
+            "(purchase/transfer/wealth management/etc). Added a second breakdown ranked by counterparty "
+            "name instead -- the actual merchant or payee -- showing the top 10 by net spend, both for "
+            "the whole year and for each individual month. Refunds still net against the matching "
+            "merchant's total, and rows with no counterparty name (one ICBC export format omits that "
+            "column) get grouped under \"Other\" instead of silently disappearing from the total."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]

@@ -1953,7 +1953,9 @@ def expenses():
     for m in year_calendar:
         m["label"] = date(2000, m["month"], 1).strftime("%b") if g.lang == "en" else f"{m['month']} 月"
     year_bar_chart = bank.build_year_bar_chart(year_calendar)
-    year_stats = bank.summarize([t for t in tx_list if t["tx_date"][:4] == str(summary_year)])
+    year_txs = [t for t in tx_list if t["tx_date"][:4] == str(summary_year)]
+    year_stats = bank.summarize(year_txs)
+    year_top_merchants = bank.top_counterparties(year_txs)
 
     # All 12 months' day-calendars for the selected year are rendered into the
     # page at once (cheap -- just a few hundred small cells) and toggled with
@@ -1961,6 +1963,7 @@ def expenses():
     # to the server for every month switch.
     month_calendars = []
     for m in range(1, 13):
+        month_prefix = f"{summary_year}-{m:02d}"
         month_calendars.append({
             "month": m,
             "weeks": bank.build_month_calendar(summary_year, m, daily_spending),
@@ -1968,6 +1971,9 @@ def expenses():
                 date(summary_year, m, 1).strftime("%B %Y") + " Spending Calendar"
                 if g.lang == "en"
                 else f"{summary_year} 年 {m} 月消费日历"
+            ),
+            "top_merchants": bank.top_counterparties(
+                [t for t in year_txs if t["tx_date"][:7] == month_prefix]
             ),
         })
 
@@ -1982,6 +1988,7 @@ def expenses():
         year_bar_chart=year_bar_chart,
         year_spend_total=year_spend_total,
         year_stats=year_stats,
+        year_top_merchants=year_top_merchants,
         stats=stats,
         error=request.args.get("error"),
         info=request.args.get("info"),

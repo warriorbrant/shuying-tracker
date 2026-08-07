@@ -237,6 +237,27 @@ def year_total(year, daily_spending):
     return sum(spend for d, spend in daily_spending.items() if int(d[:4]) == year)
 
 
+def top_counterparties(transactions, limit=10):
+    """Top spending merchants ranked by net amount, grouped by 对方户名
+    (counterparty name) instead of the bank's own 摘要 category -- lets you
+    see *who* the money went to, not just what kind of transaction it was.
+    Same 消费/退款 scope and netting as build_daily_spending, so a refund
+    still reduces the merchant's total instead of showing up separately.
+    Rows with no counterparty name (one of the two ICBC export variants
+    never fills this column in) are grouped under 其他 rather than dropped,
+    so the money isn't silently missing from the list."""
+    by_merchant = defaultdict(float)
+    for t in transactions:
+        if t["category"] in (SPENDING_CATEGORY, REFUND_CATEGORY):
+            name = t["counterparty_name"] or "其他"
+            by_merchant[name] += -t["amount"]
+    ranked = sorted(
+        ((name, amt) for name, amt in by_merchant.items() if amt > 0),
+        key=lambda kv: kv[1], reverse=True,
+    )
+    return ranked[:limit]
+
+
 def build_year_bar_chart(year_calendar, width=760, height=280, padding_x=30, padding_y=28):
     """12 bars (Jan-Dec) from the same data as build_year_calendar. Bars grow
     up from a zero baseline for a net-cost month (red) and down for a

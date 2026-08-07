@@ -1131,6 +1131,15 @@ button {
 
 .metric-row:last-child { border-bottom: none; }
 
+.exp-merchant-list {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.exp-merchant-list .metric-row {
+  padding-left: 4px;
+}
+
 .status-breakdown {
   font-size: 0.9rem;
   color: var(--text);

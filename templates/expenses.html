@@ -100,6 +100,17 @@
     {% endif %}
   </div>
 
+  {% if year_top_merchants %}
+  <div class="metrics-card exp-merchant-card">
+    <h2>{{ tr('{y} 年消费商户 Top 10', y=summary_year) }}</h2>
+    <ol class="exp-merchant-list">
+      {% for name, amt in year_top_merchants %}
+      <li class="metric-row"><span>{{ name }}</span><strong class="pnl-negative">{{ amt | money }}</strong></li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
   <p class="hint">{{ tr('全年消费合计：') }}<strong class="{{ 'pnl-negative' if year_spend_total > 0 else 'pnl-positive' }}">{{ (-year_spend_total) | money }}</strong></p>
 
   <div class="actions">
@@ -164,6 +175,16 @@
       </div>
       {% endfor %}
     </div>
+    {% if mc.top_merchants %}
+    <div class="metrics-card exp-merchant-card">
+      <h2>{{ tr('本月消费商户 Top 10') }}</h2>
+      <ol class="exp-merchant-list">
+        {% for name, amt in mc.top_merchants %}
+        <li class="metric-row"><span>{{ name }}</span><strong class="pnl-negative">{{ amt | money }}</strong></li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
   </div>
   {% endfor %}
 </section>
