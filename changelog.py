@@ -2590,4 +2590,26 @@ CHANGELOG = [
         "lines_changed": 90,
         "estimated": False,
     },
+    {
+        "date": "2026-08-08",
+        "title": "公开首页文案改成「探索AI应用的边界」，品牌图标从 📚🎬 换成 🧭",
+        "title_en": "Public homepage tagline updated, brand icon changed from 📚🎬 to 🧭",
+        "summary": (
+            "公开首页顶部那句介绍，把「书影/生活追踪只是目前跑在里面的第一个功能」换成了「探索AI应用"
+            "的边界」——书影追踪现在只是好几个功能之一，这句话已经不准确了。顺手把「知行合一AI实验室」"
+            "左边的图标从 📚🎬（书和电影，代表最早那个书影追踪功能）换成了 🧭（指南针），跟「探索边界」"
+            "这句新文案也算呼应上了，导航栏、登录/注册/找回密码页都用的同一个图标。"
+        ),
+        "summary_en": (
+            "Swapped the public homepage's intro line -- \"book/show tracking is just the first feature "
+            "running in here so far\" was outdated now that it's one of several features, so it's now "
+            "\"exploring the boundaries of what AI applications can do.\" Also changed the icon next to "
+            "the brand name from 📚🎬 (book + film, representing the original book/show tracker) to 🧭 "
+            "(compass), which pairs nicely with the new \"exploring boundaries\" tagline. Same icon "
+            "everywhere it appears: nav bar, login/register/reset-password pages."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

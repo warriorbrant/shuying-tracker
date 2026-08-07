@@ -12,7 +12,7 @@
 
 TR = {
     # --- base.html / nav (shown on every page) ---
-    "📚🎬 知行合一AI实验室": "📚🎬 Unity of Knowledge & Action AI Lab",
+    "🧭 知行合一AI实验室": "🧭 Unity of Knowledge & Action AI Lab",
     "知行合一AI实验室": "Unity of Knowledge & Action AI Lab",
     "+ 添加": "+ Add",
     "+ 截图导入": "+ Import Screenshot",
@@ -50,9 +50,9 @@ TR = {
     "账号不存在": "Account not found",
 
     # --- public_home.html ---
-    "这是我用 AI 从零搭建的个人 AI 应用实验室，书影/生活追踪只是目前跑在里面的第一个功能。完整内容登录后才能看到，这里是公开的开发更新日志。":
-        "A personal AI-app lab I built from scratch with AI. Book/show tracking is just the first "
-        "feature running in it so far. Full content needs a login — this is the public dev changelog.",
+    "这是我用 AI 从零搭建的个人 AI 应用实验室，探索AI应用的边界。完整内容登录后才能看到，这里是公开的开发更新日志。":
+        "A personal AI-app lab I built from scratch with AI, exploring the boundaries of what AI "
+        "applications can do. Full content needs a login — this is the public dev changelog.",
     "这个网站是怎么做出来的": "How this site gets built",
     "🤖 AI 开发模式（这个网站的实际流程）": "🤖 AI development mode (how this site actually works)",
     "跟 Claude<br>对话提需求": "Chat with Claude<br>about what to build",
