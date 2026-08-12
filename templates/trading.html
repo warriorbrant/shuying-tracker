@@ -38,6 +38,11 @@
     <div class="metrics-card">
       <div class="metric-row"><span>{{ tr('盈利天数') }}</span><strong class="pnl-positive">{{ stats.win_days }}</strong></div>
       <div class="metric-row"><span>{{ tr('亏损天数') }}</span><strong class="pnl-negative">{{ stats.loss_days }}</strong></div>
+      {% if stats.win_rate is not none %}
+      <div class="metric-row" title="{{ tr('盈利天数 ÷（盈利天数 + 亏损天数）') }}">
+        <span>{{ tr('胜率') }}</span><strong>{{ "%.1f"|format(stats.win_rate * 100) }}%</strong>
+      </div>
+      {% endif %}
       {% if stats.win_loss_ratio is not none %}
       <div class="metric-row" title="{{ tr('平均每个盈利日 ÷ 平均每个亏损日（取绝对值）') }}">
         <span>{{ tr('盈亏比') }}</span><strong>{{ "%.2f"|format(stats.win_loss_ratio) }} : 1</strong>
@@ -69,7 +74,7 @@
       <a class="btn-link" href="{{ url_for('trading_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
     </div>
   </div>
-  <p class="hint">{{ tr('分享图不会显示具体金额，只显示走势形状、盈利/亏损天数和盈亏比。') }}</p>
+  <p class="hint">{{ tr('分享图不会显示具体金额，只显示走势形状、盈利/亏损天数、胜率和盈亏比。') }}</p>
   {% if chart %}
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
     <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>

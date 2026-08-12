@@ -219,7 +219,7 @@ def summarize_daily_pnl(daily_pnl):
     if not daily_pnl:
         return {
             "total": 0.0, "win_days": 0, "loss_days": 0, "best_day": None, "worst_day": None,
-            "avg_win": None, "avg_loss": None, "win_loss_ratio": None,
+            "avg_win": None, "avg_loss": None, "win_loss_ratio": None, "win_rate": None,
         }
     total = sum(daily_pnl.values())
     wins = [v for v in daily_pnl.values() if v > 0]
@@ -232,6 +232,10 @@ def summarize_daily_pnl(daily_pnl):
     # typical win is 2.5x the size of a typical loss. Undefined (None)
     # without at least one day on each side -- there's nothing to compare.
     win_loss_ratio = (avg_win / abs(avg_loss)) if avg_win is not None and avg_loss else None
+    # 胜率: winning days as a share of decided days (flat/$0 days count
+    # toward neither side, same as win_days/loss_days above).
+    decided_days = win_days + loss_days
+    win_rate = (win_days / decided_days) if decided_days else None
     best_date = max(daily_pnl, key=daily_pnl.get)
     worst_date = min(daily_pnl, key=daily_pnl.get)
     return {
@@ -241,6 +245,7 @@ def summarize_daily_pnl(daily_pnl):
         "avg_win": avg_win,
         "avg_loss": avg_loss,
         "win_loss_ratio": win_loss_ratio,
+        "win_rate": win_rate,
         "best_day": (best_date, daily_pnl[best_date]),
         "worst_day": (worst_date, daily_pnl[worst_date]),
     }

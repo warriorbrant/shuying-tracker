@@ -469,7 +469,7 @@ TR = {
     "全年消费合计：": "Year net spending: ",
     "按月消费柱状图": "Monthly spending bar chart",
     "分享图不会显示具体金额，只显示每月消费的高低走势。": "The share image doesn't show exact amounts, just the shape of month-to-month spending.",
-    "分享图不会显示具体金额，只显示走势形状、盈利/亏损天数和盈亏比。": "The share image doesn't show exact amounts, just the shape of the curve, the win/loss day counts, and the win/loss ratio.",
+    "分享图不会显示具体金额，只显示走势形状、盈利/亏损天数、胜率和盈亏比。": "The share image doesn't show exact amounts, just the shape of the curve, the win/loss day counts, the win rate, and the win/loss ratio.",
     "{y} 年消费商户 Top 10": "{y} Top 10 Merchants",
     "本月消费商户 Top 10": "Top 10 Merchants This Month",
 
@@ -489,6 +489,8 @@ TR = {
     "亏损天数": "Losing days",
     "盈亏比": "Win/loss ratio",
     "平均每个盈利日 ÷ 平均每个亏损日（取绝对值）": "Average winning day ÷ average losing day (absolute value)",
+    "胜率": "Win rate",
+    "盈利天数 ÷（盈利天数 + 亏损天数）": "Winning days ÷ (winning days + losing days)",
     "最佳单日 ({d})": "Best day ({d})",
     "最差单日 ({d})": "Worst day ({d})",
     "目前仍持有的仓位": "Open positions",

@@ -917,6 +917,9 @@ def build_trading_share_card(series, stats):
     draw.text((pad, pad), "累计盈亏走势", font=title_font, fill=TEXT)
 
     subtitle = f"{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日"
+    win_rate = stats.get("win_rate")
+    if win_rate is not None:
+        subtitle += f" · 胜率 {win_rate * 100:.1f}%"
     ratio = stats.get("win_loss_ratio")
     if ratio is not None:
         subtitle += f" · 盈亏比 {ratio:.2f} : 1"

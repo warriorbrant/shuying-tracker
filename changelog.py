@@ -2653,4 +2653,23 @@ CHANGELOG = [
         "lines_changed": 45,
         "estimated": False,
     },
+    {
+        "date": "2026-08-12",
+        "title": "交易页再加一个胜率，跟盈亏比放在一起",
+        "title_en": "Trading page adds a win rate next to the win/loss ratio",
+        "summary": (
+            "胜率 = 盈利天数 ÷（盈利天数 + 亏损天数），当天盈亏正好是 0 的日子不算在分母里。放在「胜率」"
+            "行的位置在盈亏比上面，同样鼠标悬停能看公式。分享图的副标题那一行也加上了，现在是「X 盈利日 · "
+            "Y 亏损日 · 胜率 Z% · 盈亏比 W:1」，实测一行放得下，没有溢出卡片。"
+        ),
+        "summary_en": (
+            "Win rate = winning days ÷ (winning days + losing days) -- days with exactly $0 P&L count "
+            "toward neither side. Sits above the win/loss ratio row, same tooltip-with-formula treatment. "
+            "Also added to the share image's subtitle, which now reads \"X winning · Y losing · Z% win "
+            "rate · W:1 ratio\" -- confirmed it still fits on one line without overflowing the card."
+        ),
+        "image": None,
+        "lines_changed": 30,
+        "estimated": False,
+    },
 ]
