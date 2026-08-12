@@ -169,6 +169,11 @@ def compute_daily_pnl(trades):
     open_positions = 0
     unmatched_closes = 0
     total_fees = 0.0
+    # One entry per closing row (a single Sell / Sell to Close transaction),
+    # regardless of how many opening lots it consumed -- this is the natural
+    # unit for a "how many trades, how many won/lost" count, distinct from
+    # the day-level win/loss stats above.
+    closes = []
 
     for symbol, txns in by_symbol.items():
         lots = deque()  # each: [remaining_qty, net_cost_per_unit, gross_cost_per_unit]
@@ -205,6 +210,7 @@ def compute_daily_pnl(trades):
                     # P&L rather than risk overstating gains.
                     unmatched_closes += 1
                 daily[t["trade_date"]] += pnl
+                closes.append({"trade_date": t["trade_date"], "symbol": symbol, "pnl": pnl})
         if lots:
             open_positions += 1
 
@@ -212,6 +218,7 @@ def compute_daily_pnl(trades):
         "open_positions": open_positions,
         "unmatched_closes": unmatched_closes,
         "total_fees": total_fees,
+        "closes": closes,
     }
 
 
@@ -248,6 +255,49 @@ def summarize_daily_pnl(daily_pnl):
         "win_rate": win_rate,
         "best_day": (best_date, daily_pnl[best_date]),
         "worst_day": (worst_date, daily_pnl[worst_date]),
+    }
+
+
+def summarize_trades(closes):
+    """closes: the meta["closes"] list from compute_daily_pnl (one entry per
+    closing transaction, i.e. per "笔"). Returns overall win/loss trade
+    counts plus a per-symbol breakdown, sorted by |net P&L| descending so
+    the symbols that mattered most float to the top of the table."""
+    total_trades = len(closes)
+    win_trades = sum(1 for c in closes if c["pnl"] > 0)
+    loss_trades = sum(1 for c in closes if c["pnl"] < 0)
+    even_trades = total_trades - win_trades - loss_trades
+
+    by_symbol = defaultdict(lambda: {"total_win": 0.0, "total_loss": 0.0, "win_count": 0, "loss_count": 0})
+    for c in closes:
+        row = by_symbol[c["symbol"]]
+        if c["pnl"] > 0:
+            row["total_win"] += c["pnl"]
+            row["win_count"] += 1
+        elif c["pnl"] < 0:
+            row["total_loss"] += c["pnl"]  # stays negative
+            row["loss_count"] += 1
+
+    symbol_table = []
+    for symbol, row in by_symbol.items():
+        net = row["total_win"] + row["total_loss"]
+        symbol_table.append({
+            "symbol": symbol,
+            "total_win": row["total_win"],
+            "total_loss": row["total_loss"],
+            "net": net,
+            "win_count": row["win_count"],
+            "loss_count": row["loss_count"],
+            "trade_count": row["win_count"] + row["loss_count"],
+        })
+    symbol_table.sort(key=lambda r: abs(r["net"]), reverse=True)
+
+    return {
+        "total_trades": total_trades,
+        "win_trades": win_trades,
+        "loss_trades": loss_trades,
+        "even_trades": even_trades,
+        "by_symbol": symbol_table,
     }
 
 

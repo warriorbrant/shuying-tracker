@@ -60,11 +60,50 @@
       <div class="metric-row"><span>{{ tr('最差单日 ({d})', d=stats.worst_day[0]) }}</span><strong class="pnl-negative">{{ stats.worst_day[1] | money }}</strong></div>
       {% endif %}
     </div>
+    <div class="metrics-card">
+      <div class="metric-row"><span>{{ tr('总交易笔数') }}</span><strong>{{ trade_stats.total_trades }}</strong></div>
+      <div class="metric-row"><span>{{ tr('盈利笔数') }}</span><strong class="pnl-positive">{{ trade_stats.win_trades }}</strong></div>
+      <div class="metric-row"><span>{{ tr('亏损笔数') }}</span><strong class="pnl-negative">{{ trade_stats.loss_trades }}</strong></div>
+    </div>
   </div>
   {% if match_meta.unmatched_closes %}
   <p class="hint">{{ tr('有 {n} 笔平仓在导入的记录里找不到对应的开仓，可能是导入范围之前建的仓——这部分暂时按 $0 盈亏处理，不会拉低或拉高总盈亏。', n=match_meta.unmatched_closes) }}</p>
   {% endif %}
 </section>
+
+{% if trade_stats.by_symbol %}
+<section class="log-section">
+  <h2>{{ tr('按品种统计') }}</h2>
+  <div class="table-scroll">
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>{{ tr('品种') }}</th>
+          <th>{{ tr('笔数') }}</th>
+          <th>{{ tr('盈利笔数') }}</th>
+          <th>{{ tr('亏损笔数') }}</th>
+          <th>{{ tr('总盈利') }}</th>
+          <th>{{ tr('总亏损') }}</th>
+          <th>{{ tr('净盈亏') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in trade_stats.by_symbol %}
+        <tr>
+          <td>{{ row.symbol }}</td>
+          <td>{{ row.trade_count }}</td>
+          <td class="pnl-positive">{{ row.win_count }}</td>
+          <td class="pnl-negative">{{ row.loss_count }}</td>
+          <td class="pnl-positive">{{ row.total_win | money }}</td>
+          <td class="pnl-negative">{{ row.total_loss | money }}</td>
+          <td class="{{ 'pnl-positive' if row.net >= 0 else 'pnl-negative' }}">{{ row.net | money }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 
 <section class="log-section">
   <div class="changelog-header-row">

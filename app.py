@@ -46,6 +46,7 @@ from trading import (
     compute_daily_pnl,
     parse_schwab_csv,
     summarize_daily_pnl,
+    summarize_trades,
 )
 import bank
 from share_card import (
@@ -1815,6 +1816,7 @@ def trading():
     daily_pnl, match_meta = compute_daily_pnl(trades_list)
     stats = summarize_daily_pnl(daily_pnl)
     stats["gross_total"] = stats["total"] + match_meta["total_fees"]
+    trade_stats = summarize_trades(match_meta["closes"])
     weeks = build_month_calendar(year, month, daily_pnl)
     month_summary = build_month_summary(daily_pnl)
     series = build_cumulative_series(daily_pnl)
@@ -1845,6 +1847,7 @@ def trading():
         month_summary=month_summary,
         chart=chart,
         stats=stats,
+        trade_stats=trade_stats,
         match_meta=match_meta,
         prev_year=prev_year,
         prev_month=prev_month,

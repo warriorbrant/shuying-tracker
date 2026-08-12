@@ -1146,6 +1146,10 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .metrics-table {
   width: 100%;
   border-collapse: collapse;

@@ -2672,4 +2672,28 @@ CHANGELOG = [
         "lines_changed": 30,
         "estimated": False,
     },
+    {
+        "date": "2026-08-12",
+        "title": "交易页加了总交易笔数/盈利笔数/亏损笔数，以及按品种拆分的盈亏表格",
+        "title_en": "Trading page adds total/win/loss trade counts, plus a per-symbol P&L table",
+        "summary": (
+            "之前盈利/亏损天数是按「天」算的，这次加的是按「笔」算的——每一笔平仓（Sell / Sell to Close）"
+            "算一笔交易，赚了算盈利笔，亏了算亏损笔，跟之前的按天统计是两回事，都保留着。另外加了一个"
+            "「按品种统计」表格，每个品种（比如 SOXS）一行，显示这个品种一共平仓几笔、赢了几笔输了几笔、"
+            "总共赢了多少、总共亏了多少、净盈亏是多少，按净盈亏绝对值从大到小排序，影响最大的品种排在"
+            "最前面。这两块统计复用了原有的 FIFO 配对引擎，没有另起一套逻辑。"
+        ),
+        "summary_en": (
+            "The existing win/loss day counts were per-day; this adds per-trade counts instead -- each "
+            "closing transaction (Sell / Sell to Close) counts as one trade, win or loss based on its own "
+            "realized P&L. Both views stay, they answer different questions. Also added a \"By Symbol\" "
+            "table: one row per symbol (e.g. SOXS) showing how many trades closed, how many won/lost, "
+            "total profit, total loss, and net P&L, sorted by |net P&L| descending so the symbols that "
+            "moved the needle most show up first. Both new stats reuse the existing FIFO matching engine "
+            "rather than recomputing anything from scratch."
+        ),
+        "image": None,
+        "lines_changed": 100,
+        "estimated": False,
+    },
 ]

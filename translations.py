@@ -493,6 +493,15 @@ TR = {
     "盈利天数 ÷（盈利天数 + 亏损天数）": "Winning days ÷ (winning days + losing days)",
     "最佳单日 ({d})": "Best day ({d})",
     "最差单日 ({d})": "Worst day ({d})",
+    "总交易笔数": "Total trades",
+    "盈利笔数": "Winning trades",
+    "亏损笔数": "Losing trades",
+    "按品种统计": "By Symbol",
+    "品种": "Symbol",
+    "笔数": "Trades",
+    "总盈利": "Total win",
+    "总亏损": "Total loss",
+    "净盈亏": "Net P&L",
     "目前仍持有的仓位": "Open positions",
     "有 {n} 笔平仓在导入的记录里找不到对应的开仓，可能是导入范围之前建的仓——这部分暂时按 $0 盈亏处理，不会拉低或拉高总盈亏。":
         "{n} closing trade(s) have no matching opening trade in the imported data — likely positions opened "
