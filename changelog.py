@@ -2499,7 +2499,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-08",
+        "date": "2026-08-12",
         "title": "消费追踪加了「消费商户 Top 10」——按对方户名统计，而不是银行的摘要分类",
         "title_en": "Expense tracker adds a Top-10-merchants list, ranked by counterparty name",
         "summary": (
@@ -2521,7 +2521,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-08",
+        "date": "2026-08-12",
         "title": "新增「功能一览」页面，介绍交易/消费/小说/分享动态四大功能，可一键生成分享图",
         "title_en": "New Features showcase page for trading/expenses/novels/moments, with a one-click share image",
         "summary": (
@@ -2543,7 +2543,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-08",
+        "date": "2026-08-12",
         "title": "功能一览页更精美了：渐变光晕背景、卡片依次浮现，每张卡片还加了小演示动画",
         "title_en": "Features page gets a visual upgrade: gradient hero, staggered card entrance, and a mini demo animation per card",
         "summary": (
@@ -2567,7 +2567,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-08",
+        "date": "2026-08-12",
         "title": "功能一览的四张卡片也放到了公开首页，就在「网站的技术架构」上面",
         "title_en": "The four feature cards now also show up on the public homepage, right above the architecture diagram",
         "summary": (
@@ -2591,7 +2591,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-08",
+        "date": "2026-08-12",
         "title": "公开首页文案改成「探索AI应用的边界」，品牌图标从 📚🎬 换成 🧭",
         "title_en": "Public homepage tagline updated, brand icon changed from 📚🎬 to 🧭",
         "summary": (
@@ -2610,6 +2610,25 @@ CHANGELOG = [
         ),
         "image": None,
         "lines_changed": 15,
+        "estimated": False,
+    },
+    {
+        "date": "2026-08-12",
+        "title": "交易分享图把盈利天数和亏损天数加回来了",
+        "title_en": "Trading share image brings back the win/loss day counts",
+        "summary": (
+            "之前为了不让分享图透露具体数字，把「X 盈利日 · Y 亏损日」这行也一起去掉了；现在改成只隐藏"
+            "金额，天数这种非敏感的统计信息加回标题下面。跟消费柱状图那边的原则保持一致：具体赚了/亏了"
+            "多少钱还是不显示，只有走势形状、日期和这两个天数。"
+        ),
+        "summary_en": (
+            "The \"X winning days / Y losing days\" line got dropped along with the dollar figures when "
+            "the share image was made to hide numbers earlier -- turns out that was overzealous, since "
+            "day counts aren't sensitive the way a P&L total is. Brought it back under the title. Still "
+            "no dollar amounts anywhere on the image, same rule as the expense bar chart's share image."
+        ),
+        "image": None,
+        "lines_changed": 20,
         "estimated": False,
     },
 ]
