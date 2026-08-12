@@ -2631,4 +2631,26 @@ CHANGELOG = [
         "lines_changed": 20,
         "estimated": False,
     },
+    {
+        "date": "2026-08-12",
+        "title": "交易页加了盈亏比统计，分享图也一起显示",
+        "title_en": "Trading page adds a win/loss ratio, shown on the share image too",
+        "summary": (
+            "盈亏比 = 平均每个盈利日的盈利 ÷ 平均每个亏损日的亏损（取绝对值），比如 3:1 就是说平时赢的时候"
+            "赢得比输的时候多三倍。加在了「盈利天数/亏损天数」那张卡片下面，鼠标悬停能看到具体算法说明；"
+            "至少要有一个盈利日和一个亏损日才算得出来，不然显示为空。分享图的标题下面那行也顺带加上了，"
+            "跟盈利/亏损天数放在一起——这是个比率不是具体金额，不违反「分享图不露金额」的规矩。"
+        ),
+        "summary_en": (
+            "Win/loss ratio = average P&L on a winning day ÷ average loss on a losing day (absolute "
+            "value) -- e.g. 3:1 means a typical win is three times the size of a typical loss. Added "
+            "under the win/loss day counts card, with a tooltip explaining the math; needs at least one "
+            "winning and one losing day to be defined, otherwise it's left out. Also added to the share "
+            "image's subtitle line next to the day counts -- it's a ratio, not a dollar figure, so it "
+            "doesn't break the \"no amounts on the share image\" rule."
+        ),
+        "image": None,
+        "lines_changed": 45,
+        "estimated": False,
+    },
 ]

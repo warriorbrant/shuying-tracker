@@ -899,7 +899,8 @@ def build_trading_share_card(series, stats):
     stats: dict from trading.summarize_daily_pnl. Like the expense bar card,
     this deliberately omits every dollar figure -- just the title, the shape
     of the curve, date labels, and (unlike dollar amounts) the win/loss day
-    counts, which aren't sensitive the way a P&L total is."""
+    counts and win/loss ratio, which aren't sensitive the way a P&L total
+    is."""
     W = 1080
     pad = 64
     header_h = 210
@@ -916,6 +917,9 @@ def build_trading_share_card(series, stats):
     draw.text((pad, pad), "累计盈亏走势", font=title_font, fill=TEXT)
 
     subtitle = f"{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日"
+    ratio = stats.get("win_loss_ratio")
+    if ratio is not None:
+        subtitle += f" · 盈亏比 {ratio:.2f} : 1"
     draw.text((pad, pad + 74), subtitle, font=subtitle_font, fill=MUTED)
 
     chart_top = header_h

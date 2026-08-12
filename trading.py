@@ -217,16 +217,30 @@ def compute_daily_pnl(trades):
 
 def summarize_daily_pnl(daily_pnl):
     if not daily_pnl:
-        return {"total": 0.0, "win_days": 0, "loss_days": 0, "best_day": None, "worst_day": None}
+        return {
+            "total": 0.0, "win_days": 0, "loss_days": 0, "best_day": None, "worst_day": None,
+            "avg_win": None, "avg_loss": None, "win_loss_ratio": None,
+        }
     total = sum(daily_pnl.values())
-    win_days = sum(1 for v in daily_pnl.values() if v > 0)
-    loss_days = sum(1 for v in daily_pnl.values() if v < 0)
+    wins = [v for v in daily_pnl.values() if v > 0]
+    losses = [v for v in daily_pnl.values() if v < 0]
+    win_days = len(wins)
+    loss_days = len(losses)
+    avg_win = sum(wins) / win_days if win_days else None
+    avg_loss = sum(losses) / loss_days if loss_days else None  # negative (or None)
+    # 盈亏比: average winning day vs. average losing day, e.g. 2.5 means a
+    # typical win is 2.5x the size of a typical loss. Undefined (None)
+    # without at least one day on each side -- there's nothing to compare.
+    win_loss_ratio = (avg_win / abs(avg_loss)) if avg_win is not None and avg_loss else None
     best_date = max(daily_pnl, key=daily_pnl.get)
     worst_date = min(daily_pnl, key=daily_pnl.get)
     return {
         "total": total,
         "win_days": win_days,
         "loss_days": loss_days,
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "win_loss_ratio": win_loss_ratio,
         "best_day": (best_date, daily_pnl[best_date]),
         "worst_day": (worst_date, daily_pnl[worst_date]),
     }
