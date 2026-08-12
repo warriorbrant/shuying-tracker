@@ -258,11 +258,24 @@ def summarize_daily_pnl(daily_pnl):
     }
 
 
+def root_symbol(symbol):
+    """The underlying ticker for a trade symbol, stripping Schwab's
+    option-contract suffix (expiry date, strike, call/put -- e.g.
+    "QQQ 08/15/2025 550.00 C") down to just "QQQ". Plain equity symbols
+    like "SOXS" have no suffix and pass through unchanged. Used only for
+    grouping the by-symbol display table below -- FIFO matching in
+    compute_daily_pnl still keys off the exact symbol, so a $550 call and a
+    $560 call on the same underlying are never matched against each other,
+    they just end up on the same display row afterward."""
+    return symbol.split()[0] if symbol else symbol
+
+
 def summarize_trades(closes):
     """closes: the meta["closes"] list from compute_daily_pnl (one entry per
     closing transaction, i.e. per "笔"). Returns overall win/loss trade
-    counts plus a per-symbol breakdown, sorted by |net P&L| descending so
-    the symbols that mattered most float to the top of the table."""
+    counts plus a per-underlying-symbol breakdown (all QQQ calls/puts across
+    every expiry and strike collapse into one "QQQ" row), sorted by |net
+    P&L| descending so the symbols that mattered most float to the top."""
     total_trades = len(closes)
     win_trades = sum(1 for c in closes if c["pnl"] > 0)
     loss_trades = sum(1 for c in closes if c["pnl"] < 0)
@@ -270,7 +283,7 @@ def summarize_trades(closes):
 
     by_symbol = defaultdict(lambda: {"total_win": 0.0, "total_loss": 0.0, "win_count": 0, "loss_count": 0})
     for c in closes:
-        row = by_symbol[c["symbol"]]
+        row = by_symbol[root_symbol(c["symbol"])]
         if c["pnl"] > 0:
             row["total_win"] += c["pnl"]
             row["win_count"] += 1

@@ -2696,4 +2696,28 @@ CHANGELOG = [
         "lines_changed": 100,
         "estimated": False,
     },
+    {
+        "date": "2026-08-12",
+        "title": "按品种统计表格现在按标的合并，QQQ 的所有到期日/行权价/看涨看跌都算一行",
+        "title_en": "By-symbol table now groups by underlying — every QQQ contract, any expiry/strike/side, is one row",
+        "summary": (
+            "Schwab 的期权 Symbol 字段自带到期日、行权价、看涨/看跌（比如「QQQ 08/15/2025 550.00 C」），"
+            "之前按品种统计的表格是按这个完整字符串分的，同一个 QQQ 会因为合约不同拆成好几行。现在表格"
+            "只取第一个空格前的部分当标的代码，所有 QQQ 的合约（不管哪个到期日、哪个行权价、看涨还是"
+            "看跌）都合并成一行。注意这只影响展示这张表格的分组方式——日历和走势图背后的 FIFO 配对逻辑"
+            "完全没动，不同合约的开平仓还是各自精确匹配，不会互相抵消。"
+        ),
+        "summary_en": (
+            "Schwab's option Symbol field bundles in the expiry, strike, and call/put (e.g. \"QQQ "
+            "08/15/2025 550.00 C\"), so the by-symbol table used to split the same underlying into a "
+            "separate row per contract. Now it groups by just the first token (the underlying ticker), "
+            "so every QQQ contract -- any expiry, strike, or side -- collapses into one row. This only "
+            "changes how the display table groups rows; the FIFO matching behind the calendar and chart "
+            "is untouched and still matches each exact contract precisely, so different contracts never "
+            "offset each other's cost basis."
+        ),
+        "image": None,
+        "lines_changed": 20,
+        "estimated": False,
+    },
 ]
