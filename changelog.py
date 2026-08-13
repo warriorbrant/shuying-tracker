@@ -2499,7 +2499,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-08",
         "title": "消费追踪加了「消费商户 Top 10」——按对方户名统计，而不是银行的摘要分类",
         "title_en": "Expense tracker adds a Top-10-merchants list, ranked by counterparty name",
         "summary": (
@@ -2521,7 +2521,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-08",
         "title": "新增「功能一览」页面，介绍交易/消费/小说/分享动态四大功能，可一键生成分享图",
         "title_en": "New Features showcase page for trading/expenses/novels/moments, with a one-click share image",
         "summary": (
@@ -2543,7 +2543,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-08",
         "title": "功能一览页更精美了：渐变光晕背景、卡片依次浮现，每张卡片还加了小演示动画",
         "title_en": "Features page gets a visual upgrade: gradient hero, staggered card entrance, and a mini demo animation per card",
         "summary": (
@@ -2567,7 +2567,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-08",
         "title": "功能一览的四张卡片也放到了公开首页，就在「网站的技术架构」上面",
         "title_en": "The four feature cards now also show up on the public homepage, right above the architecture diagram",
         "summary": (
@@ -2591,7 +2591,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-08",
         "title": "公开首页文案改成「探索AI应用的边界」，品牌图标从 📚🎬 换成 🧭",
         "title_en": "Public homepage tagline updated, brand icon changed from 📚🎬 to 🧭",
         "summary": (
@@ -2721,7 +2721,7 @@ CHANGELOG = [
         "estimated": False,
     },
     {
-        "date": "2026-08-12",
+        "date": "2026-08-13",
         "title": "胜率和盈亏比现在按天、按笔两种算法都显示",
         "title_en": "Win rate and win/loss ratio now shown both by-day and by-trade",
         "summary": (
