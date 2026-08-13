@@ -894,16 +894,18 @@ def build_novel_share_card(novel, chapters, references, total_words=0):
     return buf
 
 
-def build_trading_share_card(series, stats):
+def build_trading_share_card(series, stats, trade_stats=None):
     """series: list of {"date","pnl","cumulative"} from trading.build_cumulative_series.
-    stats: dict from trading.summarize_daily_pnl. Like the expense bar card,
-    this deliberately omits every dollar figure -- just the title, the shape
-    of the curve, date labels, and (unlike dollar amounts) the win/loss day
-    counts and win/loss ratio, which aren't sensitive the way a P&L total
-    is."""
+    stats: dict from trading.summarize_daily_pnl (by-day win/loss counts,
+    win rate, win/loss ratio). trade_stats: dict from trading.summarize_trades
+    (the same three stats, but per closing trade instead of per day -- the
+    two often disagree, same as the "按天统计"/"按笔统计" cards on the page,
+    so both get their own line here). Like the expense bar card, this
+    deliberately omits every dollar figure -- just the title, the shape of
+    the curve, date labels, and these non-monetary ratios/counts."""
     W = 1080
     pad = 64
-    header_h = 210
+    header_h = 244
     chart_h = 560
     footer_h = 70
     H = header_h + chart_h + footer_h + pad
@@ -916,14 +918,24 @@ def build_trading_share_card(series, stats):
 
     draw.text((pad, pad), "累计盈亏走势", font=title_font, fill=TEXT)
 
-    subtitle = f"{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日"
+    day_line = f"按天：{stats.get('win_days', 0)} 盈利日 · {stats.get('loss_days', 0)} 亏损日"
     win_rate = stats.get("win_rate")
     if win_rate is not None:
-        subtitle += f" · 胜率 {win_rate * 100:.1f}%"
+        day_line += f" · 胜率 {win_rate * 100:.1f}%"
     ratio = stats.get("win_loss_ratio")
     if ratio is not None:
-        subtitle += f" · 盈亏比 {ratio:.2f} : 1"
-    draw.text((pad, pad + 74), subtitle, font=subtitle_font, fill=MUTED)
+        day_line += f" · 盈亏比 {ratio:.2f} : 1"
+    draw.text((pad, pad + 74), day_line, font=subtitle_font, fill=MUTED)
+
+    if trade_stats is not None:
+        trade_line = f"按笔：{trade_stats.get('win_trades', 0)} 盈利笔 · {trade_stats.get('loss_trades', 0)} 亏损笔"
+        t_win_rate = trade_stats.get("win_rate")
+        if t_win_rate is not None:
+            trade_line += f" · 胜率 {t_win_rate * 100:.1f}%"
+        t_ratio = trade_stats.get("win_loss_ratio")
+        if t_ratio is not None:
+            trade_line += f" · 盈亏比 {t_ratio:.2f} : 1"
+        draw.text((pad, pad + 112), trade_line, font=subtitle_font, fill=MUTED)
 
     chart_top = header_h
     chart_left = pad

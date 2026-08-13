@@ -2742,4 +2742,24 @@ CHANGELOG = [
         "lines_changed": 40,
         "estimated": False,
     },
+    {
+        "date": "2026-08-13",
+        "title": "交易分享图也同时显示按天、按笔两种胜率盈亏比",
+        "title_en": "Trading share image now shows win rate/ratio both by-day and by-trade too",
+        "summary": (
+            "页面上刚加的「按天统计」「按笔统计」两套胜率盈亏比，分享图也跟上了——标题下面变成两行，"
+            "一行「按天：...」一行「按笔：...」，数字跟页面上完全一致。同样不露具体盈亏金额，只有这些"
+            "比率和天数/笔数。多了一行文字，把分享图头部的高度也相应调高了一点，跟走势图之间还留着空隙，"
+            "不会挤在一起。"
+        ),
+        "summary_en": (
+            "The by-day / by-trade win rate and win/loss ratio that just landed on the page are now on "
+            "the share image too -- two lines under the title, \"By Day: ...\" and \"By Trade: ...\", "
+            "matching the page exactly. Still no dollar amounts, just these ratios and counts. Bumped the "
+            "header height slightly to fit the extra line without crowding the chart below it."
+        ),
+        "image": None,
+        "lines_changed": 35,
+        "estimated": False,
+    },
 ]

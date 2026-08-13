@@ -1912,11 +1912,12 @@ def trading_share_image():
     conn.close()
     trades_list = [dict(r) for r in trades_rows]
 
-    daily_pnl, _ = compute_daily_pnl(trades_list)
+    daily_pnl, match_meta = compute_daily_pnl(trades_list)
     stats = summarize_daily_pnl(daily_pnl)
+    trade_stats = summarize_trades(match_meta["closes"])
     series = build_cumulative_series(daily_pnl)
 
-    buf = build_trading_share_card(series, stats)
+    buf = build_trading_share_card(series, stats, trade_stats)
 
     download = request.args.get("download")
     return send_file(

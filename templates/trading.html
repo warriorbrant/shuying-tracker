@@ -125,7 +125,7 @@
       <a class="btn-link" href="{{ url_for('trading_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
     </div>
   </div>
-  <p class="hint">{{ tr('分享图不会显示具体金额，只显示走势形状、盈利/亏损天数、胜率和盈亏比。') }}</p>
+  <p class="hint">{{ tr('分享图不会显示具体金额，只显示走势形状，以及按天、按笔两种算法的胜率和盈亏比。') }}</p>
   {% if chart %}
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
     <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>
