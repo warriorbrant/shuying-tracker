@@ -277,9 +277,21 @@ def summarize_trades(closes):
     every expiry and strike collapse into one "QQQ" row), sorted by |net
     P&L| descending so the symbols that mattered most float to the top."""
     total_trades = len(closes)
-    win_trades = sum(1 for c in closes if c["pnl"] > 0)
-    loss_trades = sum(1 for c in closes if c["pnl"] < 0)
+    win_pnls = [c["pnl"] for c in closes if c["pnl"] > 0]
+    loss_pnls = [c["pnl"] for c in closes if c["pnl"] < 0]
+    win_trades = len(win_pnls)
+    loss_trades = len(loss_pnls)
     even_trades = total_trades - win_trades - loss_trades
+
+    # Same two stats as summarize_daily_pnl (胜率/盈亏比), but per closing
+    # trade instead of per day -- a day with 3 wins and 1 loss counts as
+    # one winning day there, but four separate trades here. Both views are
+    # shown side by side on the page since they answer different questions.
+    avg_win = sum(win_pnls) / win_trades if win_trades else None
+    avg_loss = sum(loss_pnls) / loss_trades if loss_trades else None  # negative (or None)
+    win_loss_ratio = (avg_win / abs(avg_loss)) if avg_win is not None and avg_loss else None
+    decided_trades = win_trades + loss_trades
+    win_rate = (win_trades / decided_trades) if decided_trades else None
 
     by_symbol = defaultdict(lambda: {"total_win": 0.0, "total_loss": 0.0, "win_count": 0, "loss_count": 0})
     for c in closes:
@@ -310,6 +322,10 @@ def summarize_trades(closes):
         "win_trades": win_trades,
         "loss_trades": loss_trades,
         "even_trades": even_trades,
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "win_loss_ratio": win_loss_ratio,
+        "win_rate": win_rate,
         "by_symbol": symbol_table,
     }
 

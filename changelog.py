@@ -2720,4 +2720,26 @@ CHANGELOG = [
         "lines_changed": 20,
         "estimated": False,
     },
+    {
+        "date": "2026-08-12",
+        "title": "胜率和盈亏比现在按天、按笔两种算法都显示",
+        "title_en": "Win rate and win/loss ratio now shown both by-day and by-trade",
+        "summary": (
+            "之前胜率和盈亏比只按「天」算——同一天不管开平几笔仓，只看当天合计是赚是赔。现在「按笔统计」"
+            "那张卡片里也加上了胜率和盈亏比，这次是按每一笔平仓单独算，两种算法数字经常对不上：比如同一天"
+            "先赚 300 又亏 50，按天算是 1 个盈利日、胜率 100%；按笔算是 1 赢 1 输，胜率只有 50%、盈亏比 "
+            "6:1。两张卡片现在并排放，标题写清楚是「按天统计」还是「按笔统计」，鼠标悬停也有说明。"
+        ),
+        "summary_en": (
+            "Win rate and win/loss ratio used to be day-only -- however many trades happened on a day, "
+            "only the day's net result counted. Added the same two stats to the \"By Trade\" card, this "
+            "time computed per individual closing trade. The two often disagree: e.g. +300 then -50 on "
+            "the same day is 1 winning day (100% by-day win rate), but by trade it's 1 win + 1 loss (50% "
+            "win rate, 6:1 ratio). Both cards now sit side by side, labeled \"By Day\" / \"By Trade\" with "
+            "a tooltip explaining each."
+        ),
+        "image": None,
+        "lines_changed": 40,
+        "estimated": False,
+    },
 ]

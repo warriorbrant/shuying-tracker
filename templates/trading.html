@@ -36,6 +36,7 @@
       <div class="metric-row"><span>{{ tr('净利润（已扣手续费）') }}</span><strong class="{{ 'pnl-positive' if stats.total >= 0 else 'pnl-negative' }}">{{ stats.total | money }}</strong></div>
     </div>
     <div class="metrics-card">
+      <h2 title="{{ tr('同一天可能有好几笔交易，只看当天合计是赚是赔') }}">{{ tr('按天统计') }}</h2>
       <div class="metric-row"><span>{{ tr('盈利天数') }}</span><strong class="pnl-positive">{{ stats.win_days }}</strong></div>
       <div class="metric-row"><span>{{ tr('亏损天数') }}</span><strong class="pnl-negative">{{ stats.loss_days }}</strong></div>
       {% if stats.win_rate is not none %}
@@ -53,17 +54,28 @@
       {% endif %}
     </div>
     <div class="metrics-card">
+      <h2 title="{{ tr('每一笔平仓单独算一笔交易，跟按天统计是两回事') }}">{{ tr('按笔统计') }}</h2>
+      <div class="metric-row"><span>{{ tr('总交易笔数') }}</span><strong>{{ trade_stats.total_trades }}</strong></div>
+      <div class="metric-row"><span>{{ tr('盈利笔数') }}</span><strong class="pnl-positive">{{ trade_stats.win_trades }}</strong></div>
+      <div class="metric-row"><span>{{ tr('亏损笔数') }}</span><strong class="pnl-negative">{{ trade_stats.loss_trades }}</strong></div>
+      {% if trade_stats.win_rate is not none %}
+      <div class="metric-row" title="{{ tr('盈利笔数 ÷（盈利笔数 + 亏损笔数）') }}">
+        <span>{{ tr('胜率') }}</span><strong>{{ "%.1f"|format(trade_stats.win_rate * 100) }}%</strong>
+      </div>
+      {% endif %}
+      {% if trade_stats.win_loss_ratio is not none %}
+      <div class="metric-row" title="{{ tr('平均每笔盈利 ÷ 平均每笔亏损（取绝对值）') }}">
+        <span>{{ tr('盈亏比') }}</span><strong>{{ "%.2f"|format(trade_stats.win_loss_ratio) }} : 1</strong>
+      </div>
+      {% endif %}
+    </div>
+    <div class="metrics-card">
       {% if stats.best_day %}
       <div class="metric-row"><span>{{ tr('最佳单日 ({d})', d=stats.best_day[0]) }}</span><strong class="pnl-positive">{{ stats.best_day[1] | money }}</strong></div>
       {% endif %}
       {% if stats.worst_day %}
       <div class="metric-row"><span>{{ tr('最差单日 ({d})', d=stats.worst_day[0]) }}</span><strong class="pnl-negative">{{ stats.worst_day[1] | money }}</strong></div>
       {% endif %}
-    </div>
-    <div class="metrics-card">
-      <div class="metric-row"><span>{{ tr('总交易笔数') }}</span><strong>{{ trade_stats.total_trades }}</strong></div>
-      <div class="metric-row"><span>{{ tr('盈利笔数') }}</span><strong class="pnl-positive">{{ trade_stats.win_trades }}</strong></div>
-      <div class="metric-row"><span>{{ tr('亏损笔数') }}</span><strong class="pnl-negative">{{ trade_stats.loss_trades }}</strong></div>
     </div>
   </div>
   {% if match_meta.unmatched_closes %}
