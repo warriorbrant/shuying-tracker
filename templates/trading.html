@@ -83,6 +83,37 @@
   {% endif %}
 </section>
 
+{% if match_meta.open_position_list %}
+<section class="log-section">
+  <h2>{{ tr('目前仍持有的仓位') }}</h2>
+  <div class="table-scroll">
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>{{ tr('品种') }}</th>
+          <th>{{ tr('数量') }}</th>
+          <th>{{ tr('平均成本') }}</th>
+          <th>{{ tr('成本合计') }}</th>
+          <th>{{ tr('建仓日期') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pos in match_meta.open_position_list %}
+        <tr>
+          <td>{{ pos.symbol }}</td>
+          <td>{{ '%g' % pos.quantity }}</td>
+          <td>{{ pos.avg_cost | money }}</td>
+          <td>{{ pos.total_cost | money }}</td>
+          <td>{{ pos.opened_date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="hint">{{ tr('成本按已导入的开仓记录算，不代表当前市值——这里没有接实时行情。') }}</p>
+</section>
+{% endif %}
+
 {% if trade_stats.by_symbol %}
 <section class="log-section">
   <h2>{{ tr('按品种统计') }}</h2>

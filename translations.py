@@ -509,6 +509,12 @@ TR = {
     "总亏损": "Total loss",
     "净盈亏": "Net P&L",
     "目前仍持有的仓位": "Open positions",
+    "数量": "Quantity",
+    "平均成本": "Avg cost",
+    "成本合计": "Total cost",
+    "建仓日期": "Opened",
+    "成本按已导入的开仓记录算，不代表当前市值——这里没有接实时行情。":
+        "Cost is based on the imported opening trades, not current market value — there's no live price feed here.",
     "有 {n} 笔平仓在导入的记录里找不到对应的开仓，可能是导入范围之前建的仓——这部分暂时按 $0 盈亏处理，不会拉低或拉高总盈亏。":
         "{n} closing trade(s) have no matching opening trade in the imported data — likely positions opened "
         "before the imported range. Treated as $0 P&L for now, so they don't skew the total either way.",

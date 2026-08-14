@@ -146,7 +146,7 @@ def compute_daily_pnl(trades):
     """trades: iterable of dict-likes with trade_date/action/symbol/quantity/
     amount/fees, already sorted chronologically (trade_date, then insertion
     order). Returns (daily_pnl: {date: float}, meta: {open_positions,
-    unmatched_closes, total_fees}).
+    open_position_list, unmatched_closes, total_fees, closes}).
 
     `amount` already nets in fees (a sell's Amount = trade value - fee; a
     buy's Amount = -(trade value + fee)), so daily_pnl is P&L *after* fees
@@ -174,9 +174,14 @@ def compute_daily_pnl(trades):
     # unit for a "how many trades, how many won/lost" count, distinct from
     # the day-level win/loss stats above.
     closes = []
+    # One entry per symbol still holding shares/contracts after all closes
+    # are matched off -- the exact symbol is kept here (not collapsed to the
+    # underlying the way the by-symbol table does), since knowing exactly
+    # which strike/expiry is still open is the whole point.
+    open_position_list = []
 
     for symbol, txns in by_symbol.items():
-        lots = deque()  # each: [remaining_qty, net_cost_per_unit, gross_cost_per_unit]
+        lots = deque()  # each: [remaining_qty, net_cost_per_unit, gross_cost_per_unit, opened_date]
         for t in txns:
             qty = t["quantity"] or 0
             if qty <= 0:
@@ -184,14 +189,14 @@ def compute_daily_pnl(trades):
             fee_per_unit = (t["fees"] or 0) / qty
             if t["action"] in OPEN_ACTIONS:
                 net_cost = abs(t["amount"]) / qty
-                lots.append([qty, net_cost, net_cost - fee_per_unit])
+                lots.append([qty, net_cost, net_cost - fee_per_unit, t["trade_date"]])
             elif t["action"] in CLOSE_ACTIONS:
                 net_proceeds = t["amount"] / qty
                 gross_proceeds = net_proceeds + fee_per_unit
                 remaining = qty
                 pnl = 0.0
                 while remaining > 1e-9 and lots:
-                    lot_qty, lot_net_cost, lot_gross_cost = lots[0]
+                    lot_qty, lot_net_cost, lot_gross_cost, _lot_date = lots[0]
                     take = min(remaining, lot_qty)
                     net_piece = take * (net_proceeds - lot_net_cost)
                     gross_piece = take * (gross_proceeds - lot_gross_cost)
@@ -213,9 +218,21 @@ def compute_daily_pnl(trades):
                 closes.append({"trade_date": t["trade_date"], "symbol": symbol, "pnl": pnl})
         if lots:
             open_positions += 1
+            total_qty = sum(lot[0] for lot in lots)
+            total_net_cost = sum(lot[0] * lot[1] for lot in lots)
+            open_position_list.append({
+                "symbol": symbol,
+                "quantity": total_qty,
+                "avg_cost": total_net_cost / total_qty if total_qty else 0.0,
+                "total_cost": total_net_cost,
+                "opened_date": min(lot[3] for lot in lots),
+            })
+
+    open_position_list.sort(key=lambda p: p["opened_date"])
 
     return dict(daily), {
         "open_positions": open_positions,
+        "open_position_list": open_position_list,
         "unmatched_closes": unmatched_closes,
         "total_fees": total_fees,
         "closes": closes,

@@ -2762,4 +2762,29 @@ CHANGELOG = [
         "lines_changed": 35,
         "estimated": False,
     },
+    {
+        "date": "2026-08-15",
+        "title": "交易页新增「目前仍持有的仓位」表格：品种、数量、平均成本、建仓日期",
+        "title_en": "New 'Open Positions' table: symbol, quantity, average cost, date opened",
+        "summary": (
+            "之前「目前仍持有的仓位」只是一个数字（有几个品种还没平仓），现在加了一张表格，每个还没"
+            "平仓的品种一行：数量、平均成本（按已导入的开仓记录算，含手续费）、成本合计、最早的建仓"
+            "日期。期权保留精确的合约字符串（到期日/行权价/看涨看跌），不像按品种统计那张表按标的合并"
+            "——这里要看的就是具体持有哪张合约。同一个品种分几笔建仓、部分平仓的情况也算对了（用剩余"
+            "数量加权平均成本）。表格下面提示了一句：这是成本，不是当前市值，没有接实时行情。"
+        ),
+        "summary_en": (
+            "\"Open positions\" used to just be a count. Added a table with one row per symbol still "
+            "carrying a position: quantity, average cost (from the imported opening trades, fees "
+            "included), total cost basis, and the earliest date it was opened. Options keep their exact "
+            "contract string (expiry/strike/side) here, unlike the by-symbol table which collapses to the "
+            "underlying -- the point of this table is knowing exactly what's still open. Partial closes "
+            "and multiple opening lots for the same symbol are handled correctly (quantity-weighted "
+            "average cost across whatever's left). A note under the table makes clear this is cost basis, "
+            "not current market value -- there's no live price feed wired up."
+        ),
+        "image": None,
+        "lines_changed": 55,
+        "estimated": False,
+    },
 ]
