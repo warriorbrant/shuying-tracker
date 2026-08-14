@@ -470,6 +470,7 @@ TR = {
     "按月消费柱状图": "Monthly spending bar chart",
     "分享图不会显示具体金额，只显示每月消费的高低走势。": "The share image doesn't show exact amounts, just the shape of month-to-month spending.",
     "分享图不会显示具体金额，只显示走势形状，以及按天、按笔两种算法的胜率和盈亏比。": "The share image doesn't show exact amounts, just the shape of the curve, plus the win rate and win/loss ratio computed both by-day and by-trade.",
+    "分享图里带上目前持仓（只显示品种和建仓日期，不显示数量和成本）": "Include current positions in the share image (symbol and opened date only — no quantity or cost)",
     "{y} 年消费商户 Top 10": "{y} Top 10 Merchants",
     "本月消费商户 Top 10": "Top 10 Merchants This Month",
 

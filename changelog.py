@@ -2787,4 +2787,28 @@ CHANGELOG = [
         "lines_changed": 55,
         "estimated": False,
     },
+    {
+        "date": "2026-08-15",
+        "title": "交易分享图可以选择带上目前持仓（可选项，只显示品种和建仓日期）",
+        "title_en": "Trading share image can optionally include open positions (symbol + date only)",
+        "summary": (
+            "分享图现在能加一段「目前持仓」，但默认不带——页面上多了个勾选框「分享图里带上目前持仓」，"
+            "勾上之后「生成分享图」「先预览」两个链接才会带上持仓。就算勾了，也只显示品种和建仓日期，"
+            "数量和成本一律不显示（持仓大小比盈亏比例更敏感，所以比之前的胜率/盈亏比更谨慎）。做的时候"
+            "有个排版 bug：持仓区块的位置算错了，跟走势图下面的日期刻度文字重叠在一起，调整了间距后"
+            "分开了。"
+        ),
+        "summary_en": (
+            "The share image can now include a \"Current Positions\" section, but off by default -- a "
+            "new checkbox on the page (\"Include current positions in the share image\") has to be "
+            "checked before either the generate or preview link picks it up. Even then it only shows "
+            "symbol and opened date, never quantity or cost (position size felt like it deserved more "
+            "caution than the win-rate/ratio numbers already on there). Hit a layout bug while building "
+            "it: the positions block's vertical position was miscalculated and landed right on top of the "
+            "chart's date-axis label -- fixed by giving it more clearance."
+        ),
+        "image": None,
+        "lines_changed": 75,
+        "estimated": False,
+    },
 ]

@@ -894,7 +894,7 @@ def build_novel_share_card(novel, chapters, references, total_words=0):
     return buf
 
 
-def build_trading_share_card(series, stats, trade_stats=None):
+def build_trading_share_card(series, stats, trade_stats=None, open_positions=None):
     """series: list of {"date","pnl","cumulative"} from trading.build_cumulative_series.
     stats: dict from trading.summarize_daily_pnl (by-day win/loss counts,
     win rate, win/loss ratio). trade_stats: dict from trading.summarize_trades
@@ -902,13 +902,32 @@ def build_trading_share_card(series, stats, trade_stats=None):
     two often disagree, same as the "按天统计"/"按笔统计" cards on the page,
     so both get their own line here). Like the expense bar card, this
     deliberately omits every dollar figure -- just the title, the shape of
-    the curve, date labels, and these non-monetary ratios/counts."""
+    the curve, date labels, and these non-monetary ratios/counts.
+
+    open_positions: optional -- pass match_meta["open_position_list"] to add
+    a "目前持仓" section listing each open symbol with its opened date. Only
+    those two fields are drawn, never quantity or cost (still no dollar
+    figures, and position size is arguably even more sensitive than a P&L
+    ratio). Opt-in only: omit or pass None/[] to leave this off entirely,
+    same as before this was added."""
     W = 1080
     pad = 64
     header_h = 244
     chart_h = 560
     footer_h = 70
-    H = header_h + chart_h + footer_h + pad
+
+    # chart_top + chart_h + 12 is where the chart's own date-axis labels sit
+    # (see below); this section has to clear well past that before it starts
+    # drawing anything, or the two overlap.
+    positions_axis_clearance = 70
+    positions_title_to_rows = 50
+    positions_row_h = 40
+    positions_h = (
+        (positions_axis_clearance + positions_title_to_rows + len(open_positions) * positions_row_h + 24)
+        if open_positions else 0
+    )
+
+    H = header_h + chart_h + positions_h + footer_h + pad
 
     card = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(card)
@@ -976,6 +995,20 @@ def build_trading_share_card(series, stats, trade_stats=None):
     else:
         empty_font = _font(30)
         draw.text((pad, chart_top + chart_h / 2 - 15), "还没有交易记录", font=empty_font, fill=MUTED)
+
+    if open_positions:
+        section_top = chart_top + chart_h + positions_axis_clearance
+        positions_title_font = _font(30, bold=True)
+        draw.text((pad, section_top), "目前持仓", font=positions_title_font, fill=TEXT)
+        row_font = _font(24)
+        rows_top = section_top + positions_title_to_rows
+        for i, pos in enumerate(open_positions):
+            y = rows_top + i * positions_row_h
+            draw.text((pad, y), pos["symbol"], font=row_font, fill=TEXT)
+            date_label = pos.get("opened_date", "")
+            bbox = draw.textbbox((0, 0), date_label, font=row_font)
+            tw = bbox[2] - bbox[0]
+            draw.text((W - pad - tw, y), date_label, font=row_font, fill=MUTED)
 
     footer_font = _font(24)
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"

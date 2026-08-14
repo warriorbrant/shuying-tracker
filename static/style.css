@@ -1701,6 +1701,21 @@ button {
   margin: 0;
 }
 
+.checkbox-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.checkbox-hint input {
+  margin: 0;
+  flex: none;
+}
+
 label.checkbox-label {
   flex-direction: row;
   align-items: center;

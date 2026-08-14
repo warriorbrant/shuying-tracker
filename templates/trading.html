@@ -152,11 +152,17 @@
   <div class="changelog-header-row">
     <h2>{{ tr('累计盈亏走势') }}</h2>
     <div class="actions">
-      <a class="btn-share" href="{{ url_for('trading_share_image', download=1) }}">{{ tr('📤 生成分享图') }}</a>
-      <a class="btn-link" href="{{ url_for('trading_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
+      <a class="btn-share" id="shareImgBtn" href="{{ url_for('trading_share_image', download=1) }}">{{ tr('📤 生成分享图') }}</a>
+      <a class="btn-link" id="previewImgBtn" href="{{ url_for('trading_share_image') }}" target="_blank">{{ tr('先预览') }}</a>
     </div>
   </div>
   <p class="hint">{{ tr('分享图不会显示具体金额，只显示走势形状，以及按天、按笔两种算法的胜率和盈亏比。') }}</p>
+  {% if match_meta.open_position_list %}
+  <label class="checkbox-hint">
+    <input type="checkbox" id="includePositionsCheckbox">
+    {{ tr('分享图里带上目前持仓（只显示品种和建仓日期，不显示数量和成本）') }}
+  </label>
+  {% endif %}
   {% if chart %}
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
     <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>
@@ -219,4 +225,28 @@
 
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var checkbox = document.getElementById('includePositionsCheckbox');
+  var shareBtn = document.getElementById('shareImgBtn');
+  var previewBtn = document.getElementById('previewImgBtn');
+  if (!checkbox || !shareBtn || !previewBtn) return;
+
+  var shareBase = shareBtn.getAttribute('href');
+  var previewBase = previewBtn.getAttribute('href');
+
+  function withPositions(url) {
+    if (!checkbox.checked) return url;
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + 'positions=1';
+  }
+
+  checkbox.addEventListener('change', function () {
+    shareBtn.setAttribute('href', withPositions(shareBase));
+    previewBtn.setAttribute('href', withPositions(previewBase));
+  });
+})();
+</script>
 {% endblock %}

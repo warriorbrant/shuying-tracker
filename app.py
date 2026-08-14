@@ -1917,7 +1917,13 @@ def trading_share_image():
     trade_stats = summarize_trades(match_meta["closes"])
     series = build_cumulative_series(daily_pnl)
 
-    buf = build_trading_share_card(series, stats, trade_stats)
+    # Opt-in only -- the page has a checkbox for this, unchecked by default,
+    # since position size (even without cost/quantity shown) is information
+    # someone might not want to include on every share.
+    include_positions = request.args.get("positions") == "1"
+    open_positions = match_meta["open_position_list"] if include_positions else None
+
+    buf = build_trading_share_card(series, stats, trade_stats, open_positions)
 
     download = request.args.get("download")
     return send_file(
