@@ -3090,4 +3090,28 @@ CHANGELOG = [
         "lines_changed": 55,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓分享图画布放大，密集点终于有地方标注了",
+        "title_en": "Route Outline share image is much bigger, giving crowded clusters room to breathe",
+        "summary": (
+            "加了引线之后还是不够——因为整条路线（不管多远）都是按同一个比例塞进固定大小的画布里，"
+            "路线跨度越大，中间挨得近的那几个城市在图上就挤得越狠，引线再怎么找位置也没地方放。这次"
+            "直接把画布从 1080×760 放大到 1500×1000，同样的经纬度数据，每一度能分到的像素多了不少，"
+            "密集的城市群终于有喘息空间了。用之前那条丽江到武汉、途经 14 个城市（昆明附近三个点挤在"
+            "一起、南昌附近三个点也挤在一起）的路线重新测了一遍，这次两处密集区域的标签全部清晰可读。"
+        ),
+        "summary_en": (
+            "Leader lines alone weren't enough -- the whole route, however long, gets fit into a fixed-"
+            "size canvas at one uniform scale, so the longer the route, the more cramped any tightly-"
+            "clustered cities in the middle become, leaving the leader-line search nowhere to actually "
+            "put a label. Bumped the canvas straight up from 1080x760 to 1500x1000; same lat/lng data, "
+            "meaningfully more pixels per degree, so a crowded cluster of cities finally has room. "
+            "Re-tested with the same Lijiang-to-Wuhan, 14-city route (three points bunched near Kunming, "
+            "three more near Nanchang) -- both crowded clusters are fully legible now."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]

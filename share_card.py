@@ -1361,10 +1361,17 @@ def build_route_outline_card(title, points, show_terrain=False):
     rivers (see _fetch_terrain_features) -- optional and off by default
     since it adds a real network round-trip (some seconds) the base card
     doesn't need."""
-    W = 1080
+    # Sized well beyond the usual 1080-wide share card -- the whole route's
+    # extent gets fit into this canvas at one uniform scale, so a route
+    # spanning a long distance with a tight local cluster of points (a few
+    # cities close together early in a long trip, say) leaves that cluster
+    # only a handful of pixels across no matter how good the label
+    # placement logic is. A much bigger canvas gives every degree more
+    # pixels to work with, which is the only thing that actually helps.
+    W = 1500
     pad = 64
     header_h = 110
-    plot_h = 760
+    plot_h = 1000
     footer_h = 70
     H = header_h + plot_h + footer_h + pad
 
