@@ -198,12 +198,15 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
 );
 CREATE INDEX IF NOT EXISTS idx_bank_transactions_user_date ON bank_transactions(user_id, tx_date);
 
--- User-drawn routes (click points on a Leaflet map -> polyline), not
--- imported from anywhere -- see the custom_routes feature. `points` is a
--- JSON array of {"lat":, "lng":} objects (an object per point rather than a
+-- User-drawn routes (click points on a Leaflet map -> polyline, or type
+-- place names and geocode them via Nominatim), not imported from anywhere
+-- -- see the custom_routes feature. `points` is a JSON array of
+-- {"lat":, "lng":, "label":} objects (an object per point rather than a
 -- bare [lat, lng] pair, deliberately, so the field names catch a swapped
 -- lat/lng bug immediately instead of silently plotting a valid-looking but
--- wrong point). `is_locked` follows the exact same convention as
+-- wrong point); "label" is optional -- present when the point came from a
+-- typed-and-geocoded place name, absent for a plain map click. `is_locked`
+-- follows the exact same convention as
 -- novels.is_locked (1 = only the owner can view, 0 = anyone with the link
 -- can) but defaults to locked here, opposite of novels -- a route stays
 -- private until its owner explicitly shares it.

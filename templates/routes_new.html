@@ -5,7 +5,7 @@
 <h1>{{ tr('画新路线') }}</h1>
 
 {% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
-<p class="hint">{{ tr('在地图上依次点几下，连成一条路线；点错了可以撤销最后一个点。') }}</p>
+<p class="hint">{{ tr('在地图上依次点几下，连成一条路线；也可以在下面直接输入地点名称，自动查坐标连线。点错了可以撤销最后一个点。') }}</p>
 
 <section class="log-section">
   <div class="route-jump-row">
@@ -18,6 +18,16 @@
     <button type="button" id="undoPointBtn" class="btn-link">{{ tr('↩️ 撤销上一个点') }}</button>
     <button type="button" id="clearPointsBtn" class="btn-link-danger">{{ tr('🗑️ 清空') }}</button>
     <span id="pointCount" class="hint">{{ tr('已选 {n} 个点', n=0) }}</span>
+  </div>
+</section>
+
+<section class="log-section">
+  <h2>{{ tr('输入地点名称') }}</h2>
+  <p class="hint">{{ tr('一行一个地名，会按顺序依次查坐标、连成线，追加在已有的点后面（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。') }}</p>
+  <textarea id="placesInput" class="route-places-input" rows="6" placeholder="{{ tr('东京\n京都\n大阪\n……') }}"></textarea>
+  <div class="route-map-actions">
+    <button type="button" id="resolvePlacesBtn" class="btn-link">{{ tr('📍 解析并连线') }}</button>
+    <span id="resolveStatus" class="hint"></span>
   </div>
 </section>
 
@@ -64,12 +74,19 @@
     pointCount.textContent = {{ tr('已选 {n} 个点') | tojson }}.replace('{n}', points.length);
   }
 
-  map.on('click', function (e) {
-    var p = { lat: e.latlng.lat, lng: e.latlng.lng };
+  function addPoint(lat, lng, label) {
+    var p = { lat: lat, lng: lng };
+    if (label) p.label = label;
     points.push(p);
-    var marker = L.circleMarker(e.latlng, { radius: 5, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    var marker = L.circleMarker([lat, lng], { radius: 5, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    if (label) marker.bindTooltip(label, { permanent: false });
     markers.push(marker);
     sync();
+    return p;
+  }
+
+  map.on('click', function (e) {
+    addPoint(e.latlng.lat, e.latlng.lng, null);
   });
 
   document.getElementById('undoPointBtn').addEventListener('click', function () {
@@ -97,6 +114,56 @@
       e.preventDefault();
       alert({{ tr('路线至少需要两个点，在地图上多点几下') | tojson }});
     }
+  });
+
+  // --- type place names -> geocode via Nominatim (OSM's free geocoder,
+  // no API key) -> append as points in the order typed. Nominatim's usage
+  // policy caps public requests at 1/second and asks not to be hit in a
+  // tight loop, so this waits between each lookup instead of firing all
+  // of them at once -- with up to ~20 places that's tens of seconds, not
+  // instant, which the status line below makes clear as it goes.
+  var resolveBtn = document.getElementById('resolvePlacesBtn');
+  var placesInput = document.getElementById('placesInput');
+  var resolveStatus = document.getElementById('resolveStatus');
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  resolveBtn.addEventListener('click', function () {
+    var names = placesInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!names.length) return;
+    resolveBtn.disabled = true;
+    (async function () {
+      var failed = [];
+      var added = [];
+      for (var i = 0; i < names.length; i++) {
+        var name = names[i];
+        resolveStatus.textContent = {{ tr('解析中 {i}/{n}：{place}') | tojson }}
+          .replace('{i}', i + 1).replace('{n}', names.length).replace('{place}', name);
+        try {
+          var resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(name));
+          var results = await resp.json();
+          if (results && results.length) {
+            addPoint(parseFloat(results[0].lat), parseFloat(results[0].lon), name);
+            added.push(name);
+          } else {
+            failed.push(name);
+          }
+        } catch (err) {
+          failed.push(name);
+        }
+        if (i < names.length - 1) await sleep(1100);
+      }
+      var summary = {{ tr('完成：成功 {ok} 个') | tojson }}.replace('{ok}', added.length);
+      if (failed.length) {
+        summary += {{ tr('，没找到 {n} 个：{list}') | tojson }}
+          .replace('{n}', failed.length).replace('{list}', failed.join('、'));
+      }
+      resolveStatus.textContent = summary;
+      placesInput.value = failed.join('\n');
+      resolveBtn.disabled = false;
+      if (added.length) {
+        map.fitBounds(line.getBounds(), { padding: [24, 24] });
+      }
+    })();
   });
 
   sync();

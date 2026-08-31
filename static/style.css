@@ -2454,3 +2454,15 @@ label.checkbox-label {
   color: var(--muted);
   margin: 4px 0 0;
 }
+
+.route-places-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff;
+  resize: vertical;
+}

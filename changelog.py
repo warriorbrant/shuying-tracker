@@ -2867,4 +2867,33 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "画路线可以直接输入地点名称了，自动查坐标连线（不用一个个在地图上点）",
+        "title_en": "Draw a route by typing place names too — auto-geocoded and connected",
+        "summary": (
+            "画路线页面加了个「输入地点名称」区块，一行一个地名（比如东京、京都、大阪……20 个都行），"
+            "点「解析并连线」后按顺序依次查坐标（用的是 OpenStreetMap 自己的免费地名查询 Nominatim，"
+            "不用申请 key），连成线，追加在地图上已有的点后面——可以跟点地图混着用。查不到的地名不会"
+            "卡住整批，会跳过继续查后面的，最后汇总告诉你「成功 X 个，没找到 Y 个：xxx」，textarea 里"
+            "也只留下没找到的，方便改完重试。Nominatim 有一次一个请求、别打太快的使用规则，所以每次查询"
+            "之间等了 1.1 秒，20 个地名大概要等半分钟左右，页面上有进度提示（解析中 3/20：大阪）。地图上"
+            "每个有名字的点都能鼠标悬停看到地名，保存后查看页也一样能看到。"
+        ),
+        "summary_en": (
+            "The draw-route page now has a \"Type Place Names\" box -- one place per line (Tokyo, Kyoto, "
+            "Osaka..., up to 20 or however many), and \"Resolve & Connect\" looks up coordinates in order "
+            "(via OpenStreetMap's own free Nominatim geocoder, no API key needed) and appends them after "
+            "whatever points are already on the map -- mixes fine with clicking. A place that doesn't "
+            "resolve doesn't block the rest; it gets skipped and reported at the end (\"X resolved, Y not "
+            "found: ...\"), with the textarea left holding just the failures so they're easy to fix and "
+            "retry. Nominatim's usage policy caps public requests at one at a time, so there's a 1.1s wait "
+            "between each lookup -- 20 places takes something like half a minute, with a live progress "
+            "line (\"Resolving 3/20: Osaka\"). Every named point shows its place name on hover, both while "
+            "drawing and after saving."
+        ),
+        "image": None,
+        "lines_changed": 150,
+        "estimated": False,
+    },
 ]

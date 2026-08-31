@@ -549,8 +549,19 @@ TR = {
     # --- routes (draw-a-route feature) ---
     "🗺️ 路线": "🗺️ Routes",
     "画新路线": "Draw a Route",
-    "在地图上依次点几下，连成一条路线；点错了可以撤销最后一个点。":
-        "Click a few points on the map in order to build a route; misclicked? undo just the last point.",
+    "在地图上依次点几下，连成一条路线；也可以在下面直接输入地点名称，自动查坐标连线。点错了可以撤销最后一个点。":
+        "Click a few points on the map in order to build a route -- or type place names below and have "
+        "their coordinates looked up and connected automatically. Misclicked? undo just the last point.",
+    "输入地点名称": "Type Place Names",
+    "一行一个地名，会按顺序依次查坐标、连成线，追加在已有的点后面（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。":
+        "One place per line -- coordinates get looked up and connected in order, appended after any "
+        "points already on the map (uses OpenStreetMap's free place lookup, one at a time, so it's a "
+        "bit slow -- hang tight).",
+    "东京\n京都\n大阪\n……": "Tokyo\nKyoto\nOsaka\n...",
+    "📍 解析并连线": "📍 Resolve & Connect",
+    "解析中 {i}/{n}：{place}": "Resolving {i}/{n}: {place}",
+    "完成：成功 {ok} 个": "Done: {ok} resolved",
+    "，没找到 {n} 个：{list}": ", {n} not found: {list}",
     "跳到中国": "Jump to China",
     "跳到日本": "Jump to Japan",
     "跳到美国": "Jump to the US",

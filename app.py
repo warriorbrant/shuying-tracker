@@ -2167,8 +2167,10 @@ ROUTE_MAX_POINTS = 2000  # generous for hand-clicked points; just a backstop
 
 def _parse_route_points(raw):
     """raw: the JSON string posted from the draw-route form (a list of
-    {"lat":, "lng":} objects, see db.py's custom_routes.points comment).
-    Drops anything malformed instead of failing the whole save -- a few bad
+    {"lat":, "lng":, "label":} objects, see db.py's custom_routes.points
+    comment -- "label" is optional, populated when a point came from typing
+    a place name in and geocoding it rather than clicking the map). Drops
+    anything malformed instead of failing the whole save -- a few bad
     points from some client-side glitch shouldn't lose an otherwise-valid
     route. Returns [] if raw doesn't even parse as JSON."""
     try:
@@ -2184,7 +2186,11 @@ def _parse_route_points(raw):
         except (KeyError, TypeError, ValueError):
             continue
         if -90 <= lat <= 90 and -180 <= lng <= 180:
-            clean.append({"lat": lat, "lng": lng})
+            point = {"lat": lat, "lng": lng}
+            label = p.get("label") if isinstance(p, dict) else None
+            if isinstance(label, str) and label.strip():
+                point["label"] = label.strip()[:60]
+            clean.append(point)
     return clean
 
 
