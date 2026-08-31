@@ -2238,6 +2238,39 @@ def routes_new():
     return render_template("routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"))
 
 
+@app.route("/routes/<int:route_id>/edit", methods=["GET", "POST"])
+def route_edit(route_id):
+    conn = get_db()
+    route = conn.execute("SELECT * FROM custom_routes WHERE id = ?", (route_id,)).fetchone()
+    if route is None or route["user_id"] != g.user["id"]:
+        conn.close()
+        return "未找到该路线", 404
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip() or tr("未命名路线")
+        country = request.form.get("country", "").strip()
+        points = _parse_route_points(request.form.get("points"))
+        if len(points) < 2:
+            conn.close()
+            return redirect(url_for("route_edit", route_id=route_id, error=tr("路线至少需要两个点，在地图上多点几下")))
+
+        conn.execute(
+            "UPDATE custom_routes SET title = ?, country = ?, points = ?, updated_at = datetime('now','localtime') "
+            "WHERE id = ?",
+            (title, country, json.dumps(points), route_id),
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for("route_detail", route_id=route_id))
+
+    conn.close()
+    route_dict = dict(route)
+    route_dict["points"] = json.loads(route_dict["points"])
+    return render_template(
+        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"), route=route_dict
+    )
+
+
 @app.route("/routes/<int:route_id>")
 def route_detail(route_id):
     conn = get_db()

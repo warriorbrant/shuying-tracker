@@ -33,6 +33,7 @@
     </form>
     <a class="btn-share" id="routeShareBtn" href="{{ url_for('route_share_image', route_id=route.id, download=1) }}">{{ tr('📤 生成分享图') }}</a>
     <a class="btn-link" id="routePreviewBtn" href="{{ url_for('route_share_image', route_id=route.id) }}" target="_blank">{{ tr('先预览') }}</a>
+    <a class="btn-link" href="{{ url_for('route_edit', route_id=route.id) }}">{{ tr('✏️ 编辑') }}</a>
     <form method="post" action="{{ url_for('route_delete', route_id=route.id) }}"
           onsubmit="return confirm({{ tr('确定删除这条路线吗？此操作不可撤销。') | tojson }});" class="inline-delete">
       <button type="submit" class="btn-link-danger">{{ tr('删除') }}</button>

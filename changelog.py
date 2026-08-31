@@ -3225,4 +3225,28 @@ CHANGELOG = [
         "lines_changed": 30,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线现在可以编辑了，不用删了重画",
+        "title_en": "Routes can now be edited instead of delete-and-redraw",
+        "summary": (
+            "路线详情页加了个「✏️ 编辑」链接（只有创建者能看到），点进去是跟画新路线一样的地图页面，"
+            "只是已有的点、路线名称、国家/地区都会预先加载好——已经画好的点在地图上正常显示（线、点、"
+            "有名字的点的提示气泡都在），可以在这基础上继续加点、撤销、清空、输入新地名，改完保存会"
+            "更新这条路线本身（还是原来那个链接、原来那些点赞/分享设置），不会新建一条。复用了画新路线"
+            "页面的模板和 JS，没有另外写一套。"
+        ),
+        "summary_en": (
+            "Added an \"✏️ Edit\" link to the route detail page (owner only) that opens the same "
+            "draw-a-route interface used for new routes, except pre-loaded with the existing points, "
+            "title, and country -- the already-drawn route shows up on the map exactly as if just "
+            "clicked/typed (line, dots, tooltips on named points all there), and you can keep adding "
+            "points, undo, clear, or type more place names from there. Saving updates that same route "
+            "(same URL, same sharing settings) instead of creating a new one. Reused the draw-route "
+            "template and JS rather than writing a separate edit flow."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]

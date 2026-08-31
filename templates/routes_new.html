@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}{{ tr('画新路线') }}{% endblock %}
+{% block title %}{{ tr('编辑路线') if route else tr('画新路线') }}{% endblock %}
 {% block content %}
 
-<h1>{{ tr('画新路线') }}</h1>
+<h1>{{ tr('编辑路线') if route else tr('画新路线') }}</h1>
 
 {% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
 <p class="hint">{{ tr('在地图上依次点几下，连成一条路线；也可以在下面直接输入地点名称，自动查坐标连线。点错了可以撤销最后一个点。') }}</p>
@@ -31,22 +31,22 @@
   </div>
 </section>
 
-<form class="form" method="post" action="{{ url_for('routes_new') }}" id="routeForm">
+<form class="form" method="post" action="{{ url_for('route_edit', route_id=route.id) if route else url_for('routes_new') }}" id="routeForm">
   <label>
     {{ tr('路线名称') }}
-    <input type="text" name="title" placeholder="{{ tr('比如：东京三日步行路线') }}" maxlength="80">
+    <input type="text" name="title" placeholder="{{ tr('比如：东京三日步行路线') }}" maxlength="80" value="{{ route.title if route else '' }}">
   </label>
   <label>
     {{ tr('国家/地区') }}
     <select name="country">
       <option value=""></option>
       {% for c in countries %}
-      <option value="{{ c }}">{{ tr(c) }}</option>
+      <option value="{{ c }}" {{ 'selected' if route and route.country == c else '' }}>{{ tr(c) }}</option>
       {% endfor %}
     </select>
   </label>
   <input type="hidden" name="points" id="pointsInput" value="[]">
-  <button type="submit">{{ tr('保存路线') }}</button>
+  <button type="submit">{{ tr('保存修改') if route else tr('保存路线') }}</button>
 </form>
 
 {% endblock %}
@@ -93,6 +93,19 @@
   map.on('click', function (e) {
     addPoint(e.latlng.lat, e.latlng.lng, null);
   });
+
+  // Editing an existing route: restore its points onto the map so they
+  // show up as if just clicked/typed, then zoom to fit them -- reuses
+  // addPoint() as-is rather than a separate code path, so restored points
+  // behave identically to freshly-added ones (undo, clear, etc. all work).
+  {% if route %}
+  ({{ route.points | tojson }}).forEach(function (p) {
+    addPoint(p.lat, p.lng, p.label || null);
+  });
+  if (points.length) {
+    map.fitBounds(line.getBounds(), { padding: [24, 24] });
+  }
+  {% endif %}
 
   document.getElementById('undoPointBtn').addEventListener('click', function () {
     points.pop();
