@@ -3114,4 +3114,27 @@ CHANGELOG = [
         "lines_changed": 15,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓分享图退回最初那版：米色底、纯圆点、无山脉河流标注",
+        "title_en": "Route Outline share image reverted back to its original look",
+        "summary": (
+            "羊皮纸底色、城楼图标、山脉河流标注这一整套（照着参考插画图做的那次改版）撤掉了，"
+            "退回最一开始那版：米色背景、纯彩色圆点标记、简单的名字标注（不带引线，也不再自动放大"
+            "画布），跟当初刚做出「路线轮廓」这个样式时的效果完全一样。「分享图样式」下拉框里"
+            "标准地图/地形图/路线轮廓三个选项还在，删掉的只是「路线轮廓」样式本身的画法和那个"
+            "「标注周围山脉河流」勾选框。"
+        ),
+        "summary_en": (
+            "Pulled back out the whole parchment-background / watchtower-icon / mountain-river-labeling "
+            "set (the version built around the reference illustration), back to the very first look: "
+            "cream background, plain colored dots, simple labels with no leader lines and no enlarged "
+            "canvas -- exactly what \"Route Outline\" looked like when it first shipped. The style "
+            "dropdown still has all three options (Standard/Terrain/Outline); only the Outline card's own "
+            "drawing and the \"label nearby mountains/rivers\" checkbox came out."
+        ),
+        "image": None,
+        "lines_changed": 90,
+        "estimated": False,
+    },
 ]

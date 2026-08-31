@@ -25,10 +25,6 @@
       <option value="outline">{{ tr('路线轮廓（无地图，只标城市）') }}</option>
     </select>
   </label>
-  <label class="checkbox-hint">
-    <input type="checkbox" id="terrainLabelsCheckbox">
-    {{ tr('标注周围山脉河流（仅路线轮廓样式生效，会让生成变慢）') }}
-  </label>
   <div class="actions">
     <form method="post" action="{{ url_for('route_share_toggle', route_id=route.id) }}" class="inline-delete">
       <button type="submit" class="btn-link">
@@ -84,32 +80,18 @@
   }
 
   var styleSelect = document.getElementById('shareStyleSelect');
-  var terrainCheckbox = document.getElementById('terrainLabelsCheckbox');
   var shareBtn = document.getElementById('routeShareBtn');
   var previewBtn = document.getElementById('routePreviewBtn');
-  if (styleSelect && terrainCheckbox && shareBtn && previewBtn) {
+  if (styleSelect && shareBtn && previewBtn) {
     var shareBase = shareBtn.getAttribute('href');
     var previewBase = previewBtn.getAttribute('href');
-    function withParams(url) {
-      var params = [];
-      if (styleSelect.value !== 'standard') params.push('style=' + styleSelect.value);
-      if (terrainCheckbox.checked) params.push('terrain=1');
-      if (!params.length) return url;
-      return url + (url.indexOf('?') === -1 ? '?' : '&') + params.join('&');
+    function withStyle(url) {
+      if (styleSelect.value === 'standard') return url;
+      return url + (url.indexOf('?') === -1 ? '?' : '&') + 'style=' + styleSelect.value;
     }
-    function update() {
-      shareBtn.setAttribute('href', withParams(shareBase));
-      previewBtn.setAttribute('href', withParams(previewBase));
-    }
-    styleSelect.addEventListener('change', update);
-    // The terrain-labels checkbox only does anything when style=outline
-    // (that's the only card that draws them) -- checking it without also
-    // switching the dropdown silently produced a normal map with no
-    // labels at all, so switch the style for the user instead of leaving
-    // that trap in place.
-    terrainCheckbox.addEventListener('change', function () {
-      if (terrainCheckbox.checked) styleSelect.value = 'outline';
-      update();
+    styleSelect.addEventListener('change', function () {
+      shareBtn.setAttribute('href', withStyle(shareBase));
+      previewBtn.setAttribute('href', withStyle(previewBase));
     });
   }
 })();

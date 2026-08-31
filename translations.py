@@ -551,8 +551,6 @@ TR = {
     "标准地图": "Standard",
     "分享图样式：": "Share image style: ",
     "路线轮廓（无地图，只标城市）": "Route Outline (no map, just city labels)",
-    "标注周围山脉河流（仅路线轮廓样式生效，会让生成变慢）":
-        "Label nearby mountains and rivers (only applies to Route Outline style, makes generation slower)",
     "地形图": "Terrain",
     "画新路线": "Draw a Route",
     "在地图上依次点几下，连成一条路线；也可以在下面直接输入地点名称，自动查坐标连线。点错了可以撤销最后一个点。":
