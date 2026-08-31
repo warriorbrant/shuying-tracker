@@ -3001,4 +3001,39 @@ CHANGELOG = [
         "lines_changed": 100,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓分享图改成手绘地图风格，可选标注周围山脉河流",
+        "title_en": "Route Outline share image gets an old-map look, can label nearby mountains and rivers",
+        "summary": (
+            "「路线轮廓」这个分享图样式重新画了一版：底色换成米黄羊皮纸色、加了装饰性双线边框、城市点"
+            "从纯圆点换成简化的城楼剪影图标、路线颜色换成更有地图感的暗红色，标题文字也用了深棕色。另外"
+            "加了个可选勾选项「标注周围山脉河流」——勾上之后会用 OpenStreetMap 的 Overpass API（同样不用"
+            "申请 key）查路线附近有名字的山峰和河流，山峰画三角形图标、河流画菱形图标，各自标上名字。"
+            "这个查询比较慢（实测十几秒），所以默认不勾，勾了之后生成会明显变慢，页面上有提示。做的时候"
+            "发现两个问题：一是查询范围（经纬度跨度）设太大会直接超时，改成了根据路线本身的经纬度范围"
+            "自动算一个合理的查询框；二是山峰河流一多会跟城市名字挤在一起看不清，加了个简单的碰撞检测——"
+            "城市名字优先级最高，山峰河流的标签如果会跟已经画上去的文字重叠，就只画图标不画文字，避免"
+            "叠字看不清。"
+        ),
+        "summary_en": (
+            "Redrew the \"Route Outline\" share style: warm parchment-tan background instead of the app's "
+            "usual cream, a decorative double-line border, city points changed from plain dots to a "
+            "simplified watchtower-silhouette icon, the route line changed to a more map-appropriate "
+            "dark ink-red, dark-brown title text. Also added an optional checkbox, \"Label nearby "
+            "mountains and rivers\" -- when checked, it queries OpenStreetMap's free Overpass API (no key "
+            "needed, same as everywhere else in this feature) for named peaks and rivers near the route, "
+            "drawing a triangle icon + name for peaks and a diamond icon + name for rivers. The query is "
+            "slow (some seconds in testing), so it's off by default, with a note on the page that turning "
+            "it on makes generation noticeably slower. Hit two problems while building it: too large a "
+            "search bbox timed out outright, fixed by sizing the query area off the route's own lat/lng "
+            "span instead of something arbitrary; and with enough nearby peaks/rivers, their labels "
+            "started colliding with city names and each other, fixed with simple collision detection -- "
+            "city labels get priority, and a terrain label that would overlap an already-placed one just "
+            "draws its icon without the text instead of piling text on top of text."
+        ),
+        "image": None,
+        "lines_changed": 200,
+        "estimated": False,
+    },
 ]

@@ -2299,7 +2299,8 @@ def route_share_image(route_id):
     if style not in ("standard", "terrain", "outline"):
         style = "standard"
     if style == "outline":
-        buf = build_route_outline_card(route["title"], points)
+        show_terrain = request.args.get("terrain") == "1"
+        buf = build_route_outline_card(route["title"], points, show_terrain=show_terrain)
     else:
         buf = build_route_share_card(route["title"], points, style=style)
 

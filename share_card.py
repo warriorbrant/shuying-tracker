@@ -1218,13 +1218,149 @@ def build_route_share_card(title, points, style="standard"):
     return buf
 
 
-def build_route_outline_card(title, points):
+# --- "old map" theme for build_route_outline_card, distinct from the rest
+# of this module's cream/white app styling -- warm parchment instead of the
+# app's usual BG, ink-red instead of the app's usual ACCENT, since this card
+# is meant to read as a little hand-drawn-map illustration, not a dashboard
+# chart.
+PARCHMENT_BG = (222, 197, 153)
+PARCHMENT_BORDER = (120, 80, 40)
+PARCHMENT_TEXT = (66, 43, 20)
+PARCHMENT_MUTED = (110, 80, 50)
+MAP_INK = (120, 45, 25)
+MAP_START = (46, 92, 58)
+MAP_PEAK = (108, 88, 66)
+MAP_RIVER = (58, 96, 128)
+
+
+def _fetch_terrain_features(lat_min, lat_max, lng_min, lng_max, max_peaks=6, max_rivers=6):
+    """Best-effort lookup of named mountain peaks and rivers within a
+    bounding box, via OpenStreetMap's free Overpass API (no key needed --
+    same no-key-needed spirit as Nominatim geocoding and the OSM/OpenTopoMap
+    tile layers elsewhere in this feature). Returns
+    ([{"lat","lng","name"}], [{"lat","lng","name"}]) for (peaks, rivers) --
+    empty lists, never an exception, if the query fails, times out, or the
+    bbox is too large for Overpass to answer in time. This is a decorative
+    addition to the outline card, not something that should ever break
+    rendering the route's own shape.
+
+    Uses `out center` (not full geometry) for rivers -- a bbox big enough to
+    matter for a real route is already a lot of area for Overpass to search,
+    and full river geometry made even a modest bbox time out in testing.
+    The trade-off is a river gets a single label point (its OSM way
+    segment's centroid) rather than a traced path."""
+    query = (
+        "[out:json][timeout:20];"
+        "("
+        f'node["natural"="peak"]["name"]({lat_min},{lng_min},{lat_max},{lng_max});'
+        f'way["waterway"="river"]["name"]({lat_min},{lng_min},{lat_max},{lng_max});'
+        ");"
+        "out center;"
+    )
+    try:
+        resp = requests.post(
+            "https://overpass-api.de/api/interpreter",
+            data={"data": query},
+            timeout=20,
+            headers={"User-Agent": "zhixingheyi-app/1.0 (+personal project, contact via GitHub issues)"},
+        )
+        resp.raise_for_status()
+        elements = resp.json().get("elements", [])
+    except Exception:
+        return [], []
+
+    peaks = []
+    rivers_by_name = {}
+    for el in elements:
+        tags = el.get("tags", {})
+        name = tags.get("name")
+        if not name:
+            continue
+        if el.get("type") == "node" and tags.get("natural") == "peak":
+            try:
+                ele = float(tags.get("ele"))
+            except (TypeError, ValueError):
+                ele = None
+            peaks.append({"lat": el["lat"], "lng": el["lon"], "name": name, "ele": ele})
+        elif el.get("type") == "way" and tags.get("waterway") == "river":
+            center = el.get("center")
+            if not center:
+                continue
+            row = rivers_by_name.setdefault(name, {"name": name, "lats": [], "lngs": []})
+            row["lats"].append(center["lat"])
+            row["lngs"].append(center["lon"])
+
+    # Taller peaks first (missing elevation sorts last, order among those is
+    # arbitrary); rivers with the most segments in the bbox first, as a
+    # rough proxy for "how much of this river is actually nearby" since
+    # `out center` doesn't give a real length to measure.
+    peaks.sort(key=lambda p: (p["ele"] is None, -(p["ele"] or 0)))
+    rivers = sorted(rivers_by_name.values(), key=lambda r: -len(r["lats"]))
+    rivers = [
+        {"name": r["name"], "lat": sum(r["lats"]) / len(r["lats"]), "lng": sum(r["lngs"]) / len(r["lngs"])}
+        for r in rivers[:max_rivers]
+    ]
+    return peaks[:max_peaks], rivers
+
+
+def _draw_city_icon(draw, x, y, color, size=11):
+    """A simple geometric stand-in for an old-map city marker -- a
+    watchtower silhouette (body + peaked roof), not a real illustration,
+    just enough to read as "a settlement" rather than a generic dot. White
+    halo behind it for legibility against the parchment texture and
+    whatever else (the route line, other icons) might sit nearby."""
+    body_w, body_h, roof_h = size * 1.1, size * 0.9, size * 0.8
+    halo = 3
+    for expand, fill in ((halo, (255, 255, 255)), (0, color)):
+        bw, bh, rh = body_w + expand * 2, body_h + expand * 2, roof_h + expand
+        draw.polygon(
+            [
+                (x - bw / 2, y + bh / 2),
+                (x - bw / 2, y - bh / 2),
+                (x, y - bh / 2 - rh),
+                (x + bw / 2, y - bh / 2),
+                (x + bw / 2, y + bh / 2),
+            ],
+            fill=fill,
+        )
+
+
+def _draw_peak_icon(draw, x, y, size=9):
+    draw.polygon(
+        [(x, y - size), (x - size * 0.9, y + size * 0.6), (x + size * 0.9, y + size * 0.6)],
+        fill=(255, 255, 255),
+        outline=MAP_PEAK,
+    )
+    inset = size * 0.55
+    draw.polygon(
+        [(x, y - inset), (x - inset * 0.8, y + inset * 0.4), (x + inset * 0.8, y + inset * 0.4)],
+        fill=MAP_PEAK,
+    )
+
+
+def _draw_river_icon(draw, x, y, size=7):
+    draw.ellipse([x - size - 2, y - size - 2, x + size + 2, y + size + 2], fill=(255, 255, 255))
+    draw.polygon(
+        [(x, y - size), (x + size, y), (x, y + size), (x - size, y)],
+        fill=MAP_RIVER,
+    )
+
+
+def build_route_outline_card(title, points, show_terrain=False):
     """Like build_route_share_card, but with no real map tiles at all --
     just the route's own shape (points projected with a simple
     latitude-corrected equirectangular scale, not a real map projection)
     connected in order, with each named point's city label drawn next to
-    it. For when the shape and the sequence of places matter more than the
-    surrounding geography -- faster too, since there's no tile fetching."""
+    it, styled like a little hand-drawn map (parchment background, ink-red
+    route, watchtower-style city icons) rather than the rest of this
+    module's dashboard look. For when the shape and the sequence of places
+    matter more than the surrounding geography -- faster too, since there's
+    no tile fetching, unless show_terrain adds the one Overpass API call.
+
+    show_terrain: also looks up and labels nearby named mountain peaks and
+    rivers (see _fetch_terrain_features) -- optional and off by default
+    since it adds a real network round-trip (some seconds) the base card
+    doesn't need."""
     W = 1080
     pad = 64
     header_h = 110
@@ -1232,11 +1368,13 @@ def build_route_outline_card(title, points):
     footer_h = 70
     H = header_h + plot_h + footer_h + pad
 
-    card = Image.new("RGB", (W, H), BG)
+    card = Image.new("RGB", (W, H), PARCHMENT_BG)
     draw = ImageDraw.Draw(card)
+    draw.rectangle([14, 14, W - 14, H - 14], outline=PARCHMENT_BORDER, width=3)
+    draw.rectangle([22, 22, W - 22, H - 22], outline=PARCHMENT_BORDER, width=1)
 
     title_font = _font(44, bold=True)
-    draw.text((pad, pad - 10), title or "我的路线", font=title_font, fill=TEXT)
+    draw.text((pad, pad - 10), title or "我的路线", font=title_font, fill=PARCHMENT_TEXT)
 
     plot_top = header_h
     plot_left = pad
@@ -1263,47 +1401,82 @@ def build_route_outline_card(title, points):
         cx = (plot_left + plot_right) / 2
         cy = plot_top + plot_h / 2
 
-        def project(p):
-            x = cx + (p["lng"] - lng_mid) * lon_scale * scale
-            y = cy - (p["lat"] - lat_mid) * scale  # north is up
+        def project(lat, lng):
+            x = cx + (lng - lng_mid) * lon_scale * scale
+            y = cy - (lat - lat_mid) * scale  # north is up
             return x, y
 
-        coords = [project(p) for p in points]
+        def boxes_overlap(a, b):
+            return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
+
+        # City labels are reserved first -- they're the whole point of the
+        # card -- so a crowded area of named mountains/rivers backs off
+        # around them instead of the other way around. Terrain labels are
+        # then only kept if they don't collide with a city label or with an
+        # already-kept terrain label; the icon is still drawn either way,
+        # just without text, so a crowded region still shows *something*
+        # was nearby rather than silently vanishing.
+        coords = [project(p["lat"], p["lng"]) for p in points]
+        label_font = _font(22)
+        reserved_boxes = []
+        city_labels = []  # (x, y, label, box) for points that have one
+        for pt, (x, y) in zip(points, coords):
+            label = pt.get("label")
+            if not label:
+                continue
+            bbox = draw.textbbox((0, 0), label, font=label_font)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            lx = min(max(x - tw / 2, plot_left), plot_right - tw)
+            ly = y + 16
+            box = (lx - 5, ly - 3, lx + tw + 5, ly + th + 5)
+            reserved_boxes.append(box)
+            city_labels.append((lx, ly, label, box))
+
+        if show_terrain:
+            # Same margin the plot itself uses (in degrees, roughly) so the
+            # search area matches what's actually visible on the card,
+            # rather than querying the tight point-only bbox or something
+            # arbitrarily larger.
+            deg_margin_lat = (lat_max - lat_min) * 0.25 or 0.3
+            deg_margin_lng = (lng_max - lng_min) * 0.25 or 0.3
+            peaks, rivers = _fetch_terrain_features(
+                lat_min - deg_margin_lat, lat_max + deg_margin_lat,
+                lng_min - deg_margin_lng, lng_max + deg_margin_lng,
+            )
+            terrain_font = _font(19)
+            for feature, draw_icon, color, offset in (
+                *((p, _draw_peak_icon, PARCHMENT_MUTED, 12) for p in peaks),
+                *((r, _draw_river_icon, MAP_RIVER, 10) for r in rivers),
+            ):
+                x, y = project(feature["lat"], feature["lng"])
+                draw_icon(draw, x, y)
+                bbox = draw.textbbox((0, 0), feature["name"], font=terrain_font)
+                tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+                box = (x + offset, y - 8, x + offset + tw, y - 8 + th)
+                if any(boxes_overlap(box, other) for other in reserved_boxes):
+                    continue  # icon already drawn above; just skip the label
+                draw.text((x + offset, y - 8), feature["name"], font=terrain_font, fill=color)
+                reserved_boxes.append(box)
 
         if len(coords) >= 2:
             draw.line(coords, fill=(255, 255, 255), width=10, joint="curve")
-            draw.line(coords, fill=ACCENT, width=5, joint="curve")
+            draw.line(coords, fill=MAP_INK, width=5, joint="curve")
 
-        label_font = _font(22)
-        r = 8
         for i, (pt, (x, y)) in enumerate(zip(points, coords)):
-            if i == 0:
-                dot_color = POSITIVE_COLOR
-            elif i == len(points) - 1 and len(points) > 1:
-                dot_color = NEGATIVE_COLOR
-            else:
-                dot_color = ACCENT
-            draw.ellipse([x - r - 3, y - r - 3, x + r + 3, y + r + 3], fill=(255, 255, 255))
-            draw.ellipse([x - r, y - r, x + r, y + r], fill=dot_color)
-
-            label = pt.get("label")
-            if label:
-                bbox = draw.textbbox((0, 0), label, font=label_font)
-                tw = bbox[2] - bbox[0]
-                th = bbox[3] - bbox[1]
-                lx = min(max(x - tw / 2, plot_left), plot_right - tw)
-                ly = y + r + 8
-                draw.rectangle([lx - 5, ly - 3, lx + tw + 5, ly + th + 5], fill=BG)
-                draw.text((lx, ly), label, font=label_font, fill=TEXT)
+            icon_color = MAP_START if i == 0 else MAP_INK
+            _draw_city_icon(draw, x, y, icon_color)
+        for lx, ly, label, box in city_labels:
+            draw.rectangle([box[0], box[1], box[2], box[3]], fill=PARCHMENT_BG)
+            draw.text((lx, ly), label, font=label_font, fill=PARCHMENT_TEXT)
     else:
         empty_font = _font(28)
-        draw.text((pad, plot_top + plot_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)
+        draw.text((pad, plot_top + plot_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=PARCHMENT_MUTED)
 
     footer_font = _font(24)
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)
     tw = bbox[2] - bbox[0]
-    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=PARCHMENT_MUTED)
 
     buf = io.BytesIO()
     card.save(buf, format="PNG")
