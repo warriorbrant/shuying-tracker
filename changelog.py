@@ -3202,4 +3202,27 @@ CHANGELOG = [
         "lines_changed": 10,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "修复：路线轮廓的标签会把路线线条挡住/擦掉一截",
+        "title_en": "Fix: Route Outline labels could paper over a chunk of the route line",
+        "summary": (
+            "之前标签找位置只避开别的标签，没考虑路线本身——标签背后画的那块底色矩形（为了让字看得清）"
+            "如果刚好落在线条经过的地方，就会把线条盖住一截，看起来像路线断掉了。现在找位置的时候也会"
+            "避开路线线条本身，实在避不开才会退回去用会挡住线的位置（比完全没有位置放强）。用一条真实"
+            "路线（含往返和好几处密集点）重新测过，线条现在从头到尾都是连续的，没有被文字挡住的断点。"
+        ),
+        "summary_en": (
+            "Label placement only avoided other labels before, not the route line itself -- the opaque "
+            "background drawn behind each label (so the text stays legible) would paper right over "
+            "whatever line segment happened to run underneath it, making the route look broken. Label "
+            "placement now also treats the line as something to avoid, only falling back to a "
+            "line-covering spot if nothing else works out. Re-tested with a real route (an out-and-back "
+            "leg plus several tight clusters) -- the line is continuous end to end now, no gaps where "
+            "text used to cut through it."
+        ),
+        "image": None,
+        "lines_changed": 30,
+        "estimated": False,
+    },
 ]

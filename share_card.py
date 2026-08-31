@@ -1280,15 +1280,36 @@ def build_route_outline_card(title, points):
         def boxes_overlap(a, b):
             return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
 
+        def segment_hits_box(p1, p2, box):
+            # Sampled rather than solved exactly (segment/rectangle
+            # intersection has enough edge cases to get wrong) -- cheap
+            # enough at a route's scale, and the label boxes are small
+            # relative to a 4px sampling step, so nothing slips through.
+            x1, y1 = p1
+            x2, y2 = p2
+            steps = max(1, int(math.hypot(x2 - x1, y2 - y1) / 4))
+            for i in range(steps + 1):
+                t = i / steps
+                x, y = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
+                if box[0] <= x <= box[2] and box[1] <= y <= box[3]:
+                    return True
+            return False
+
+        coords = [project(p) for p in points]
+        line_segments = list(zip(coords, coords[1:]))
+
         # Try a ring of candidate positions around a point for a label,
         # widening the ring each pass, and return the first spot that
-        # doesn't collide with anything already placed. Straight-below at
-        # the smallest radius is tried first, so an isolated point's label
-        # looks exactly like the old fixed placement -- only a point with
-        # something already nearby gets pushed outward. needs_leader is
-        # False only for that first straight-below case, so the caller
-        # knows when a connector line back to the point is needed to keep
-        # the label legible as belonging to it.
+        # doesn't collide with anything already placed *and* doesn't sit on
+        # top of the route line itself (a label's opaque background would
+        # otherwise paper over whatever line segment happened to run under
+        # it). Straight-below at the smallest radius is tried first, so an
+        # isolated point's label looks exactly like the old fixed placement
+        # -- only a point with something already nearby, or the line
+        # itself, gets pushed outward. needs_leader is False only for that
+        # first straight-below case, so the caller knows when a connector
+        # line back to the point is needed to keep the label legible as
+        # belonging to it.
         label_directions = [
             (0, 1), (0, -1), (1.3, 0.15), (-1.3, 0.15),
             (1, 0.9), (-1, 0.9), (1, -0.9), (-1, -0.9),
@@ -1306,11 +1327,12 @@ def build_route_outline_card(title, points):
                     box = (lx - 5, ly - 3, lx + tw + 5, ly + th + 5)
                     if fallback is None:
                         fallback = (lx, ly, box)
-                    if not any(boxes_overlap(box, other) for other in reserved):
-                        return lx, ly, box, not (pass_i == 0 and dir_i == 0)
+                    if any(boxes_overlap(box, other) for other in reserved):
+                        continue
+                    if any(segment_hits_box(p1, p2, box) for p1, p2 in line_segments):
+                        continue
+                    return lx, ly, box, not (pass_i == 0 and dir_i == 0)
             return fallback[0], fallback[1], fallback[2], True  # everything collided; use it anyway
-
-        coords = [project(p) for p in points]
 
         if len(coords) >= 2:
             draw.line(coords, fill=(255, 255, 255), width=10, joint="curve")
