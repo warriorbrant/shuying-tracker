@@ -3322,4 +3322,24 @@ CHANGELOG = [
         "lines_changed": 79,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "撤销「标注河流/山脉」功能",
+        "title_en": "Reverted the river/mountain marking feature",
+        "summary": (
+            "把最近加的「路线轮廓图上标注指定河流/山脉」整个撤掉了，包括后来补的撤销按钮——画路线页的"
+            "「标注河流 / 山脉」区块、`/routes/resolve-river` 接口、数据库里的 mountains/rivers 字段、"
+            "分享图上的三角图标和河道线全部移除，路线相关页面和分享图退回到这几个功能加之前的样子。"
+        ),
+        "summary_en": (
+            "Fully reverted the recently-added \"mark named rivers/mountains on the route outline\" "
+            "feature, including the undo button added right after it -- the draw-route page's \"Mark "
+            "Rivers/Mountains\" section, the /routes/resolve-river endpoint, the mountains/rivers "
+            "database columns, and the triangle icons/river lines on the share image are all gone; "
+            "route pages and share images are back to how they looked before those two changes."
+        ),
+        "image": None,
+        "lines_changed": 628,
+        "estimated": False,
+    },
 ]
