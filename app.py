@@ -56,6 +56,7 @@ from share_card import (
     build_day_share_card,
     build_expense_bar_share_card,
     build_novel_share_card,
+    build_route_outline_card,
     build_route_share_card,
     build_share_card,
     build_showcase_card,
@@ -2294,8 +2295,13 @@ def route_share_image(route_id):
         return "这条路线还没有公开分享，只有创建者能看", 403
 
     points = json.loads(route["points"])
-    style = request.args.get("style") if request.args.get("style") in ("standard", "terrain") else "standard"
-    buf = build_route_share_card(route["title"], points, style=style)
+    style = request.args.get("style")
+    if style not in ("standard", "terrain", "outline"):
+        style = "standard"
+    if style == "outline":
+        buf = build_route_outline_card(route["title"], points)
+    else:
+        buf = build_route_share_card(route["title"], points, style=style)
 
     download = request.args.get("download")
     return send_file(

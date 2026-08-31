@@ -2977,4 +2977,28 @@ CHANGELOG = [
         "lines_changed": 30,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线分享图新增「路线轮廓」样式：不要地图背景，只标城市名字",
+        "title_en": "New 'Route Outline' share style: no map background, just city labels",
+        "summary": (
+            "「分享图样式」下拉框加了第三个选项——路线轮廓。这个不是真实地图瓦片拼出来的，是把各个点的"
+            "经纬度按一个简单的等距投影（经度乘以纬度余弦值做一下修正，不是严谨的地图投影，只是让形状"
+            "看起来不歪）直接画在空白卡片上，点之间连线，每个有名字的点旁边标上城市名。因为不用下载真实"
+            "地图瓦片，生成速度比另外两种地图样式快很多，图片文件也小得多。起点绿色、终点红色，跟其他"
+            "两种样式的配色保持一致。"
+        ),
+        "summary_en": (
+            "Added a third option to the \"Share image style\" dropdown: Route Outline. This one skips "
+            "real map tiles entirely -- each point's lat/lng gets projected with a simple "
+            "latitude-corrected equirectangular scale (not a real map projection, just enough to keep "
+            "the shape from looking skewed) onto a blank card, connected in order, with each named "
+            "point's city label right next to it. No tile downloads means it renders much faster than "
+            "the other two styles, and the file is much smaller too. Same start-green/end-red coloring "
+            "as the other styles for consistency."
+        ),
+        "image": None,
+        "lines_changed": 100,
+        "estimated": False,
+    },
 ]

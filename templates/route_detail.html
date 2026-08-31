@@ -22,6 +22,7 @@
     <select id="shareStyleSelect">
       <option value="standard">{{ tr('标准地图') }}</option>
       <option value="terrain">{{ tr('地形图') }}</option>
+      <option value="outline">{{ tr('路线轮廓（无地图，只标城市）') }}</option>
     </select>
   </label>
   <div class="actions">
@@ -85,8 +86,8 @@
     var shareBase = shareBtn.getAttribute('href');
     var previewBase = previewBtn.getAttribute('href');
     function withStyle(url) {
-      if (styleSelect.value !== 'terrain') return url;
-      return url + (url.indexOf('?') === -1 ? '?' : '&') + 'style=terrain';
+      if (styleSelect.value === 'standard') return url;
+      return url + (url.indexOf('?') === -1 ? '?' : '&') + 'style=' + styleSelect.value;
     }
     styleSelect.addEventListener('change', function () {
       shareBtn.setAttribute('href', withStyle(shareBase));

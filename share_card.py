@@ -1,5 +1,6 @@
 import hashlib
 import io
+import math
 import mimetypes
 from datetime import date
 from functools import lru_cache
@@ -1204,6 +1205,99 @@ def build_route_share_card(title, points, style="standard"):
 
     attribution_font = _font(18)
     draw.text((pad, header_h + map_h + 6), style_info["attribution"], font=attribution_font, fill=MUTED)
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
+def build_route_outline_card(title, points):
+    """Like build_route_share_card, but with no real map tiles at all --
+    just the route's own shape (points projected with a simple
+    latitude-corrected equirectangular scale, not a real map projection)
+    connected in order, with each named point's city label drawn next to
+    it. For when the shape and the sequence of places matter more than the
+    surrounding geography -- faster too, since there's no tile fetching."""
+    W = 1080
+    pad = 64
+    header_h = 110
+    plot_h = 760
+    footer_h = 70
+    H = header_h + plot_h + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    title_font = _font(44, bold=True)
+    draw.text((pad, pad - 10), title or "我的路线", font=title_font, fill=TEXT)
+
+    plot_top = header_h
+    plot_left = pad
+    plot_right = W - pad
+
+    if points:
+        lats = [p["lat"] for p in points]
+        lngs = [p["lng"] for p in points]
+        lat_min, lat_max = min(lats), max(lats)
+        lng_min, lng_max = min(lngs), max(lngs)
+        lat_mid = (lat_min + lat_max) / 2
+        lng_mid = (lng_min + lng_max) / 2
+        # cos(latitude) keeps longitude degrees from looking stretched
+        # relative to latitude degrees at higher latitudes -- a common
+        # simple correction, not a real map projection.
+        lon_scale = math.cos(math.radians(lat_mid)) or 0.01
+        span_x = (lng_max - lng_min) * lon_scale or 0.001
+        span_y = (lat_max - lat_min) or 0.001
+
+        margin = 90  # room for point labels near the plot edges
+        avail_w = (plot_right - plot_left) - margin * 2
+        avail_h = plot_h - margin * 2
+        scale = min(avail_w / span_x, avail_h / span_y)
+        cx = (plot_left + plot_right) / 2
+        cy = plot_top + plot_h / 2
+
+        def project(p):
+            x = cx + (p["lng"] - lng_mid) * lon_scale * scale
+            y = cy - (p["lat"] - lat_mid) * scale  # north is up
+            return x, y
+
+        coords = [project(p) for p in points]
+
+        if len(coords) >= 2:
+            draw.line(coords, fill=(255, 255, 255), width=10, joint="curve")
+            draw.line(coords, fill=ACCENT, width=5, joint="curve")
+
+        label_font = _font(22)
+        r = 8
+        for i, (pt, (x, y)) in enumerate(zip(points, coords)):
+            if i == 0:
+                dot_color = POSITIVE_COLOR
+            elif i == len(points) - 1 and len(points) > 1:
+                dot_color = NEGATIVE_COLOR
+            else:
+                dot_color = ACCENT
+            draw.ellipse([x - r - 3, y - r - 3, x + r + 3, y + r + 3], fill=(255, 255, 255))
+            draw.ellipse([x - r, y - r, x + r, y + r], fill=dot_color)
+
+            label = pt.get("label")
+            if label:
+                bbox = draw.textbbox((0, 0), label, font=label_font)
+                tw = bbox[2] - bbox[0]
+                th = bbox[3] - bbox[1]
+                lx = min(max(x - tw / 2, plot_left), plot_right - tw)
+                ly = y + r + 8
+                draw.rectangle([lx - 5, ly - 3, lx + tw + 5, ly + th + 5], fill=BG)
+                draw.text((lx, ly), label, font=label_font, fill=TEXT)
+    else:
+        empty_font = _font(28)
+        draw.text((pad, plot_top + plot_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)
 
     footer_font = _font(24)
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
