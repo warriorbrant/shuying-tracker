@@ -210,25 +210,12 @@ CREATE INDEX IF NOT EXISTS idx_bank_transactions_user_date ON bank_transactions(
 -- novels.is_locked (1 = only the owner can view, 0 = anyone with the link
 -- can) but defaults to locked here, opposite of novels -- a route stays
 -- private until its owner explicitly shares it.
--- mountains/rivers are optional landmark annotations the owner types in by
--- name (not auto-detected -- see the reverted "nearby peaks/rivers" attempt
--- in git history, which the owner explicitly asked to back out of).
--- mountains: JSON list of {"name":, "lat":, "lng":} -- geocoded via
--- Nominatim same as a route point, just rendered as a peak icon instead of a
--- stop on the route. rivers: JSON list of {"name":, "segments": [[{"lat":,
--- "lng":}, ...], ...]} -- a real course looked up from OpenStreetMap via
--- Overpass, scoped to a box around the route so a common name doesn't
--- return a nationwide result; "segments" is a list (not one flat point
--- list) because OSM often splits a single named river across several way
--- objects.
 CREATE TABLE IF NOT EXISTS custom_routes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
     title TEXT NOT NULL DEFAULT '',
     country TEXT NOT NULL DEFAULT '',
     points TEXT NOT NULL,
-    mountains TEXT NOT NULL DEFAULT '[]',
-    rivers TEXT NOT NULL DEFAULT '[]',
     is_locked INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
@@ -293,12 +280,6 @@ def _migrate(conn):
     novel_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novels)")]
     if novel_cols and "is_locked" not in novel_cols:
         conn.execute("ALTER TABLE novels ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0")
-
-    route_cols = [row["name"] for row in conn.execute("PRAGMA table_info(custom_routes)")]
-    if route_cols and "mountains" not in route_cols:
-        conn.execute("ALTER TABLE custom_routes ADD COLUMN mountains TEXT NOT NULL DEFAULT '[]'")
-    if route_cols and "rivers" not in route_cols:
-        conn.execute("ALTER TABLE custom_routes ADD COLUMN rivers TEXT NOT NULL DEFAULT '[]'")
 
     chapter_cols = [row["name"] for row in conn.execute("PRAGMA table_info(novel_chapters)")]
     if chapter_cols and "is_locked" not in chapter_cols:

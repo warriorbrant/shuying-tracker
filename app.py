@@ -2195,91 +2195,6 @@ def _parse_route_points(raw):
     return clean
 
 
-ROUTE_MAX_MOUNTAINS = 30
-ROUTE_MAX_RIVERS = 15
-ROUTE_MAX_RIVER_SEGMENTS = 5  # a long river is often split across several OSM ways
-ROUTE_MAX_RIVER_POINTS = 200  # per segment, after downsampling
-
-
-def _downsample_points(points, max_len):
-    """Thin out a list evenly (not just truncate) so a river's overall shape
-    survives even when its real OSM geometry has far more nodes than a share
-    card needs. No-op if it's already short enough."""
-    if len(points) <= max_len or max_len <= 0:
-        return points
-    step = len(points) / max_len
-    return [points[int(i * step)] for i in range(max_len)]
-
-
-def _parse_route_mountains(raw):
-    """raw: JSON string posted from the route form -- a list of
-    {"name":, "lat":, "lng":} objects, each geocoded client-side via
-    Nominatim the same way a typed route point is. Same drop-bad-entries-
-    instead-of-failing-the-save approach as _parse_route_points."""
-    try:
-        mountains = json.loads(raw or "[]")
-    except (TypeError, ValueError):
-        return []
-    clean = []
-    for m in mountains if isinstance(mountains, list) else []:
-        if len(clean) >= ROUTE_MAX_MOUNTAINS:
-            break
-        if not isinstance(m, dict):
-            continue
-        name = m.get("name")
-        if not isinstance(name, str) or not name.strip():
-            continue
-        try:
-            lat, lng = float(m["lat"]), float(m["lng"])
-        except (KeyError, TypeError, ValueError):
-            continue
-        if -90 <= lat <= 90 and -180 <= lng <= 180:
-            clean.append({"name": name.strip()[:60], "lat": lat, "lng": lng})
-    return clean
-
-
-def _parse_route_rivers(raw):
-    """raw: JSON string posted from the route form -- a list of
-    {"name":, "segments": [[{"lat":,"lng":}, ...], ...]} objects, resolved
-    server-side via /routes/resolve-river (a proxy to Overpass -- see that
-    view). Caps segment count and points per segment again here, not just
-    trusting whatever the client already capped, since this is the actual
-    save path."""
-    try:
-        rivers = json.loads(raw or "[]")
-    except (TypeError, ValueError):
-        return []
-    clean = []
-    for r in rivers if isinstance(rivers, list) else []:
-        if len(clean) >= ROUTE_MAX_RIVERS:
-            break
-        if not isinstance(r, dict):
-            continue
-        name = r.get("name")
-        if not isinstance(name, str) or not name.strip():
-            continue
-        raw_segments = r.get("segments")
-        if not isinstance(raw_segments, list):
-            continue
-        segments = []
-        for seg in raw_segments[:ROUTE_MAX_RIVER_SEGMENTS]:
-            if not isinstance(seg, list):
-                continue
-            clean_seg = []
-            for pt in seg:
-                try:
-                    lat, lng = float(pt["lat"]), float(pt["lng"])
-                except (KeyError, TypeError, ValueError):
-                    continue
-                if -90 <= lat <= 90 and -180 <= lng <= 180:
-                    clean_seg.append({"lat": lat, "lng": lng})
-            if len(clean_seg) >= 2:
-                segments.append(_downsample_points(clean_seg, ROUTE_MAX_RIVER_POINTS))
-        if segments:
-            clean.append({"name": name.strip()[:60], "segments": segments})
-    return clean
-
-
 def _route_is_locked_for_viewer(route):
     if not route["is_locked"]:
         return False
@@ -2309,14 +2224,11 @@ def routes_new():
         points = _parse_route_points(request.form.get("points"))
         if len(points) < 2:
             return redirect(url_for("routes_new", error=tr("路线至少需要两个点，在地图上多点几下")))
-        mountains = _parse_route_mountains(request.form.get("mountains"))
-        rivers = _parse_route_rivers(request.form.get("rivers"))
 
         conn = get_db()
         cur = conn.execute(
-            "INSERT INTO custom_routes (user_id, title, country, points, mountains, rivers) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (g.user["id"], title, country, json.dumps(points), json.dumps(mountains), json.dumps(rivers)),
+            "INSERT INTO custom_routes (user_id, title, country, points) VALUES (?, ?, ?, ?)",
+            (g.user["id"], title, country, json.dumps(points)),
         )
         route_id = cur.lastrowid
         conn.commit()
@@ -2324,8 +2236,7 @@ def routes_new():
         return redirect(url_for("route_detail", route_id=route_id))
 
     return render_template(
-        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"),
-        existing_places="", existing_mountains="", existing_rivers="",
+        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"), existing_places=""
     )
 
 
@@ -2344,13 +2255,11 @@ def route_edit(route_id):
         if len(points) < 2:
             conn.close()
             return redirect(url_for("route_edit", route_id=route_id, error=tr("路线至少需要两个点，在地图上多点几下")))
-        mountains = _parse_route_mountains(request.form.get("mountains"))
-        rivers = _parse_route_rivers(request.form.get("rivers"))
 
         conn.execute(
-            "UPDATE custom_routes SET title = ?, country = ?, points = ?, mountains = ?, rivers = ?, "
-            "updated_at = datetime('now','localtime') WHERE id = ?",
-            (title, country, json.dumps(points), json.dumps(mountains), json.dumps(rivers), route_id),
+            "UPDATE custom_routes SET title = ?, country = ?, points = ?, updated_at = datetime('now','localtime') "
+            "WHERE id = ?",
+            (title, country, json.dumps(points), route_id),
         )
         conn.commit()
         conn.close()
@@ -2359,21 +2268,15 @@ def route_edit(route_id):
     conn.close()
     route_dict = dict(route)
     route_dict["points"] = json.loads(route_dict["points"])
-    route_dict["mountains"] = json.loads(route_dict["mountains"])
-    route_dict["rivers"] = json.loads(route_dict["rivers"])
     # Pre-fill the "type place names" box with this route's own named points,
     # so editing can mean "tweak this list and re-resolve" instead of only
     # "drag pins around on the map". Points added by clicking the map (no
     # label) have no name to put here and are simply not represented in the
-    # box -- they still show up on the map from route.points below. Same
-    # idea for the mountain/river name boxes.
+    # box -- they still show up on the map from route.points below.
     existing_places = "\n".join(p["label"] for p in route_dict["points"] if p.get("label"))
-    existing_mountains = "\n".join(m["name"] for m in route_dict["mountains"])
-    existing_rivers = "\n".join(r["name"] for r in route_dict["rivers"])
     return render_template(
         "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"),
         route=route_dict, existing_places=existing_places,
-        existing_mountains=existing_mountains, existing_rivers=existing_rivers,
     )
 
 
@@ -2390,76 +2293,7 @@ def route_detail(route_id):
 
     is_owner = bool(g.user) and g.user["id"] == route["user_id"]
     points = json.loads(route["points"])
-    mountains = json.loads(route["mountains"])
-    rivers = json.loads(route["rivers"])
-    return render_template(
-        "route_detail.html", route=route, points=points, mountains=mountains, rivers=rivers, is_owner=is_owner
-    )
-
-
-@app.route("/routes/resolve-river")
-def route_resolve_river():
-    """Server-side proxy to Overpass for one named river's real course,
-    scoped to a bounding box the client computes from the route's own point
-    span (padded -- see boundsWithMargin() in route-map.js) so a common
-    river name doesn't come back with a nationwide, timeout-prone result.
-    Kept server-side (unlike the Nominatim place lookups, which run straight
-    from the browser) mainly so this is testable without depending on
-    Overpass's CORS behavior, and to keep the query-building/downsampling
-    logic in one place instead of duplicated in JS. Not in PUBLIC_ENDPOINTS,
-    so require_login() already redirects anonymous requests before this
-    runs -- no separate g.user check needed here."""
-    name = request.args.get("name", "").strip()
-    if not name:
-        return jsonify({"segments": []})
-    try:
-        south = float(request.args["south"])
-        west = float(request.args["west"])
-        north = float(request.args["north"])
-        east = float(request.args["east"])
-    except (KeyError, ValueError):
-        return jsonify({"segments": []}), 400
-
-    # A wide bbox with a long, heavily-segmented river (the Yangtze, say)
-    # can genuinely take Overpass a while even with a bbox filter -- give it
-    # 25s of its own budget to at least return a proper error/partial
-    # response, and give the HTTP call itself a bit more than that so this
-    # doesn't give up first and throw away a query Overpass was still about
-    # to answer.
-    overpass_timeout = 25
-    query = (
-        "[out:json][timeout:{timeout}];"
-        'way["waterway"~"^(river|stream|canal)$"]["name"="{name}"]({south},{west},{north},{east});'
-        "out geom;"
-    ).format(
-        timeout=overpass_timeout, name=name.replace('"', ""), south=south, west=west, north=north, east=east
-    )
-    try:
-        resp = requests.post(
-            "https://overpass-api.de/api/interpreter",
-            data=query.encode("utf-8"),
-            # Overpass's server rejects requests with no recognizable
-            # User-Agent (returns a plain Apache 406, not an Overpass-level
-            # error) -- same identifying string already used for the
-            # staticmap tile fetches elsewhere in share_card.py.
-            headers={"User-Agent": "zhixingheyi-app/1.0 (+personal project, contact via GitHub issues)"},
-            timeout=overpass_timeout + 5,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except (requests.RequestException, ValueError):
-        return jsonify({"segments": []})
-
-    segments = []
-    for el in data.get("elements", []):
-        if el.get("type") != "way" or not el.get("geometry"):
-            continue
-        seg = [{"lat": pt["lat"], "lng": pt["lon"]} for pt in el["geometry"] if "lat" in pt and "lon" in pt]
-        if len(seg) >= 2:
-            segments.append(_downsample_points(seg, ROUTE_MAX_RIVER_POINTS))
-        if len(segments) >= ROUTE_MAX_RIVER_SEGMENTS:
-            break
-    return jsonify({"segments": segments})
+    return render_template("route_detail.html", route=route, points=points, is_owner=is_owner)
 
 
 @app.route("/routes/<int:route_id>/share", methods=["POST"])
@@ -2507,9 +2341,7 @@ def route_share_image(route_id):
     if style not in ("standard", "terrain", "outline"):
         style = "standard"
     if style == "outline":
-        mountains = json.loads(route["mountains"])
-        rivers = json.loads(route["rivers"])
-        buf = build_route_outline_card(route["title"], points, mountains=mountains, rivers=rivers)
+        buf = build_route_outline_card(route["title"], points)
     else:
         buf = build_route_share_card(route["title"], points, style=style)
 
@@ -2804,10 +2636,7 @@ def novel_chapter_share_image(novel_id, chapter_id):
     # above already enforces that), so unlike the read page there's no need to
     # filter attached routes by their own lock -- the owner can always see
     # their own routes regardless of that route's separate sharing setting.
-    routes = [
-        dict(r, points=json.loads(r["points"]), mountains=json.loads(r["mountains"]), rivers=json.loads(r["rivers"]))
-        for r in route_rows
-    ]
+    routes = [dict(r, points=json.loads(r["points"])) for r in route_rows]
     blocks, _, unmatched_routes = build_chapter_blocks(chapter["content"], [], routes)
     buf = build_chapter_share_card(dict(novel), dict(chapter), blocks=blocks, unmatched_routes=unmatched_routes)
 

@@ -2526,33 +2526,3 @@ label.checkbox-label {
   background: #fff;
   resize: vertical;
 }
-
-.route-landmarks-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.route-landmarks-col {
-  flex: 1 1 220px;
-  min-width: 220px;
-}
-
-.route-landmarks-col label {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-/* Leaflet divIcon marker for a named mountain -- a white halo behind the
-   glyph keeps it legible over both the standard street basemap and the
-   terrain layer's brown hillshading, same trick as the route line's own
-   white casing. */
-.route-mountain-icon {
-  color: #6b5b3d;
-  font-size: 18px;
-  line-height: 18px;
-  text-align: center;
-  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff;
-}
