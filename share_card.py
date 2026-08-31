@@ -1379,6 +1379,7 @@ def build_route_outline_card(title, points, show_terrain=False):
     plot_top = header_h
     plot_left = pad
     plot_right = W - pad
+    plot_bottom = plot_top + plot_h
 
     if points:
         lats = [p["lat"] for p in points]
@@ -1409,7 +1410,38 @@ def build_route_outline_card(title, points, show_terrain=False):
         def boxes_overlap(a, b):
             return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
 
-        # City labels are reserved first -- they're the whole point of the
+        # Try a ring of candidate positions around a point for a label,
+        # widening the ring each pass, and return the first spot that
+        # doesn't collide with anything already placed. Straight-below at
+        # the smallest radius is tried first, matching the old fixed
+        # placement, so an isolated point's label looks the same as before
+        # -- only a point with something already nearby gets pushed
+        # outward. Returns (label_x, label_y, box, needs_leader) --
+        # needs_leader is False only for that first straight-below case, so
+        # the caller knows when a connector line back to the point is
+        # needed to keep the label legible as belonging to it.
+        label_directions = [
+            (0, 1), (0, -1), (1.3, 0.15), (-1.3, 0.15),
+            (1, 0.9), (-1, 0.9), (1, -0.9), (-1, -0.9),
+        ]
+
+        def place_label(x, y, text, font, reserved):
+            bbox = draw.textbbox((0, 0), text, font=font)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            fallback = None
+            for pass_i, radius in enumerate((16, 34, 56, 84)):
+                for dir_i, (dx, dy) in enumerate(label_directions):
+                    ox, oy = x + dx * radius, y + dy * radius
+                    lx = min(max(ox - tw / 2, plot_left), plot_right - tw)
+                    ly = min(max(oy - th / 2, plot_top), plot_bottom - th)
+                    box = (lx - 5, ly - 3, lx + tw + 5, ly + th + 5)
+                    if fallback is None:
+                        fallback = (lx, ly, box)
+                    if not any(boxes_overlap(box, other) for other in reserved):
+                        return lx, ly, box, not (pass_i == 0 and dir_i == 0)
+            return fallback[0], fallback[1], fallback[2], True  # everything collided; use it anyway
+
+        # City labels are placed first -- they're the whole point of the
         # card -- so a crowded area of named mountains/rivers backs off
         # around them instead of the other way around. Terrain labels are
         # then only kept if they don't collide with a city label or with an
@@ -1419,18 +1451,14 @@ def build_route_outline_card(title, points, show_terrain=False):
         coords = [project(p["lat"], p["lng"]) for p in points]
         label_font = _font(22)
         reserved_boxes = []
-        city_labels = []  # (x, y, label, box) for points that have one
+        city_labels = []  # (icon_x, icon_y, label_x, label_y, label, box, needs_leader)
         for pt, (x, y) in zip(points, coords):
             label = pt.get("label")
             if not label:
                 continue
-            bbox = draw.textbbox((0, 0), label, font=label_font)
-            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-            lx = min(max(x - tw / 2, plot_left), plot_right - tw)
-            ly = y + 16
-            box = (lx - 5, ly - 3, lx + tw + 5, ly + th + 5)
+            lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
             reserved_boxes.append(box)
-            city_labels.append((lx, ly, label, box))
+            city_labels.append((x, y, lx, ly, label, box, needs_leader))
 
         if show_terrain:
             # Same margin the plot itself uses (in degrees, roughly) so the
@@ -1479,7 +1507,10 @@ def build_route_outline_card(title, points, show_terrain=False):
         for i, (pt, (x, y)) in enumerate(zip(points, coords)):
             icon_color = MAP_START if i == 0 else MAP_INK
             _draw_city_icon(draw, x, y, icon_color)
-        for lx, ly, label, box in city_labels:
+        for icon_x, icon_y, lx, ly, label, box, needs_leader in city_labels:
+            if needs_leader:
+                label_cx, label_cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+                draw.line([(icon_x, icon_y), (label_cx, label_cy)], fill=PARCHMENT_MUTED, width=1)
             draw.rectangle([box[0], box[1], box[2], box[3]], fill=PARCHMENT_BG)
             draw.text((lx, ly), label, font=label_font, fill=PARCHMENT_TEXT)
     else:

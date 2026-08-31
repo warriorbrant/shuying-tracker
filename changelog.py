@@ -3063,4 +3063,31 @@ CHANGELOG = [
         "lines_changed": 25,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓的城市标签挤在一起时，改成用引线指向对应的点",
+        "title_en": "Crowded city labels on the Route Outline card now use leader lines back to their point",
+        "summary": (
+            "路线点比较密集的时候（比如经过很多城市），标签原来固定画在点正下方，挤在一起看不清、"
+            "有的还叠字。现在改成：先试试正下方能不能放得下（跟以前一样，不挤的时候看起来完全没变），"
+            "放不下就依次试周围 8 个方向、由近到远几个距离，找到第一个不跟别的标签重叠的位置放上去；"
+            "只要不是放在默认的正下方，就从标签画一条细线连回对应的点，这样挪开了也看得出这个名字是"
+            "哪个点的。用一条经过 14 个城市、好几处离得很近（丽江附近、南昌附近）的路线测试过，之前"
+            "叠在一起看不清的地方现在都能读了。"
+        ),
+        "summary_en": (
+            "When route points are close together (a route through many nearby cities, say), labels used "
+            "to always sit fixed directly below the point -- crowd a few together and they'd overlap into "
+            "unreadable text. Now it tries directly-below first (identical to before when nothing's "
+            "crowded), and if that's taken, tries a ring of 8 directions at a few increasing distances "
+            "until it finds a spot that doesn't collide with an already-placed label. Whenever a label "
+            "isn't in that default straight-below spot, a thin line is drawn from it back to its point so "
+            "it's still clear which name belongs to which marker. Tested with a 14-city route with two "
+            "tight clusters (near Lijiang, near Nanchang) -- spots that used to be illegible overlapping "
+            "text are readable now."
+        ),
+        "image": None,
+        "lines_changed": 55,
+        "estimated": False,
+    },
 ]
