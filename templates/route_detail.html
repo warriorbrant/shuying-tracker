@@ -59,16 +59,19 @@
 
   if (points.length) {
     var latlngs = points.map(function (p) { return [p.lat, p.lng]; });
+    // White casing underneath the colored line/markers -- otherwise the
+    // accent brown blends straight into terrain map's brown hillshading.
+    L.polyline(latlngs, { color: '#ffffff', weight: 8, opacity: 0.9 }).addTo(map);
     var line = L.polyline(latlngs, { color: '#b5654a', weight: 4 }).addTo(map);
     points.forEach(function (p) {
       if (p.label) {
-        L.circleMarker([p.lat, p.lng], { radius: 5, color: '#b5654a', fillOpacity: 1 })
+        L.circleMarker([p.lat, p.lng], { radius: 5, color: '#fff', weight: 2, fillColor: '#b5654a', fillOpacity: 1 })
           .bindTooltip(p.label, { permanent: false }).addTo(map);
       }
     });
-    L.circleMarker(latlngs[0], { radius: 6, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    L.circleMarker(latlngs[0], { radius: 6, color: '#fff', weight: 2, fillColor: '#3d7a51', fillOpacity: 1 }).addTo(map);
     if (latlngs.length > 1) {
-      L.circleMarker(latlngs[latlngs.length - 1], { radius: 6, color: '#a34a3d', fillOpacity: 1 }).addTo(map);
+      L.circleMarker(latlngs[latlngs.length - 1], { radius: 6, color: '#fff', weight: 2, fillColor: '#a34a3d', fillOpacity: 1 }).addTo(map);
     }
     map.fitBounds(line.getBounds(), { padding: [24, 24] });
   } else {

@@ -2950,4 +2950,31 @@ CHANGELOG = [
         "lines_changed": 70,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "修复：切到地形图后路线线条几乎看不见（棕色配棕色）",
+        "title_en": "Fix: route line nearly invisible on terrain map (brown on brown)",
+        "summary": (
+            "路线的颜色（品牌棕色）跟地形图山地区域的晕渲棕色太接近了，切到地形图之后线基本融进背景里，"
+            "山区路段尤其明显。给路线线条和起点/终点/命名点的圆点标记都加了一圈白色描边（先画粗一点的"
+            "白线/大一点的白圆当底，再在上面画原本的彩色线/圆），不管是在地形图的棕色山地还是标准地图的"
+            "任何底色上都能看清楚。三个画路线的地方都改了：画路线页、查看路线页、还有真实地图分享图"
+            "（这个用 `staticmap` 库画，靠调整画图顺序实现同样的描边效果——它是按添加顺序从下往上画的，"
+            "先加白色的再加彩色的就行）。"
+        ),
+        "summary_en": (
+            "The route's brand-brown color sat too close to terrain map's brown hillshading in "
+            "mountainous areas -- switch to terrain and the line all but disappeared into the "
+            "background, worst exactly where elevation is highest. Added a white outline/casing to the "
+            "route line and to the start/end/named-point markers (draw a slightly wider white line or "
+            "larger white circle first, then the original colored one on top) so everything stays "
+            "legible against terrain's brown or anything on the standard map. Fixed in all three places "
+            "that draw a route: the draw page, the view page, and the real-map share image (built with "
+            "`staticmap`, which draws in the order layers are added -- white first, color on top gets "
+            "the same casing effect)."
+        ),
+        "image": None,
+        "lines_changed": 30,
+        "estimated": False,
+    },
 ]

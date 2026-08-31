@@ -61,13 +61,20 @@
   addRouteBaseLayers(map, { standard: {{ tr('标准地图') | tojson }}, terrain: {{ tr('地形图') | tojson }} });
 
   var points = [];
+  // A plain-colored line/marker on top of a terrain basemap's brown
+  // hillshading is nearly invisible (the accent color and mountain shading
+  // land in the same brown range) -- a white "casing" underneath keeps
+  // everything legible on any background, standard or terrain.
+  var lineCasing = L.polyline([], { color: '#ffffff', weight: 8, opacity: 0.9 }).addTo(map);
   var line = L.polyline([], { color: '#b5654a', weight: 4 }).addTo(map);
   var markers = [];
   var pointsInput = document.getElementById('pointsInput');
   var pointCount = document.getElementById('pointCount');
 
   function sync() {
-    line.setLatLngs(points.map(function (p) { return [p.lat, p.lng]; }));
+    var latlngs = points.map(function (p) { return [p.lat, p.lng]; });
+    lineCasing.setLatLngs(latlngs);
+    line.setLatLngs(latlngs);
     pointsInput.value = JSON.stringify(points);
     pointCount.textContent = {{ tr('已选 {n} 个点') | tojson }}.replace('{n}', points.length);
   }
@@ -76,7 +83,7 @@
     var p = { lat: lat, lng: lng };
     if (label) p.label = label;
     points.push(p);
-    var marker = L.circleMarker([lat, lng], { radius: 5, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    var marker = L.circleMarker([lat, lng], { radius: 5, color: '#fff', weight: 2, fillColor: '#3d7a51', fillOpacity: 1 }).addTo(map);
     if (label) marker.bindTooltip(label, { permanent: false });
     markers.push(marker);
     sync();

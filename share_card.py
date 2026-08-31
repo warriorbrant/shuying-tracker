@@ -1185,10 +1185,16 @@ def build_route_share_card(title, points, style="standard"):
             headers={"User-Agent": "zhixingheyi-app/1.0 (+personal project, contact via GitHub issues)"},
         )
         coords = [(p["lng"], p["lat"]) for p in points]  # staticmap wants (lon, lat)
+        # White casing drawn first (staticmap draws lines/markers in the
+        # order added, later on top) so the accent brown line and markers
+        # don't disappear into terrain style's brown hillshading.
         if len(coords) >= 2:
+            m.add_line(Line(coords, "#ffffff", 8))
             m.add_line(Line(coords, "#b5654a", 5))
+        m.add_marker(CircleMarker(coords[0], "#ffffff", 16))
         m.add_marker(CircleMarker(coords[0], "#3d7a51", 12))
         if len(coords) >= 2:
+            m.add_marker(CircleMarker(coords[-1], "#ffffff", 16))
             m.add_marker(CircleMarker(coords[-1], "#a34a3d", 12))
         map_img = m.render()
         card.paste(map_img, (pad, header_h))
