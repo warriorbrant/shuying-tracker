@@ -2235,7 +2235,9 @@ def routes_new():
         conn.close()
         return redirect(url_for("route_detail", route_id=route_id))
 
-    return render_template("routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"))
+    return render_template(
+        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"), existing_places=""
+    )
 
 
 @app.route("/routes/<int:route_id>/edit", methods=["GET", "POST"])
@@ -2266,8 +2268,15 @@ def route_edit(route_id):
     conn.close()
     route_dict = dict(route)
     route_dict["points"] = json.loads(route_dict["points"])
+    # Pre-fill the "type place names" box with this route's own named points,
+    # so editing can mean "tweak this list and re-resolve" instead of only
+    # "drag pins around on the map". Points added by clicking the map (no
+    # label) have no name to put here and are simply not represented in the
+    # box -- they still show up on the map from route.points below.
+    existing_places = "\n".join(p["label"] for p in route_dict["points"] if p.get("label"))
     return render_template(
-        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"), route=route_dict
+        "routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"),
+        route=route_dict, existing_places=existing_places,
     )
 
 

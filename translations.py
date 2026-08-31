@@ -564,12 +564,20 @@ TR = {
         "Click a few points on the map in order to build a route -- or type place names below and have "
         "their coordinates looked up and connected automatically. Misclicked? undo just the last point.",
     "输入地点名称": "Type Place Names",
-    "一行一个地名，会按顺序依次查坐标、连成线，追加在已有的点后面（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。":
-        "One place per line -- coordinates get looked up and connected in order, appended after any "
-        "points already on the map (uses OpenStreetMap's free place lookup, one at a time, so it's a "
-        "bit slow -- hang tight).",
+    "一行一个地名，会按顺序依次查坐标、连成线；默认追加在已有的点后面，勾选下面的「替换现有路线的点」可以改成用重新解析的结果替换掉整条路线（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。":
+        "One place per line -- coordinates get looked up and connected in order. By default this "
+        "appends after any points already on the map; check \"Replace this route's points\" below to "
+        "have the re-resolved result replace the whole route instead (uses OpenStreetMap's free place "
+        "lookup, one at a time, so it's a bit slow -- hang tight).",
+    "已经把这条路线现有的地点名称填进了下面的框——增删或改几个字后点「解析并连线」就能用新结果重新生成路线；如果解析出来的结果不理想，可以点「撤销本次重新解析」恢复成之前的路线。":
+        "This route's existing place names are already filled into the box below -- add, remove, or "
+        "tweak a few and click \"Resolve & Connect\" to regenerate the route from the new result; if "
+        "you don't like how it turns out, click \"Undo this re-resolve\" to restore the route as it was.",
     "东京\n京都\n大阪\n……": "Tokyo\nKyoto\nOsaka\n...",
     "📍 解析并连线": "📍 Resolve & Connect",
+    "替换现有路线的点（而不是追加在后面）": "Replace this route's points (instead of appending)",
+    "↩️ 撤销本次重新解析": "↩️ Undo this re-resolve",
+    "已恢复到重新解析之前的路线": "Restored the route to how it was before this re-resolve",
     "解析中 {i}/{n}：{place}": "Resolving {i}/{n}: {place}",
     "完成：成功 {ok} 个": "Done: {ok} resolved",
     "，没找到 {n} 个：{list}": ", {n} not found: {list}",

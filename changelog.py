@@ -3297,4 +3297,29 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "编辑路线时，地点名称会预填进解析框，重新解析可以撤销",
+        "title_en": "Editing a route now pre-fills the place-name box, with undo for re-resolving",
+        "summary": (
+            "编辑一条路线时，「输入地点名称」的框以前是空的——只能在地图上拖点，没法直接改地名文字。"
+            "现在会把这条路线现有的地点名称按顺序填进框里，增删改几个字之后点「解析并连线」就能用新结果"
+            "重新生成整条路线（默认是替换掉整条路线，而不是追加在后面，新增了一个可以关掉的勾选框）。"
+            "考虑到重新解析出来的坐标不一定理想（同名地点、查不到等），加了一个「撤销本次重新解析」按钮，"
+            "点一下能恢复成解析之前的样子，不用重新一个个手动加回去。"
+        ),
+        "summary_en": (
+            "The \"type place names\" box used to be empty when editing an existing route -- the only "
+            "way to change a place was dragging its pin on the map, not touching the text. It now "
+            "pre-fills with the route's existing place names in order, so adding, removing, or "
+            "tweaking a few and clicking \"Resolve & Connect\" regenerates the whole route from the new "
+            "result (replacing the route by default instead of appending, via a new checkbox that can "
+            "be turned off). Since a re-resolve can land on a worse match (ambiguous place names, one "
+            "that can't be found), there's now an \"Undo this re-resolve\" button that restores exactly "
+            "how the route looked before, instead of having to add everything back by hand."
+        ),
+        "image": None,
+        "lines_changed": 79,
+        "estimated": False,
+    },
 ]

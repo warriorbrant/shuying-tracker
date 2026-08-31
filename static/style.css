@@ -2478,8 +2478,13 @@ label.checkbox-label {
 .route-map-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   margin-top: 10px;
+}
+
+.route-map-actions .route-replace-toggle {
+  margin: 0;
 }
 
 .route-grid {

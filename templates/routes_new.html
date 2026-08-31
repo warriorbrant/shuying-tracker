@@ -23,10 +23,18 @@
 
 <section class="log-section">
   <h2>{{ tr('输入地点名称') }}</h2>
-  <p class="hint">{{ tr('一行一个地名，会按顺序依次查坐标、连成线，追加在已有的点后面（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。') }}</p>
-  <textarea id="placesInput" class="route-places-input" rows="6" placeholder="{{ tr('东京\n京都\n大阪\n……') }}"></textarea>
+  <p class="hint">{{ tr('一行一个地名，会按顺序依次查坐标、连成线；默认追加在已有的点后面，勾选下面的「替换现有路线的点」可以改成用重新解析的结果替换掉整条路线（用的是 OpenStreetMap 的免费地名查询，一次查一个，稍微有点慢，请耐心等）。') }}</p>
+  {% if route %}
+  <p class="hint">{{ tr('已经把这条路线现有的地点名称填进了下面的框——增删或改几个字后点「解析并连线」就能用新结果重新生成路线；如果解析出来的结果不理想，可以点「撤销本次重新解析」恢复成之前的路线。') }}</p>
+  {% endif %}
+  <textarea id="placesInput" class="route-places-input" rows="6" placeholder="{{ tr('东京\n京都\n大阪\n……') }}">{{ existing_places if route else '' }}</textarea>
   <div class="route-map-actions">
     <button type="button" id="resolvePlacesBtn" class="btn-link">{{ tr('📍 解析并连线') }}</button>
+    <label class="checkbox-label route-replace-toggle">
+      <input type="checkbox" id="replaceModeCheckbox" {{ 'checked' if route else '' }}>
+      {{ tr('替换现有路线的点（而不是追加在后面）') }}
+    </label>
+    <button type="button" id="rollbackResolveBtn" class="btn-link" style="display:none;">{{ tr('↩️ 撤销本次重新解析') }}</button>
     <span id="resolveStatus" class="hint"></span>
   </div>
 </section>
@@ -143,12 +151,49 @@
   var resolveBtn = document.getElementById('resolvePlacesBtn');
   var placesInput = document.getElementById('placesInput');
   var resolveStatus = document.getElementById('resolveStatus');
+  var replaceModeCheckbox = document.getElementById('replaceModeCheckbox');
+  var rollbackBtn = document.getElementById('rollbackResolveBtn');
   var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  // Single-level undo for "replace" reparses only -- appending never needs
+  // one, since nothing existing gets thrown away. Snapshotting the plain
+  // {lat,lng,label} data (not the Leaflet layers themselves) keeps this
+  // independent of whatever markers/line objects exist at rollback time.
+  function snapshotPoints() {
+    return points.map(function (p) { return { lat: p.lat, lng: p.lng, label: p.label }; });
+  }
+
+  function restorePoints(snapshot) {
+    points = [];
+    markers.forEach(function (m) { map.removeLayer(m); });
+    markers = [];
+    snapshot.forEach(function (p) { addPoint(p.lat, p.lng, p.label || null); });
+    if (points.length) map.fitBounds(line.getBounds(), { padding: [24, 24] });
+  }
+
+  var rollbackSnapshot = null;
+
+  rollbackBtn.addEventListener('click', function () {
+    if (!rollbackSnapshot) return;
+    restorePoints(rollbackSnapshot);
+    rollbackSnapshot = null;
+    rollbackBtn.style.display = 'none';
+    resolveStatus.textContent = {{ tr('已恢复到重新解析之前的路线') | tojson }};
+  });
 
   resolveBtn.addEventListener('click', function () {
     var names = placesInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     if (!names.length) return;
     resolveBtn.disabled = true;
+    var replacing = replaceModeCheckbox.checked;
+    var snapshotBeforeReplace = null;
+    if (replacing) {
+      snapshotBeforeReplace = snapshotPoints();
+      points = [];
+      markers.forEach(function (m) { map.removeLayer(m); });
+      markers = [];
+      sync();
+    }
     (async function () {
       var failed = [];
       var added = [];
@@ -178,6 +223,10 @@
       resolveStatus.textContent = summary;
       placesInput.value = failed.join('\n');
       resolveBtn.disabled = false;
+      if (replacing) {
+        rollbackSnapshot = snapshotBeforeReplace;
+        rollbackBtn.style.display = '';
+      }
       if (added.length) {
         map.fitBounds(line.getBounds(), { padding: [24, 24] });
       }
