@@ -1458,6 +1458,20 @@ def build_route_outline_card(title, points, show_terrain=False):
                 draw.text((x + offset, y - 8), feature["name"], font=terrain_font, fill=color)
                 reserved_boxes.append(box)
 
+            if not peaks and not rivers:
+                # Visible feedback instead of silently doing nothing --
+                # either genuinely no named peaks/rivers are tagged near
+                # this route, or the Overpass call failed/timed out
+                # (_fetch_terrain_features swallows that either way). Worth
+                # a note so "I checked the box and got nothing" doesn't
+                # look identical to the checkbox just not working.
+                note_font = _font(18)
+                draw.text(
+                    (plot_left, plot_top + 4),
+                    "（未查到附近有名字的山脉/河流，或查询超时）",
+                    font=note_font, fill=PARCHMENT_MUTED,
+                )
+
         if len(coords) >= 2:
             draw.line(coords, fill=(255, 255, 255), width=10, joint="curve")
             draw.line(coords, fill=MAP_INK, width=5, joint="curve")

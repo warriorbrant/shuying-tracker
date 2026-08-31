@@ -102,7 +102,15 @@
       previewBtn.setAttribute('href', withParams(previewBase));
     }
     styleSelect.addEventListener('change', update);
-    terrainCheckbox.addEventListener('change', update);
+    // The terrain-labels checkbox only does anything when style=outline
+    // (that's the only card that draws them) -- checking it without also
+    // switching the dropdown silently produced a normal map with no
+    // labels at all, so switch the style for the user instead of leaving
+    // that trap in place.
+    terrainCheckbox.addEventListener('change', function () {
+      if (terrainCheckbox.checked) styleSelect.value = 'outline';
+      update();
+    });
   }
 })();
 </script>

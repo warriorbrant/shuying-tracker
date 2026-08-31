@@ -3036,4 +3036,31 @@ CHANGELOG = [
         "lines_changed": 200,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "修复：勾了「标注周围山脉河流」还是没标注",
+        "title_en": "Fix: checking 'label nearby mountains/rivers' did nothing",
+        "summary": (
+            "排查下来有两个原因。主要的：这个勾选框只有在「分享图样式」也切到「路线轮廓」时才生效"
+            "（只有那张图会画山脉河流），但两个控件之前是各自独立的，光勾框不切样式的话完全没反应——"
+            "现在勾选这个框会自动把样式切过去，不用再手动切两个地方。次要的：查询用的是免费的 Overpass "
+            "公共服务器，偶尔会限流或超时，之前失败了是纯静默的，图照常生成但没有任何标注，跟\"功能没"
+            "生效\"长得一模一样分不清——现在如果确实没查到数据，图片上会显示一行提示文字，说明是没查到"
+            "还是查询失败了，不会再装作什么都没发生。"
+        ),
+        "summary_en": (
+            "Two causes. The main one: the checkbox only does anything when \"Share image style\" is also "
+            "set to \"Route Outline\" (that's the only card that draws terrain labels), but the two "
+            "controls were independent -- checking the box without switching the dropdown did nothing at "
+            "all. Fixed by having the checkbox auto-switch the style for you instead of requiring both "
+            "steps. Secondary: the query hits Overpass's free public server, which occasionally rate-"
+            "limits or times out; a failure used to be completely silent -- the image still generated, "
+            "just with no labels, indistinguishable from the feature simply not working. Fixed by drawing "
+            "a note on the card itself when nothing came back, so a real query failure no longer looks "
+            "identical to nothing being nearby."
+        ),
+        "image": None,
+        "lines_changed": 25,
+        "estimated": False,
+    },
 ]
