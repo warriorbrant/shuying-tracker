@@ -756,6 +756,15 @@ button {
   color: var(--muted);
   text-decoration: none;
   font-size: 0.85rem;
+  /* .btn-link is normally used on <a> tags, which have no background of
+     their own -- these three only matter when it's put on a <button>
+     instead (routes feature), which otherwise inherits the generic
+     `button` rule above (accent background, white text, boxy padding) and
+     ends up as barely-legible muted-gray text on a brown button. */
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
 }
 
 .btn-danger {

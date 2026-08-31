@@ -2844,4 +2844,27 @@ CHANGELOG = [
         "lines_changed": 420,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "修复：路线页的按钮文字看不清（灰字配棕色底）",
+        "title_en": "Fix: route page buttons had barely-legible gray text on a brown background",
+        "summary": (
+            "「公开分享」「撤销上一个点」这两个按钮用了 `.btn-link` 这个原本是给 `<a>` 链接用的样式类，"
+            "但套在 `<button>` 标签上时，全局有一条给所有 `<button>` 元素兜底的样式规则（棕色背景+白字），"
+            "`.btn-link` 只覆盖了文字颜色（改成灰色），没覆盖背景色，结果就是灰字配棕色底，几乎看不清。"
+            "给 `.btn-link` 补上了背景透明、内边距归零，这样套在按钮上也能正确显示成跟其他文字链接一样"
+            "的样式。"
+        ),
+        "summary_en": (
+            "The \"Share Publicly\" and \"Undo last point\" buttons used `.btn-link`, a class originally "
+            "meant for `<a>` tags -- but there's a global fallback rule for every `<button>` element "
+            "(brown background, white text), and `.btn-link` only overrode the text color to gray, not "
+            "the background, leaving barely-legible gray text on brown. Added a transparent background "
+            "and zeroed padding to `.btn-link` so it renders correctly on `<button>` elements too, "
+            "matching every other text-link control on the page."
+        ),
+        "image": None,
+        "lines_changed": 15,
+        "estimated": False,
+    },
 ]
