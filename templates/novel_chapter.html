@@ -39,7 +39,7 @@
       {% for block in blocks %}
         {% if block.type == 'text' %}
           <p>{{ block.text }}</p>
-        {% else %}
+        {% elif block.type == 'character' %}
           {% set ch = block.character %}
           <div class="character-reveal">
             <div class="character-standee">
@@ -48,6 +48,14 @@
               {% endif %}
               <span class="character-standee-name">{{ ch.name }}</span>
             </div>
+          </div>
+        {% elif block.type == 'route' %}
+          {% set rt = block.route %}
+          <div class="route-embed">
+            <a href="{{ url_for('route_detail', route_id=rt.id) }}">
+              <img loading="lazy" src="{{ url_for('route_share_image', route_id=rt.id, style='outline') }}" alt="{{ rt.title }}">
+            </a>
+            <span class="route-embed-title">{{ tr('🗺️ {title}', title=rt.title) }}</span>
           </div>
         {% endif %}
       {% endfor %}
@@ -71,6 +79,17 @@
       {% endif %}
       <h3>{{ ch.name }}</h3>
     </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if unmatched_routes %}
+  <div class="route-grid unmatched-routes">
+    {% for rt in unmatched_routes %}
+    <a class="route-embed-card" href="{{ url_for('route_detail', route_id=rt.id) }}">
+      <img loading="lazy" src="{{ url_for('route_share_image', route_id=rt.id, style='outline') }}" alt="{{ rt.title }}">
+      <h3>{{ rt.title }}</h3>
+    </a>
     {% endfor %}
   </div>
   {% endif %}

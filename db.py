@@ -222,6 +222,17 @@ CREATE TABLE IF NOT EXISTS custom_routes (
 );
 CREATE INDEX IF NOT EXISTS idx_custom_routes_user_id ON custom_routes(user_id);
 
+-- A chapter can embed any of the author's own routes (for a travelogue --
+-- see the /novel feature reused for that). Mirrors novel_chapter_videos'
+-- shape exactly. The route's own is_locked is still checked separately
+-- when a chapter is read -- attaching a still-private route to a public
+-- chapter doesn't make the route itself visible to other readers.
+CREATE TABLE IF NOT EXISTS novel_chapter_routes (
+    chapter_id INTEGER NOT NULL REFERENCES novel_chapters(id) ON DELETE CASCADE,
+    route_id INTEGER NOT NULL REFERENCES custom_routes(id) ON DELETE CASCADE,
+    PRIMARY KEY (chapter_id, route_id)
+);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).

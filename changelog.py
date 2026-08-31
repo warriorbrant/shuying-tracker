@@ -3249,4 +3249,31 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "小说章节正文里能直接嵌入自己画的路线轮廓图了（写游记专用）",
+        "title_en": "Novel chapters can now embed your own route outline maps inline (for travelogues)",
+        "summary": (
+            "小说功能一直有个「本章出场人物」的机制——正文里提到某个人物的名字，读到那一段就会自动"
+            "弹出这个人物的立绘。这次把同样的机制搬到了路线上：章节编辑页新增「本章路线」搜索框，从"
+            "自己保存过的路线里挑几条关联到这一章，正文里只要提到某条路线的标题，读到那一段就会自动"
+            "嵌入这条路线的「路线轮廓」分享图（点了还能跳到路线详情页）；关联了但正文没提到标题的路线，"
+            "会在文章末尾单独列一个小卡片区。路线本身的公开/私密状态是独立生效的——关联到一篇公开章节的"
+            "私密路线，其他读者还是看不到，只有自己（或管理员）能看。"
+        ),
+        "summary_en": (
+            "The novel feature already had a mechanism where mentioning a character's name in the "
+            "prose auto-reveals their standee right where the reader gets to it. This extends the same "
+            "idea to routes: the chapter editor gets a new \"Routes in this chapter\" search box to "
+            "attach any of your own saved routes, and mentioning a route's title anywhere in the text "
+            "auto-embeds that route's outline-style share image right after that paragraph (click "
+            "through to the route's own page). Attached routes whose title never appears in the text "
+            "get listed separately at the end of the article instead. A route's own privacy setting "
+            "still applies independently -- a private route attached to a public chapter stays hidden "
+            "from other readers, visible only to its owner (or an admin)."
+        ),
+        "image": None,
+        "lines_changed": 193,
+        "estimated": False,
+    },
 ]

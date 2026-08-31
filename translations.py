@@ -351,6 +351,10 @@ TR = {
     "视频 #{n}": "Video #{n}",
     "输入视频标题，或点一下看全部…": "Type a video title, or click to see all…",
     "没有可添加的了": "Nothing left to add",
+    "本章路线（搜索添加，正文提到路线标题时会自动嵌入轮廓图）":
+        "Routes in this chapter (search to add — mentioning a route's title in the text auto-embeds its outline map)",
+    "输入路线标题，或点一下看全部…": "Type a route title, or click to see all…",
+    "🗺️ {title}": "🗺️ {title}",
 
     # --- novel_character_form.html ---
     "编辑角色": "Edit Character",

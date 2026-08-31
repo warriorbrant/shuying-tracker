@@ -62,6 +62,21 @@
     <div id="videoResults" class="ref-results"></div>
   </div>
 
+  <label>{{ tr('本章路线（搜索添加，正文提到路线标题时会自动嵌入轮廓图）') }}</label>
+  <div id="selectedRoutes" class="chip-list">
+    {% for rt in preselected_routes %}
+    <span class="chip">
+      {{ rt.title }}
+      <button type="button" class="chip-remove" aria-label="{{ tr('移除') }}">×</button>
+      <input type="hidden" name="route_ids" value="{{ rt.id }}">
+    </span>
+    {% endfor %}
+  </div>
+  <div class="ref-search-box">
+    <input type="text" id="routeSearch" autocomplete="off" placeholder="{{ tr('输入路线标题，或点一下看全部…') }}">
+    <div id="routeResults" class="ref-results"></div>
+  </div>
+
   <div class="actions">
     <button type="submit">{{ tr('保存') }}</button>
     <a class="btn-link" href="{{ url_for('novel_edit', novel_id=novel.id) }}">{{ tr('取消') }}</a>
@@ -157,6 +172,10 @@
   setupPicker({
     searchId: 'videoSearch', resultsId: 'videoResults', selectedId: 'selectedVideos',
     field: 'video_ids', url: '{{ url_for("novel_video_search", novel_id=novel.id) }}',
+  });
+  setupPicker({
+    searchId: 'routeSearch', resultsId: 'routeResults', selectedId: 'selectedRoutes',
+    field: 'route_ids', url: '{{ url_for("routes_search") }}',
   });
 })();
 </script>

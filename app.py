@@ -2495,22 +2495,34 @@ def novel_export_pdf(novel_id):
     )
 
 
-def build_chapter_blocks(content, characters):
-    """Split chapter text into paragraphs and slot each character's standee in right
-    after the paragraph where their name is first mentioned, so it reveals as the
-    reader actually gets there rather than all at once at the top of the page."""
+def build_chapter_blocks(content, characters, routes=None):
+    """Split chapter text into paragraphs and slot each character's standee (or,
+    for a travelogue reusing the novel feature, each attached route's outline
+    map) in right after the paragraph where its name/title is first mentioned,
+    so it reveals as the reader actually gets there rather than all at once at
+    the top of the page. Same matching rule for both: a plain substring check
+    against the paragraph text, no special markup to type -- just mention the
+    route by its title somewhere in the prose."""
+    routes = routes or []
     paragraphs = [p for p in content.split("\n") if p.strip()]
-    introduced = set()
+    introduced_chars = set()
+    introduced_routes = set()
     blocks = []
     for p in paragraphs:
         blocks.append({"type": "text", "text": p})
         for ch in characters:
-            if ch["id"] in introduced or not ch["name"] or ch["name"] not in p:
+            if ch["id"] in introduced_chars or not ch["name"] or ch["name"] not in p:
                 continue
-            introduced.add(ch["id"])
+            introduced_chars.add(ch["id"])
             blocks.append({"type": "character", "character": ch})
-    unmatched = [ch for ch in characters if ch["id"] not in introduced]
-    return blocks, unmatched
+        for rt in routes:
+            if rt["id"] in introduced_routes or not rt["title"] or rt["title"] not in p:
+                continue
+            introduced_routes.add(rt["id"])
+            blocks.append({"type": "route", "route": rt})
+    unmatched_characters = [ch for ch in characters if ch["id"] not in introduced_chars]
+    unmatched_routes = [rt for rt in routes if rt["id"] not in introduced_routes]
+    return blocks, unmatched_characters, unmatched_routes
 
 
 CHAPTER_LOCK_PREVIEW_PARAGRAPHS = 3
@@ -2539,8 +2551,8 @@ def novel_chapter_read(novel_id, chapter_id):
         (novel_id,),
     ).fetchall()
     if locked:
-        # Don't reveal characters/videos tied to content the viewer can't actually read.
-        characters, videos = [], []
+        # Don't reveal characters/videos/routes tied to content the viewer can't actually read.
+        characters, videos, routes = [], [], []
     else:
         characters = conn.execute(
             "SELECT nc.* FROM novel_characters nc "
@@ -2554,6 +2566,16 @@ def novel_chapter_read(novel_id, chapter_id):
             "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
             (chapter_id,),
         ).fetchall()
+        route_rows = conn.execute(
+            "SELECT cr.* FROM custom_routes cr "
+            "JOIN novel_chapter_routes ncr ON ncr.route_id = cr.id "
+            "WHERE ncr.chapter_id = ? ORDER BY cr.created_at DESC",
+            (chapter_id,),
+        ).fetchall()
+        # A route attached to this chapter can still be privately locked on
+        # its own -- that's a separate setting from the chapter's, so it only
+        # shows here to its own owner (or an admin) until they share it too.
+        routes = [r for r in route_rows if not _route_is_locked_for_viewer(r)]
     conn.close()
 
     ids = [c["id"] for c in chapters]
@@ -2566,9 +2588,9 @@ def novel_chapter_read(novel_id, chapter_id):
             p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()
         ]
         preview_text = "\n".join(paragraphs[:CHAPTER_LOCK_PREVIEW_PARAGRAPHS])
-        blocks, unmatched_characters = build_chapter_blocks(preview_text, [])
+        blocks, unmatched_characters, unmatched_routes = build_chapter_blocks(preview_text, [])
     else:
-        blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
+        blocks, unmatched_characters, unmatched_routes = build_chapter_blocks(chapter["content"], characters, routes)
 
     # Same cache-busting versioning as the novel share link — see the comment there.
     share_ts = int(time.time())
@@ -2578,6 +2600,7 @@ def novel_chapter_read(novel_id, chapter_id):
     return render_template(
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
         blocks=blocks, unmatched_characters=unmatched_characters, videos=videos,
+        unmatched_routes=unmatched_routes,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
         share_url=share_url, preview_url=preview_url, locked=locked,
     )
@@ -2698,7 +2721,7 @@ def novel_delete(novel_id):
     return redirect(url_for("novels_list"))
 
 
-def set_chapter_links(conn, chapter_id, character_ids, video_ids):
+def set_chapter_links(conn, chapter_id, character_ids, video_ids, route_ids=()):
     conn.execute("DELETE FROM novel_chapter_characters WHERE chapter_id = ?", (chapter_id,))
     conn.executemany(
         "INSERT INTO novel_chapter_characters (chapter_id, character_id) VALUES (?, ?)",
@@ -2708,6 +2731,11 @@ def set_chapter_links(conn, chapter_id, character_ids, video_ids):
     conn.executemany(
         "INSERT INTO novel_chapter_videos (chapter_id, video_id) VALUES (?, ?)",
         [(chapter_id, vid) for vid in video_ids],
+    )
+    conn.execute("DELETE FROM novel_chapter_routes WHERE chapter_id = ?", (chapter_id,))
+    conn.executemany(
+        "INSERT INTO novel_chapter_routes (chapter_id, route_id) VALUES (?, ?)",
+        [(chapter_id, rid) for rid in route_ids],
     )
 
 
@@ -2737,6 +2765,7 @@ def novel_chapter_new(novel_id):
             conn, chapter_id,
             to_int_list(request.form.getlist("character_ids")),
             to_int_list(request.form.getlist("video_ids")),
+            to_int_list(request.form.getlist("route_ids")),
         )
         conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
         conn.commit()
@@ -2749,7 +2778,7 @@ def novel_chapter_new(novel_id):
     conn.close()
     return render_template(
         "novel_chapter_form.html", novel=novel, chapter=None, volumes=volumes,
-        preselected_characters=[], preselected_videos=[],
+        preselected_characters=[], preselected_videos=[], preselected_routes=[],
     )
 
 
@@ -2777,6 +2806,7 @@ def novel_chapter_edit(novel_id, chapter_id):
             conn, chapter_id,
             to_int_list(request.form.getlist("character_ids")),
             to_int_list(request.form.getlist("video_ids")),
+            to_int_list(request.form.getlist("route_ids")),
         )
         conn.execute("UPDATE novels SET updated_at=datetime('now','localtime') WHERE id=?", (novel_id,))
         conn.commit()
@@ -2795,6 +2825,12 @@ def novel_chapter_edit(novel_id, chapter_id):
         "WHERE ncv.chapter_id = ? ORDER BY nv.created_at DESC",
         (chapter_id,),
     ).fetchall()
+    preselected_routes = conn.execute(
+        "SELECT cr.id, cr.title, cr.country FROM custom_routes cr "
+        "JOIN novel_chapter_routes ncr ON ncr.route_id = cr.id "
+        "WHERE ncr.chapter_id = ? ORDER BY cr.created_at DESC",
+        (chapter_id,),
+    ).fetchall()
     volumes = conn.execute(
         "SELECT * FROM novel_volumes WHERE novel_id = ? ORDER BY volume_no ASC", (novel_id,)
     ).fetchall()
@@ -2802,6 +2838,7 @@ def novel_chapter_edit(novel_id, chapter_id):
     return render_template(
         "novel_chapter_form.html", novel=novel, chapter=chapter, volumes=volumes,
         preselected_characters=preselected_characters, preselected_videos=preselected_videos,
+        preselected_routes=preselected_routes,
     )
 
 
@@ -2865,6 +2902,38 @@ def novel_video_search(novel_id):
                 url_for("serve_novel_media", filename=r["thumbnail_path"])
                 if r["source_type"] == "upload" and r["thumbnail_path"] else ""
             ),
+        }
+        for r in rows
+    ])
+
+
+@app.route("/routes/search")
+def routes_search():
+    """Same shape as novel_video_search/novel_character_search, but routes
+    belong to a user, not a novel -- scoped by the logged-in user instead of
+    a novel_id, so this works for any chapter in any of their novels."""
+    if not g.user:
+        return jsonify([])
+    q = request.args.get("q", "").strip()
+    conn = get_db()
+    if q:
+        rows = conn.execute(
+            "SELECT id, title, country FROM custom_routes "
+            "WHERE user_id = ? AND title LIKE ? ORDER BY created_at DESC LIMIT 20",
+            (g.user["id"], f"%{q}%"),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT id, title, country FROM custom_routes "
+            "WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+            (g.user["id"],),
+        ).fetchall()
+    conn.close()
+    return jsonify([
+        {
+            "id": r["id"],
+            "label": r["title"] or f"路线 #{r['id']}",
+            "image_url": "",
         }
         for r in rows
     ])
