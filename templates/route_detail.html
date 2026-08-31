@@ -75,6 +75,8 @@
     if (latlngs.length > 1) {
       L.circleMarker(latlngs[latlngs.length - 1], { radius: 6, color: '#fff', weight: 2, fillColor: '#a34a3d', fillOpacity: 1 }).addTo(map);
     }
+    ({{ mountains | tojson }}).forEach(function (m) { addMountainMarker(map, m); });
+    ({{ rivers | tojson }}).forEach(function (r) { addRiverLines(map, r); });
     map.fitBounds(line.getBounds(), { padding: [24, 24] });
   } else {
     map.setView([35, 105], 3);

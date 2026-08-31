@@ -827,7 +827,10 @@ def build_chapter_share_card(novel, chapter, blocks=None, unmatched_routes=None)
         blocks = [{"type": "text", "text": p} for p in paragraphs]
 
     def route_image(route):
-        img = Image.open(build_route_outline_card(route["title"], route["points"])).convert("RGB")
+        img = Image.open(build_route_outline_card(
+            route["title"], route["points"],
+            mountains=route.get("mountains"), rivers=route.get("rivers"),
+        )).convert("RGB")
         scale = content_w / img.width
         return img.resize((content_w, round(img.height * scale)), Image.LANCZOS)
 
@@ -1253,13 +1256,25 @@ def build_route_share_card(title, points, style="standard"):
     return buf
 
 
-def build_route_outline_card(title, points):
+RIVER_COLOR = (94, 138, 168)
+MOUNTAIN_COLOR = (107, 91, 61)
+
+
+def build_route_outline_card(title, points, mountains=None, rivers=None):
     """Like build_route_share_card, but with no real map tiles at all --
     just the route's own shape (points projected with a simple
     latitude-corrected equirectangular scale, not a real map projection)
     connected in order, with each named point's city label drawn next to
     it. For when the shape and the sequence of places matter more than the
     surrounding geography -- faster too, since there's no tile fetching.
+
+    mountains: optional list of {"name","lat","lng"} -- named peaks the
+    route's owner typed in and geocoded (see /routes/new's landmark
+    picker), drawn as a small triangle + label. rivers: optional list of
+    {"name","segments":[[{"lat","lng"}, ...], ...]} -- a named river's real
+    course from OpenStreetMap, drawn as a line under the route's own line.
+    Both are opt-in decorations around the route, not part of it -- passing
+    neither renders exactly the plain route card this always has.
 
     Sized well beyond the usual 1080-wide share card -- the whole route's
     extent gets fit into this canvas at one uniform scale, so a route
@@ -1268,6 +1283,8 @@ def build_route_outline_card(title, points):
     only a handful of pixels across no matter how good the label placement
     is. A bigger canvas gives every degree more pixels to work with, which
     is what actually helps."""
+    mountains = mountains or []
+    rivers = rivers or []
     W = 1500
     pad = 64
     header_h = 110
@@ -1287,8 +1304,20 @@ def build_route_outline_card(title, points):
     plot_bottom = plot_top + plot_h
 
     if points:
+        # Mountain/river coordinates fold into the same bounds as the route's
+        # own points, so everything fits on the same canvas at the same
+        # scale instead of a landmark rendering off the edge because only
+        # the route itself was considered.
         lats = [p["lat"] for p in points]
         lngs = [p["lng"] for p in points]
+        for m in mountains:
+            lats.append(m["lat"])
+            lngs.append(m["lng"])
+        for r in rivers:
+            for seg in r.get("segments", []):
+                for p in seg:
+                    lats.append(p["lat"])
+                    lngs.append(p["lng"])
         lat_min, lat_max = min(lats), max(lats)
         lng_min, lng_max = min(lngs), max(lngs)
         lat_mid = (lat_min + lat_max) / 2
@@ -1369,6 +1398,22 @@ def build_route_outline_card(title, points):
                     return lx, ly, box, not (pass_i == 0 and dir_i == 0)
             return fallback[0], fallback[1], fallback[2], True  # everything collided; use it anyway
 
+        # Rivers draw first (underneath everything) so the route's own line
+        # stays visually dominant wherever the two happen to cross -- same
+        # white-casing trick as the route line, just a notch thinner, so a
+        # river reads clearly against the cream background without
+        # competing with the route for attention.
+        river_segments_px = [
+            [project(p) for p in seg]
+            for river in rivers
+            for seg in river.get("segments", [])
+            if len(seg) >= 2
+        ]
+        for seg_px in river_segments_px:
+            draw.line(seg_px, fill=(255, 255, 255), width=7, joint="curve")
+        for seg_px in river_segments_px:
+            draw.line(seg_px, fill=RIVER_COLOR, width=3, joint="curve")
+
         if len(coords) >= 2:
             draw.line(coords, fill=(255, 255, 255), width=10, joint="curve")
             draw.line(coords, fill=ACCENT, width=5, joint="curve")
@@ -1397,14 +1442,47 @@ def build_route_outline_card(title, points):
             label = f"{i + 1}. {raw_label}"
             lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
             reserved_boxes.append(box)
-            city_labels.append((x, y, lx, ly, label, box, needs_leader))
+            city_labels.append((x, y, lx, ly, label, box, needs_leader, TEXT))
 
-        for icon_x, icon_y, lx, ly, label, box, needs_leader in city_labels:
+        # Mountains share the same collision-avoiding placement as city
+        # labels (appending to the same reserved_boxes list, so a mountain
+        # label won't land on a city label or vice versa) but get their own
+        # triangle marker instead of a dot, and their own label color so
+        # it's clear at a glance which kind of thing a label refers to.
+        for m in mountains:
+            x, y = project(m)
+            tri = 9
+            draw.polygon(
+                [(x, y - tri - 2), (x - tri - 2, y + tri * 0.7), (x + tri + 2, y + tri * 0.7)],
+                fill=(255, 255, 255),
+            )
+            draw.polygon([(x, y - tri), (x - tri, y + tri * 0.7), (x + tri, y + tri * 0.7)], fill=MOUNTAIN_COLOR)
+            label = m["name"]
+            lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
+            reserved_boxes.append(box)
+            city_labels.append((x, y, lx, ly, label, box, needs_leader, MOUNTAIN_COLOR))
+
+        # A river has no single "point" of its own -- its label anchors to
+        # the midpoint of its longest OSM segment, which is a reasonable
+        # stand-in for "the middle of the river" without needing real
+        # centerline math.
+        for river in rivers:
+            segments = [seg for seg in river.get("segments", []) if len(seg) >= 2]
+            if not segments:
+                continue
+            longest = max(segments, key=len)
+            x, y = project(longest[len(longest) // 2])
+            label = river["name"]
+            lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
+            reserved_boxes.append(box)
+            city_labels.append((x, y, lx, ly, label, box, needs_leader, RIVER_COLOR))
+
+        for icon_x, icon_y, lx, ly, label, box, needs_leader, label_color in city_labels:
             if needs_leader:
                 label_cx, label_cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
                 draw.line([(icon_x, icon_y), (label_cx, label_cy)], fill=MUTED, width=1)
             draw.rectangle([box[0], box[1], box[2], box[3]], fill=BG)
-            draw.text((lx, ly), label, font=label_font, fill=TEXT)
+            draw.text((lx, ly), label, font=label_font, fill=label_color)
     else:
         empty_font = _font(28)
         draw.text((pad, plot_top + plot_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)

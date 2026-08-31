@@ -3322,4 +3322,33 @@ CHANGELOG = [
         "lines_changed": 79,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓图上可以标注指定的河流、山脉了",
+        "title_en": "Route outline maps can now mark named rivers and mountains",
+        "summary": (
+            "跟之前做过又撤掉的「自动标注附近山脉河流」不一样，这次是自己指定名字——画路线时多了一块"
+            "「标注河流/山脉」，输入河流、山脉的名字（一行一个），点「解析并标注」：河流会去 OpenStreetMap"
+            "查出真实的河道形状画成线（一条河经常被拆成好几段，也都会连上），山脉会标一个三角形图标加名字，"
+            "查找范围是路线本身所在的一片区域，不会因为撞名跑到别的国家去。都会画在「路线轮廓」这个分享图"
+            "样式上（河流的线在路线本身下面，交叉的地方路线不会被挡住），编辑路线时也会预填现有的河流/山脉"
+            "名字方便改。查询免费但有点慢，查不到的名字会留在框里方便重试。"
+        ),
+        "summary_en": (
+            "Different from the earlier \"auto-detect nearby peaks/rivers\" attempt (built, then backed "
+            "out of) -- this time the owner names exactly what they want. Drawing a route now has a "
+            "\"Mark Rivers/Mountains\" section: type river and mountain names (one per line) and click "
+            "\"Resolve & Mark\". A river gets its real course looked up from OpenStreetMap and drawn as "
+            "a line (often several disjoint segments stitched together, since long rivers get split "
+            "across multiple OSM ways); a mountain gets a small triangle icon and a label. The search "
+            "is scoped to roughly the route's own area, so a name shared with somewhere else in the "
+            "world doesn't land in the wrong country. Both show up on the \"Route Outline\" share style "
+            "(rivers draw underneath the route's own line, so a crossing never blocks it), and editing "
+            "a route pre-fills its existing river/mountain names for easy tweaking. The lookup is free "
+            "but not instant; anything not found stays in the box to retry."
+        ),
+        "image": None,
+        "lines_changed": 521,
+        "estimated": False,
+    },
 ]

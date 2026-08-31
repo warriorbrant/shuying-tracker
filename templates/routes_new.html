@@ -39,6 +39,25 @@
   </div>
 </section>
 
+<section class="log-section">
+  <h2>{{ tr('标注河流 / 山脉（可选）') }}</h2>
+  <p class="hint">{{ tr('先画好路线的点，再在这里输入河流、山脉的名字（一行一个）——河流会查出真实的河道形状连成线，山脉会标一个图标和名字，都会画在「路线轮廓」分享图上。查找范围是路线本身所在的一片区域，太远、查不到的会保留在框里方便重试。') }}</p>
+  <div class="route-landmarks-row">
+    <div class="route-landmarks-col">
+      <label for="mountainsInput_text">{{ tr('山脉名称') }}</label>
+      <textarea id="mountainsInput_text" class="route-places-input" rows="4" placeholder="{{ tr('峨眉山\n……') }}">{{ existing_mountains if route else '' }}</textarea>
+    </div>
+    <div class="route-landmarks-col">
+      <label for="riversInput_text">{{ tr('河流名称') }}</label>
+      <textarea id="riversInput_text" class="route-places-input" rows="4" placeholder="{{ tr('长江\n……') }}">{{ existing_rivers if route else '' }}</textarea>
+    </div>
+  </div>
+  <div class="route-map-actions">
+    <button type="button" id="resolveLandmarksBtn" class="btn-link">{{ tr('🏔️ 解析并标注') }}</button>
+    <span id="landmarkStatus" class="hint"></span>
+  </div>
+</section>
+
 <form class="form" method="post" action="{{ url_for('route_edit', route_id=route.id) if route else url_for('routes_new') }}" id="routeForm">
   <label>
     {{ tr('路线名称') }}
@@ -54,6 +73,8 @@
     </select>
   </label>
   <input type="hidden" name="points" id="pointsInput" value="[]">
+  <input type="hidden" name="mountains" id="mountainsInput" value="[]">
+  <input type="hidden" name="rivers" id="riversInput" value="[]">
   <button type="submit">{{ tr('保存修改') if route else tr('保存路线') }}</button>
 </form>
 
@@ -230,6 +251,133 @@
       if (added.length) {
         map.fitBounds(line.getBounds(), { padding: [24, 24] });
       }
+    })();
+  });
+
+  // --- mountains/rivers: the owner types specific names (not an automatic
+  // "what's nearby" search) and this resolves each one against the route's
+  // own area. Mountains are just a point lookup (Nominatim, same as a place
+  // name, biased toward the route's bounding box so a common peak name
+  // doesn't come back from the wrong country). Rivers need real line
+  // geometry, which only OpenStreetMap's Overpass API has -- that query
+  // goes through the server (see /routes/resolve-river) rather than
+  // straight from the browser like Nominatim does, mainly to keep this
+  // testable and avoid depending on Overpass's own CORS behavior.
+  var mountainsTextInput = document.getElementById('mountainsInput_text');
+  var riversTextInput = document.getElementById('riversInput_text');
+  var mountainsDataInput = document.getElementById('mountainsInput');
+  var riversDataInput = document.getElementById('riversInput');
+  var resolveLandmarksBtn = document.getElementById('resolveLandmarksBtn');
+  var landmarkStatus = document.getElementById('landmarkStatus');
+
+  var mountains = [];
+  var rivers = [];
+  var landmarkLayers = [];
+
+  function syncLandmarks() {
+    mountainsDataInput.value = JSON.stringify(mountains);
+    riversDataInput.value = JSON.stringify(rivers);
+  }
+
+  function drawLandmarks() {
+    landmarkLayers.forEach(function (l) { map.removeLayer(l); });
+    landmarkLayers = [];
+    mountains.forEach(function (m) { landmarkLayers.push(addMountainMarker(map, m)); });
+    rivers.forEach(function (r) { landmarkLayers = landmarkLayers.concat(addRiverLines(map, r)); });
+  }
+
+  {% if route %}
+  mountains = {{ (route.mountains or []) | tojson }};
+  rivers = {{ (route.rivers or []) | tojson }};
+  drawLandmarks();
+  {% endif %}
+  syncLandmarks();
+
+  async function geocodeMountain(name, bbox) {
+    // Try biased-to-the-route-area first (bounded=1 strictly excludes
+    // anything outside the box); fall back to an unbounded search if that
+    // comes up empty, same forgiving behavior the place-name box already
+    // has, rather than failing outright just because the margin was a
+    // touch too tight.
+    var boundedUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&bounded=1'
+      + '&viewbox=' + bbox.west + ',' + bbox.north + ',' + bbox.east + ',' + bbox.south
+      + '&q=' + encodeURIComponent(name);
+    var plainUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(name);
+    for (var i = 0; i < 2; i++) {
+      try {
+        var resp = await fetch(i === 0 ? boundedUrl : plainUrl);
+        var results = await resp.json();
+        if (results && results.length) {
+          return { name: name, lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+        }
+      } catch (err) { /* fall through to the next attempt, or give up */ }
+    }
+    return null;
+  }
+
+  async function resolveRiver(name, bbox) {
+    var url = '/routes/resolve-river?name=' + encodeURIComponent(name)
+      + '&south=' + bbox.south + '&west=' + bbox.west + '&north=' + bbox.north + '&east=' + bbox.east;
+    try {
+      var resp = await fetch(url);
+      var data = await resp.json();
+      if (data.segments && data.segments.length) {
+        return { name: name, segments: data.segments };
+      }
+    } catch (err) { /* not found / network issue -- caller treats as failed */ }
+    return null;
+  }
+
+  resolveLandmarksBtn.addEventListener('click', function () {
+    var mountainNames = mountainsTextInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var riverNames = riversTextInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!mountainNames.length && !riverNames.length) return;
+    if (points.length < 2) {
+      alert({{ tr('先画好路线的点，再标注河流山脉——需要用路线的范围来确定查找区域。') | tojson }});
+      return;
+    }
+    resolveLandmarksBtn.disabled = true;
+    var bbox = routeBoundsWithMargin(points, 0.25, 0.5);
+    (async function () {
+      var newMountains = [];
+      var newRivers = [];
+      var failedMountains = [];
+      var failedRivers = [];
+      var total = mountainNames.length + riverNames.length;
+      var done = 0;
+      for (var i = 0; i < mountainNames.length; i++) {
+        var mName = mountainNames[i];
+        done++;
+        landmarkStatus.textContent = {{ tr('解析中 {i}/{n}：{place}') | tojson }}
+          .replace('{i}', done).replace('{n}', total).replace('{place}', mName);
+        var m = await geocodeMountain(mName, bbox);
+        if (m) newMountains.push(m); else failedMountains.push(mName);
+        if (done < total) await sleep(1100);
+      }
+      for (var j = 0; j < riverNames.length; j++) {
+        var rName = riverNames[j];
+        done++;
+        landmarkStatus.textContent = {{ tr('解析中 {i}/{n}：{place}') | tojson }}
+          .replace('{i}', done).replace('{n}', total).replace('{place}', rName);
+        var r = await resolveRiver(rName, bbox);
+        if (r) newRivers.push(r); else failedRivers.push(rName);
+        if (done < total) await sleep(1100);
+      }
+      mountains = newMountains;
+      rivers = newRivers;
+      drawLandmarks();
+      syncLandmarks();
+      var okCount = newMountains.length + newRivers.length;
+      var summary = {{ tr('完成：成功 {ok} 个') | tojson }}.replace('{ok}', okCount);
+      var failedAll = failedMountains.concat(failedRivers);
+      if (failedAll.length) {
+        summary += {{ tr('，没找到 {n} 个：{list}') | tojson }}
+          .replace('{n}', failedAll.length).replace('{list}', failedAll.join('、'));
+      }
+      landmarkStatus.textContent = summary;
+      mountainsTextInput.value = failedMountains.join('\n');
+      riversTextInput.value = failedRivers.join('\n');
+      resolveLandmarksBtn.disabled = false;
     })();
   });
 
