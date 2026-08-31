@@ -582,16 +582,20 @@ TR = {
     "完成：成功 {ok} 个": "Done: {ok} resolved",
     "，没找到 {n} 个：{list}": ", {n} not found: {list}",
     "标注河流 / 山脉（可选）": "Mark Rivers / Mountains (optional)",
-    "先画好路线的点，再在这里输入河流、山脉的名字（一行一个）——河流会查出真实的河道形状连成线，山脉会标一个图标和名字，都会画在「路线轮廓」分享图上。查找范围是路线本身所在的一片区域，太远、查不到的会保留在框里方便重试。":
+    "先画好路线的点，再在这里输入河流、山脉的名字（一行一个）——河流会查出真实的河道形状连成线，山脉会标一个图标和名字，都会画在「路线轮廓」分享图上。查找范围是路线本身所在的一片区域，太远、查不到的会保留在框里方便重试。每次点「解析并标注」都会替换掉当前的标注，如果结果不满意，可以点「撤销本次标注」恢复成上一次的样子。":
         "Draw the route's points first, then type river and mountain names here (one per line) -- a "
         "river gets its real course looked up and drawn as a line, a mountain gets an icon and a label. "
         "Both show up on the \"Route Outline\" share image. The search area is roughly wherever the "
-        "route itself is; anything too far away or not found stays in the box so you can retry it.",
+        "route itself is; anything too far away or not found stays in the box so you can retry it. "
+        "Each click of \"Resolve & Mark\" replaces the current markings -- if you don't like the "
+        "result, click \"Undo this marking\" to restore how it looked before.",
     "山脉名称": "Mountain names",
     "峨眉山\n……": "Mt. Emei\n...",
     "河流名称": "River names",
     "长江\n……": "Yangtze River\n...",
     "🏔️ 解析并标注": "🏔️ Resolve & Mark",
+    "↩️ 撤销本次标注": "↩️ Undo this marking",
+    "已恢复到标注之前的样子": "Restored the markings to how they were before",
     "先画好路线的点，再标注河流山脉——需要用路线的范围来确定查找区域。":
         "Draw the route's points first, then mark rivers/mountains -- the route's own extent is needed "
         "to know where to search.",

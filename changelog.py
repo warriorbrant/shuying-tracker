@@ -3351,4 +3351,24 @@ CHANGELOG = [
         "lines_changed": 521,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "标注河流/山脉也能撤销了",
+        "title_en": "Marking rivers/mountains can now be undone too",
+        "summary": (
+            "跟之前给「输入地点名称」加的撤销是同一个思路：每次点「解析并标注」都会用新结果整个替换掉"
+            "当前的河流/山脉标注（如果查到的坐标不理想，或者这次有些名字没查到），现在多了个「撤销本次"
+            "标注」按钮，点一下能恢复成上一次标注的样子，不用把之前查到的名字再重新输一遍。"
+        ),
+        "summary_en": (
+            "Same idea as the undo already added for the place-names box: every click of \"Resolve & "
+            "Mark\" fully replaces the current river/mountain markings with the new result (which might "
+            "land on a worse match, or fail to find something that resolved fine before). There's now "
+            "an \"Undo this marking\" button that restores exactly how it looked before that resolve, "
+            "instead of having to retype every name that used to work."
+        ),
+        "image": None,
+        "lines_changed": 32,
+        "estimated": False,
+    },
 ]
