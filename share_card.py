@@ -1330,9 +1330,14 @@ def build_route_outline_card(title, points):
             draw.ellipse([x - r - 3, y - r - 3, x + r + 3, y + r + 3], fill=(255, 255, 255))
             draw.ellipse([x - r, y - r, x + r, y + r], fill=dot_color)
 
-            label = pt.get("label")
-            if not label:
+            raw_label = pt.get("label")
+            if not raw_label:
                 continue
+            # Numbered so a route that revisits the same place (an out-and-back
+            # trip, say) doesn't show the identical name twice with no way to
+            # tell which stop is which -- the number is the point's order
+            # along the route, not a distance or ranking.
+            label = f"{i + 1}. {raw_label}"
             lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
             reserved_boxes.append(box)
             city_labels.append((x, y, lx, ly, label, box, needs_leader))

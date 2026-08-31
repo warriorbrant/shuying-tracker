@@ -3182,4 +3182,24 @@ CHANGELOG = [
         "lines_changed": 5,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓的城市名字前加了序号，往返同一个地方不会看不懂了",
+        "title_en": "Route Outline city labels are numbered, so an out-and-back trip makes sense",
+        "summary": (
+            "有用户反馈路线里往返经过同一个城市（比如昆明出发去丽江，再回到昆明）时，两个点都标着"
+            "一样的名字，看着很困惑，分不清是不是画错了。现在每个城市名字前面加了它在路线里的顺序号，"
+            "比如「1. 昆明」「2. 丽江」「3. 昆明」，一眼就能看出这是往返，不是重复标错。"
+        ),
+        "summary_en": (
+            "A user reported that a route revisiting the same city (out to Lijiang from Kunming, then "
+            "back to Kunming, say) showed both points with the identical name, which read as confusing -- "
+            "unclear whether it was a mistake. Each city label now gets prefixed with its order along the "
+            "route, e.g. \"1. Kunming\", \"2. Lijiang\", \"3. Kunming\" -- immediately readable as an "
+            "out-and-back trip rather than a duplicate label."
+        ),
+        "image": None,
+        "lines_changed": 10,
+        "estimated": False,
+    },
 ]
