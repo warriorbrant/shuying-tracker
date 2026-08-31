@@ -2613,11 +2613,23 @@ def novel_chapter_share_image(novel_id, chapter_id):
     chapter = conn.execute(
         "SELECT * FROM novel_chapters WHERE id = ? AND novel_id = ?", (chapter_id, novel_id)
     ).fetchone()
+    route_rows = [] if chapter is None else conn.execute(
+        "SELECT cr.* FROM custom_routes cr "
+        "JOIN novel_chapter_routes ncr ON ncr.route_id = cr.id "
+        "WHERE ncr.chapter_id = ? ORDER BY cr.created_at DESC",
+        (chapter_id,),
+    ).fetchall()
     conn.close()
     if novel is None or chapter is None:
         return "未找到该章节", 404
 
-    buf = build_chapter_share_card(dict(novel), dict(chapter))
+    # This endpoint only ever runs for the novel's own owner (_get_owned_novel
+    # above already enforces that), so unlike the read page there's no need to
+    # filter attached routes by their own lock -- the owner can always see
+    # their own routes regardless of that route's separate sharing setting.
+    routes = [dict(r, points=json.loads(r["points"])) for r in route_rows]
+    blocks, _, unmatched_routes = build_chapter_blocks(chapter["content"], [], routes)
+    buf = build_chapter_share_card(dict(novel), dict(chapter), blocks=blocks, unmatched_routes=unmatched_routes)
 
     download = request.args.get("download")
     return send_file(

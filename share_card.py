@@ -793,7 +793,17 @@ def _build_reference_row(measure, w, references):
     return h, draw_fn
 
 
-def build_chapter_share_card(novel, chapter):
+def build_chapter_share_card(novel, chapter, blocks=None, unmatched_routes=None):
+    """blocks: the same {"type": "text"/"route", ...} list build_chapter_blocks()
+    produces (pass None to fall back to plain paragraph splitting, no route
+    art -- kept for callers that don't have blocks handy). Any route block --
+    whether it's inline because its title showed up in the text, or tacked on
+    via unmatched_routes because it's attached to the chapter but never
+    mentioned by name -- gets its own outline share image (built the same way
+    a standalone route share does, city labels and all) scaled down to the
+    card's content width and pasted in, so the shape of the trip shows up
+    right in the chapter screenshot instead of only being a click-through link
+    on the live page."""
     W = 1080
     pad = 64
     content_w = W - pad * 2
@@ -806,20 +816,41 @@ def build_chapter_share_card(novel, chapter):
 
     line_h = 46
     para_gap = 18
+    route_gap = 26
 
     novel_title_lines = _wrap(measure, novel["title"], novel_title_font, content_w)[:1]
     chapter_label = f"第 {chapter['chapter_no']} 章 · {chapter['title']}"
     chapter_title_lines = _wrap(measure, chapter_label, chapter_title_font, content_w)
 
-    paragraphs = [p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()]
-    para_lines = [_wrap(measure, p, body_font, content_w) for p in paragraphs]
+    if blocks is None:
+        paragraphs = [p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()]
+        blocks = [{"type": "text", "text": p} for p in paragraphs]
+
+    def route_image(route):
+        img = Image.open(build_route_outline_card(route["title"], route["points"])).convert("RGB")
+        scale = content_w / img.width
+        return img.resize((content_w, round(img.height * scale)), Image.LANCZOS)
+
+    # First pass: turn each block into something with a known height, so the
+    # canvas can be sized before anything is actually drawn.
+    prepared = []
+    for block in blocks:
+        if block["type"] == "text":
+            lines = _wrap(measure, block["text"], body_font, content_w)
+            prepared.append(("text", lines, len(lines) * line_h + para_gap))
+        elif block["type"] == "route":
+            img = route_image(block["route"])
+            prepared.append(("route", img, img.height + route_gap))
+    for route in (unmatched_routes or []):
+        img = route_image(route)
+        prepared.append(("route", img, img.height + route_gap))
 
     header_h = 0
     if novel_title_lines:
         header_h += len(novel_title_lines) * 38 + 12
     header_h += len(chapter_title_lines) * 58 + 30  # includes divider + gap below title
 
-    body_h = sum(len(lines) * line_h + para_gap for lines in para_lines)
+    body_h = sum(h for _, _, h in prepared)
 
     footer_h = 70
     H = pad + header_h + body_h + footer_h + pad
@@ -839,11 +870,15 @@ def build_chapter_share_card(novel, chapter):
     draw.line([(pad, y), (W - pad, y)], fill=BORDER, width=2)
     y += 24
 
-    for lines in para_lines:
-        for line in lines:
-            draw.text((pad, y), line, font=body_font, fill=TEXT)
-            y += line_h
-        y += para_gap
+    for kind, payload, h in prepared:
+        if kind == "text":
+            for line in payload:
+                draw.text((pad, y), line, font=body_font, fill=TEXT)
+                y += line_h
+            y += para_gap
+        else:
+            card.paste(payload, (pad, y))
+            y += h
 
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
     bbox = draw.textbbox((0, 0), watermark, font=footer_font)

@@ -3276,4 +3276,25 @@ CHANGELOG = [
         "lines_changed": 193,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "章节分享图里也能看到路线轮廓图了",
+        "title_en": "Chapter share images now show embedded route outline maps too",
+        "summary": (
+            "上一版只在网页正文里嵌入路线轮廓图，生成分享图（截图）时还是纯文字，路线部分等于"
+            "白做了。现在分享图会跟正文一样处理：提到路线标题的段落后面直接贴一张缩放过的路线轮廓图，"
+            "关联了但正文没提到标题的路线也会补在文章末尾，不会漏掉。"
+        ),
+        "summary_en": (
+            "The previous version only embedded route outline maps on the live chapter page -- the "
+            "share image (screenshot) was still plain text, so the route work didn't carry over there "
+            "at all. The share image now mirrors the page: a scaled-down copy of the route's outline "
+            "map gets pasted in right after the paragraph that mentions its title, and any attached "
+            "route whose title never comes up in the text still gets appended at the end instead of "
+            "being silently dropped."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]
