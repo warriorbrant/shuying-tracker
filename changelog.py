@@ -3164,4 +3164,22 @@ CHANGELOG = [
         "lines_changed": 60,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓的城市名字离圆点拉开了一些距离",
+        "title_en": "Route Outline labels sit a bit farther from their dots now",
+        "summary": (
+            "标签默认贴着圆点放（离圆点边缘只有几像素），文字容易压在路线线条上，看着挤。把候选位置的"
+            "起始距离从 16 像素提到 28 像素（后面几档也相应往外挪了），默认离得更远一点，路线本身更清楚。"
+        ),
+        "summary_en": (
+            "Labels used to sit right up against their dot (just a few pixels from the edge), which could "
+            "land text right on top of the route line and feel cramped. Bumped the label placement's "
+            "starting distance from 16px to 28px (later fallback rings moved out to match), so even the "
+            "default spot gives the line more breathing room."
+        ),
+        "image": None,
+        "lines_changed": 5,
+        "estimated": False,
+    },
 ]

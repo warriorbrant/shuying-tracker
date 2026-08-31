@@ -1298,7 +1298,7 @@ def build_route_outline_card(title, points):
             bbox = draw.textbbox((0, 0), text, font=font)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
             fallback = None
-            for pass_i, radius in enumerate((16, 34, 56, 84)):
+            for pass_i, radius in enumerate((28, 48, 72, 100)):
                 for dir_i, (dx, dy) in enumerate(label_directions):
                     ox, oy = x + dx * radius, y + dy * radius
                     lx = min(max(ox - tw / 2, plot_left), plot_right - tw)
