@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ route.title }}{% endblock %}
+{% block content %}
+
+<div class="changelog-header-row">
+  <h1>{{ route.title }}{% if route.is_locked %} <span class="lock-badge">🔒</span>{% else %} <span class="lock-badge">🌐</span>{% endif %}</h1>
+  {% if is_owner %}
+    <a class="btn-link" href="{{ url_for('routes_list') }}">{{ tr('← 我的路线') }}</a>
+  {% endif %}
+</div>
+{% if route.country %}<span class="lines-badge">{{ tr(route.country) }}</span>{% endif %}
+<p class="hint">{{ tr('{n} 个点 · 创建于 {d}', n=points|length, d=route.created_at[:10]) }}</p>
+
+<section class="log-section">
+  <div id="viewMap" class="route-map"></div>
+</section>
+
+{% if is_owner %}
+<section class="log-section">
+  <div class="actions">
+    <form method="post" action="{{ url_for('route_share_toggle', route_id=route.id) }}" class="inline-delete">
+      <button type="submit" class="btn-link">
+        {% if route.is_locked %}{{ tr('🌐 公开分享') }}{% else %}{{ tr('🔒 取消公开') }}{% endif %}
+      </button>
+    </form>
+    <a class="btn-share" href="{{ url_for('route_share_image', route_id=route.id, download=1) }}">{{ tr('📤 生成分享图') }}</a>
+    <a class="btn-link" href="{{ url_for('route_share_image', route_id=route.id) }}" target="_blank">{{ tr('先预览') }}</a>
+    <form method="post" action="{{ url_for('route_delete', route_id=route.id) }}"
+          onsubmit="return confirm({{ tr('确定删除这条路线吗？此操作不可撤销。') | tojson }});" class="inline-delete">
+      <button type="submit" class="btn-link-danger">{{ tr('删除') }}</button>
+    </form>
+  </div>
+  {% if route.is_locked %}
+    <p class="hint">{{ tr('还没公开——只有你自己能看到这条路线。点「公开分享」后，链接和分享图任何人都能打开。') }}</p>
+  {% else %}
+    <p class="hint">{{ tr('已公开——任何拿到链接的人都能看到这条路线（不需要登录）。') }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script>
+(function () {
+  var points = {{ points | tojson }};
+  var map = L.map('viewMap');
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  if (points.length) {
+    var latlngs = points.map(function (p) { return [p.lat, p.lng]; });
+    var line = L.polyline(latlngs, { color: '#b5654a', weight: 4 }).addTo(map);
+    L.circleMarker(latlngs[0], { radius: 6, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    if (latlngs.length > 1) {
+      L.circleMarker(latlngs[latlngs.length - 1], { radius: 6, color: '#a34a3d', fillOpacity: 1 }).addTo(map);
+    }
+    map.fitBounds(line.getBounds(), { padding: [24, 24] });
+  } else {
+    map.setView([35, 105], 3);
+  }
+})();
+</script>
+{% endblock %}

@@ -2811,4 +2811,37 @@ CHANGELOG = [
         "lines_changed": 75,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "新增「路线」功能：在地图上手绘路线，可以选择公开分享（链接 + 真实地图分享图）",
+        "title_en": "New Routes feature: hand-draw a route on a real map, optionally share it (link + real-map image)",
+        "summary": (
+            "本来想做高德地图足迹导入，但账号里没有导出入口，这条路走不通，改成了手动画路线的版本："
+            "`/routes`，在一张真实的地图上（自建 Leaflet + OpenStreetMap 瓦片，本地打包了 Leaflet 库，"
+            "不用另外申请任何 API key）依次点几下画出一条路线，标题+国家/地区（中国/日本/美国/其他，"
+            "只是个标签，地图本身全球都能画）保存起来。默认只有自己能看，点「公开分享」之后生成一个免"
+            "登录就能打开的链接，也能生成一张分享图——这张图比较特别，不是像其他分享图那样自己画个图表，"
+            "是真的把 OpenStreetMap 的地图瓦片拼出来、把路线画在上面（用了 `staticmap` 这个纯 Python 库，"
+            "复用现有的 Pillow 依赖，没有引入浏览器自动化之类的重家伙）。表单会过滤掉格式不对的点（经纬度"
+            "超范围、JSON 解析失败等），不会因为个别脏数据整条路线保存失败；单条路线最多存 2000 个点，"
+            "防止客户端出 bug 疯狂加点，把 OSM 的瓦片服务器打爆。"
+        ),
+        "summary_en": (
+            "Originally aimed to import footprint data from Amap (高德地图), but there's no export button "
+            "available on that account, so pivoted to a hand-drawn version instead: `/routes` -- click a "
+            "few points in order on a real map (self-hosted Leaflet.js + OpenStreetMap tiles, no API key "
+            "needed) to build a route, give it a title and a country tag (China/Japan/US/Other -- just a "
+            "label, the map itself works anywhere in the world), and save it. Private by default; hitting "
+            "\"Share Publicly\" generates both a link viewable without login and a share image -- unlike "
+            "every other share card in this app, which draws its own abstract chart, this one composites "
+            "the actual OSM basemap with the route drawn on top (via `staticmap`, a pure-Python library "
+            "that reuses the existing Pillow dependency instead of adding browser-automation infrastructure). "
+            "Malformed points (out-of-range coordinates, broken JSON) get filtered out rather than failing "
+            "the whole save, and each route is capped at 2000 points as a backstop against a client-side "
+            "glitch hammering OSM's tile servers."
+        ),
+        "image": None,
+        "lines_changed": 420,
+        "estimated": False,
+    },
 ]

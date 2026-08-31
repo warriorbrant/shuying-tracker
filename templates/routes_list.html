@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('我的路线') }}{% endblock %}
+{% block content %}
+
+<div class="changelog-header-row">
+  <h1>{{ tr('我的路线') }}</h1>
+  <a class="btn-link" href="{{ url_for('routes_new') }}">{{ tr('+ 画新路线') }}</a>
+</div>
+{% if info %}<p class="hint hint-ok">{{ info }}</p>{% endif %}
+
+{% if routes %}
+<div class="route-grid">
+  {% for r in routes %}
+  <a class="route-card" href="{{ url_for('route_detail', route_id=r.id) }}">
+    <div class="route-card-body">
+      <h3>{{ r.title }}{% if r.is_locked %} <span class="lock-badge">🔒</span>{% else %} <span class="lock-badge">🌐</span>{% endif %}</h3>
+      {% if r.country %}<span class="lines-badge">{{ tr(r.country) }}</span>{% endif %}
+      <p class="route-card-meta">{{ tr('{n} 个点 · {d}', n=r.points|length, d=r.created_at[:10]) }}</p>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="hint">{{ tr('还没有画过路线，') }}<a href="{{ url_for('routes_new') }}">{{ tr('画第一条') }}</a>{{ tr('。') }}</p>
+{% endif %}
+
+{% endblock %}

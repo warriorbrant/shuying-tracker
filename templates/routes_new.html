@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('画新路线') }}{% endblock %}
+{% block content %}
+
+<h1>{{ tr('画新路线') }}</h1>
+
+{% if error %}<p class="hint hint-error">{{ tr(error) }}</p>{% endif %}
+<p class="hint">{{ tr('在地图上依次点几下，连成一条路线；点错了可以撤销最后一个点。') }}</p>
+
+<section class="log-section">
+  <div class="route-jump-row">
+    <button type="button" class="btn-link route-jump" data-lat="35.8617" data-lng="104.1954" data-zoom="4">{{ tr('跳到中国') }}</button>
+    <button type="button" class="btn-link route-jump" data-lat="36.2048" data-lng="138.2529" data-zoom="5">{{ tr('跳到日本') }}</button>
+    <button type="button" class="btn-link route-jump" data-lat="39.8283" data-lng="-98.5795" data-zoom="4">{{ tr('跳到美国') }}</button>
+  </div>
+  <div id="drawMap" class="route-map"></div>
+  <div class="route-map-actions">
+    <button type="button" id="undoPointBtn" class="btn-link">{{ tr('↩️ 撤销上一个点') }}</button>
+    <button type="button" id="clearPointsBtn" class="btn-link-danger">{{ tr('🗑️ 清空') }}</button>
+    <span id="pointCount" class="hint">{{ tr('已选 {n} 个点', n=0) }}</span>
+  </div>
+</section>
+
+<form class="form" method="post" action="{{ url_for('routes_new') }}" id="routeForm">
+  <label>
+    {{ tr('路线名称') }}
+    <input type="text" name="title" placeholder="{{ tr('比如：东京三日步行路线') }}" maxlength="80">
+  </label>
+  <label>
+    {{ tr('国家/地区') }}
+    <select name="country">
+      <option value=""></option>
+      {% for c in countries %}
+      <option value="{{ c }}">{{ tr(c) }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <input type="hidden" name="points" id="pointsInput" value="[]">
+  <button type="submit">{{ tr('保存路线') }}</button>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script>
+(function () {
+  var map = L.map('drawMap').setView([35, 105], 3);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  var points = [];
+  var line = L.polyline([], { color: '#b5654a', weight: 4 }).addTo(map);
+  var markers = [];
+  var pointsInput = document.getElementById('pointsInput');
+  var pointCount = document.getElementById('pointCount');
+
+  function sync() {
+    line.setLatLngs(points.map(function (p) { return [p.lat, p.lng]; }));
+    pointsInput.value = JSON.stringify(points);
+    pointCount.textContent = {{ tr('已选 {n} 个点') | tojson }}.replace('{n}', points.length);
+  }
+
+  map.on('click', function (e) {
+    var p = { lat: e.latlng.lat, lng: e.latlng.lng };
+    points.push(p);
+    var marker = L.circleMarker(e.latlng, { radius: 5, color: '#3d7a51', fillOpacity: 1 }).addTo(map);
+    markers.push(marker);
+    sync();
+  });
+
+  document.getElementById('undoPointBtn').addEventListener('click', function () {
+    points.pop();
+    var m = markers.pop();
+    if (m) map.removeLayer(m);
+    sync();
+  });
+
+  document.getElementById('clearPointsBtn').addEventListener('click', function () {
+    points = [];
+    markers.forEach(function (m) { map.removeLayer(m); });
+    markers = [];
+    sync();
+  });
+
+  document.querySelectorAll('.route-jump').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      map.setView([parseFloat(btn.dataset.lat), parseFloat(btn.dataset.lng)], parseInt(btn.dataset.zoom, 10));
+    });
+  });
+
+  document.getElementById('routeForm').addEventListener('submit', function (e) {
+    if (points.length < 2) {
+      e.preventDefault();
+      alert({{ tr('路线至少需要两个点，在地图上多点几下') | tojson }});
+    }
+  });
+
+  sync();
+})();
+</script>
+{% endblock %}

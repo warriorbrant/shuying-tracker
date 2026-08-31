@@ -1,5 +1,6 @@
 import hashlib
 import io
+import json
 import mimetypes
 import os
 import re
@@ -55,6 +56,7 @@ from share_card import (
     build_day_share_card,
     build_expense_bar_share_card,
     build_novel_share_card,
+    build_route_share_card,
     build_share_card,
     build_showcase_card,
     build_trading_share_card,
@@ -270,7 +272,7 @@ def inject_asset_version():
 PUBLIC_ENDPOINTS = {
     "login", "register", "reset_password", "static", "changelog", "changelog_more",
     "changelog_share_image", "index", "serve_novel_media", "novels_list", "novel_detail",
-    "novel_chapter_read", "novel_share_image", "cover_proxy",
+    "novel_chapter_read", "novel_share_image", "cover_proxy", "route_detail", "route_share_image",
 }
 
 # Polling endpoint for the metrics page itself — excluded so it doesn't skew its own stats.
@@ -2148,6 +2150,152 @@ def showcase_share_image():
         mimetype="image/png",
         as_attachment=bool(download),
         download_name=f"showcase-{date.today().isoformat()}.png" if download else None,
+        max_age=0,
+    )
+
+
+# Just a label for organizing the list / centering the draw-map's initial
+# view -- not a hard technical restriction, OSM tiles cover the world.
+ROUTE_COUNTRIES = ["中国", "日本", "美国", "其他"]
+
+
+ROUTE_MAX_POINTS = 2000  # generous for hand-clicked points; just a backstop
+# against a client-side glitch (e.g. a double-firing click handler) flooding
+# storage or, worse, generating a share-image request that hammers OSM's
+# tile servers for thousands of tiles at once.
+
+
+def _parse_route_points(raw):
+    """raw: the JSON string posted from the draw-route form (a list of
+    {"lat":, "lng":} objects, see db.py's custom_routes.points comment).
+    Drops anything malformed instead of failing the whole save -- a few bad
+    points from some client-side glitch shouldn't lose an otherwise-valid
+    route. Returns [] if raw doesn't even parse as JSON."""
+    try:
+        points = json.loads(raw or "[]")
+    except (TypeError, ValueError):
+        return []
+    clean = []
+    for p in points if isinstance(points, list) else []:
+        if len(clean) >= ROUTE_MAX_POINTS:
+            break
+        try:
+            lat, lng = float(p["lat"]), float(p["lng"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if -90 <= lat <= 90 and -180 <= lng <= 180:
+            clean.append({"lat": lat, "lng": lng})
+    return clean
+
+
+def _route_is_locked_for_viewer(route):
+    if not route["is_locked"]:
+        return False
+    return not g.user or (g.user["id"] != route["user_id"] and not g.user["is_admin"])
+
+
+@app.route("/routes")
+def routes_list():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM custom_routes WHERE user_id = ? ORDER BY created_at DESC", (g.user["id"],)
+    ).fetchall()
+    conn.close()
+    routes = []
+    for r in rows:
+        d = dict(r)
+        d["points"] = json.loads(d["points"])
+        routes.append(d)
+    return render_template("routes_list.html", routes=routes, info=request.args.get("info"))
+
+
+@app.route("/routes/new", methods=["GET", "POST"])
+def routes_new():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip() or tr("未命名路线")
+        country = request.form.get("country", "").strip()
+        points = _parse_route_points(request.form.get("points"))
+        if len(points) < 2:
+            return redirect(url_for("routes_new", error=tr("路线至少需要两个点，在地图上多点几下")))
+
+        conn = get_db()
+        cur = conn.execute(
+            "INSERT INTO custom_routes (user_id, title, country, points) VALUES (?, ?, ?, ?)",
+            (g.user["id"], title, country, json.dumps(points)),
+        )
+        route_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+        return redirect(url_for("route_detail", route_id=route_id))
+
+    return render_template("routes_new.html", countries=ROUTE_COUNTRIES, error=request.args.get("error"))
+
+
+@app.route("/routes/<int:route_id>")
+def route_detail(route_id):
+    conn = get_db()
+    route = conn.execute("SELECT * FROM custom_routes WHERE id = ?", (route_id,)).fetchone()
+    conn.close()
+    if route is None:
+        return "未找到该路线", 404
+
+    if _route_is_locked_for_viewer(route):
+        return "这条路线还没有公开分享，只有创建者能看", 403
+
+    is_owner = bool(g.user) and g.user["id"] == route["user_id"]
+    points = json.loads(route["points"])
+    return render_template("route_detail.html", route=route, points=points, is_owner=is_owner)
+
+
+@app.route("/routes/<int:route_id>/share", methods=["POST"])
+def route_share_toggle(route_id):
+    conn = get_db()
+    route = conn.execute("SELECT * FROM custom_routes WHERE id = ?", (route_id,)).fetchone()
+    if route is None or route["user_id"] != g.user["id"]:
+        conn.close()
+        return "未找到该路线", 404
+    new_locked = 0 if route["is_locked"] else 1
+    conn.execute(
+        "UPDATE custom_routes SET is_locked = ?, updated_at = datetime('now','localtime') WHERE id = ?",
+        (new_locked, route_id),
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("route_detail", route_id=route_id))
+
+
+@app.route("/routes/<int:route_id>/delete", methods=["POST"])
+def route_delete(route_id):
+    conn = get_db()
+    route = conn.execute("SELECT * FROM custom_routes WHERE id = ?", (route_id,)).fetchone()
+    if route is None or route["user_id"] != g.user["id"]:
+        conn.close()
+        return "未找到该路线", 404
+    conn.execute("DELETE FROM custom_routes WHERE id = ?", (route_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("routes_list", info=tr("已删除该路线")))
+
+
+@app.route("/routes/<int:route_id>/share.png")
+def route_share_image(route_id):
+    conn = get_db()
+    route = conn.execute("SELECT * FROM custom_routes WHERE id = ?", (route_id,)).fetchone()
+    conn.close()
+    if route is None:
+        return "未找到该路线", 404
+    if _route_is_locked_for_viewer(route):
+        return "这条路线还没有公开分享，只有创建者能看", 403
+
+    points = json.loads(route["points"])
+    buf = build_route_share_card(route["title"], points)
+
+    download = request.args.get("download")
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=bool(download),
+        download_name=f"route-{route_id}-{date.today().isoformat()}.png" if download else None,
         max_age=0,
     )
 

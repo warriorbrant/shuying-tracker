@@ -22,6 +22,7 @@
         <a href="{{ url_for('trading') }}">{{ tr('📈 交易') }}</a>
         <a href="{{ url_for('expenses') }}">{{ tr('💰 消费') }}</a>
         <a href="{{ url_for('showcase') }}">{{ tr('✨ 功能一览') }}</a>
+        <a href="{{ url_for('routes_list') }}">{{ tr('🗺️ 路线') }}</a>
         <a href="{{ url_for('search') }}">{{ tr('🔍 搜索') }}</a>
         <a href="{{ url_for('admin_metrics_page') }}">{{ tr('📊 性能指标') }}</a>
         {% if current_user.is_admin %}

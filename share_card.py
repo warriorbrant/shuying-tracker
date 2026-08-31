@@ -1130,3 +1130,56 @@ def build_showcase_card(features):
     card.save(buf, format="PNG")
     buf.seek(0)
     return buf
+
+
+def build_route_share_card(title, points):
+    """points: list of {"lat":, "lng":} dicts (already validated -- see
+    app.py's _parse_route_points). Unlike every other card in this file,
+    which draws its own abstract chart, this one renders the actual OSM
+    basemap via the `staticmap` library (pure Python, Pillow-based --
+    fetches real map tiles over the network) with the route drawn on top,
+    then composes that onto a branded card matching the rest of this
+    module's look."""
+    from staticmap import CircleMarker, Line, StaticMap
+
+    W = 1080
+    pad = 48
+    header_h = 100
+    map_w = W - pad * 2
+    map_h = 760
+    footer_h = 70
+    H = header_h + map_h + footer_h + pad
+
+    card = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(card)
+
+    title_font = _font(44, bold=True)
+    draw.text((pad, pad - 10), title or "我的路线", font=title_font, fill=TEXT)
+
+    if points:
+        m = StaticMap(
+            map_w, map_h, padding_x=30, padding_y=30,
+            headers={"User-Agent": "zhixingheyi-app/1.0 (+personal project, contact via GitHub issues)"},
+        )
+        coords = [(p["lng"], p["lat"]) for p in points]  # staticmap wants (lon, lat)
+        if len(coords) >= 2:
+            m.add_line(Line(coords, "#b5654a", 5))
+        m.add_marker(CircleMarker(coords[0], "#3d7a51", 12))
+        if len(coords) >= 2:
+            m.add_marker(CircleMarker(coords[-1], "#a34a3d", 12))
+        map_img = m.render()
+        card.paste(map_img, (pad, header_h))
+    else:
+        empty_font = _font(28)
+        draw.text((pad, header_h + map_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)
+
+    footer_font = _font(24)
+    watermark = f"知行合一AI实验室 · {date.today().isoformat()}"
+    bbox = draw.textbbox((0, 0), watermark, font=footer_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) / 2, H - 50), watermark, font=footer_font, fill=MUTED)
+
+    buf = io.BytesIO()
+    card.save(buf, format="PNG")
+    buf.seek(0)
+    return buf

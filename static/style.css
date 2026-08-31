@@ -2396,3 +2396,52 @@ label.checkbox-label {
   .demo-trading-line { stroke-dashoffset: 0 !important; }
   .demo-novel-line { clip-path: inset(0 0 0 0) !important; }
 }
+
+.route-map {
+  width: 100%;
+  height: 480px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.route-jump-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.route-map-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.route-card {
+  display: block;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.route-card-body h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.route-card-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+}

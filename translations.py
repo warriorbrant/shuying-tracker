@@ -545,4 +545,42 @@ TR = {
     "读完《百年孤独》第三章": "Finished Ch. 3 of a novel",
     "跑步 5 公里": "Ran 5 km",
     "今天想明白一件事": "Figured something out today",
+
+    # --- routes (draw-a-route feature) ---
+    "🗺️ 路线": "🗺️ Routes",
+    "画新路线": "Draw a Route",
+    "在地图上依次点几下，连成一条路线；点错了可以撤销最后一个点。":
+        "Click a few points on the map in order to build a route; misclicked? undo just the last point.",
+    "跳到中国": "Jump to China",
+    "跳到日本": "Jump to Japan",
+    "跳到美国": "Jump to the US",
+    "↩️ 撤销上一个点": "↩️ Undo last point",
+    "🗑️ 清空": "🗑️ Clear",
+    "已选 {n} 个点": "{n} point(s) selected",
+    "路线名称": "Route name",
+    "比如：东京三日步行路线": "e.g. 3-day Tokyo walking route",
+    "国家/地区": "Country/Region",
+    "保存路线": "Save Route",
+    "路线至少需要两个点，在地图上多点几下": "A route needs at least two points -- click a few more on the map",
+    "中国": "China",
+    "日本": "Japan",
+    "美国": "United States",
+    "其他": "Other",
+    "我的路线": "My Routes",
+    "+ 画新路线": "+ Draw a Route",
+    "{n} 个点 · {d}": "{n} points · {d}",
+    "还没有画过路线，": "No routes drawn yet, ",
+    "画第一条": "draw your first one",
+    "← 我的路线": "← My Routes",
+    "{n} 个点 · 创建于 {d}": "{n} points · created {d}",
+    "🌐 公开分享": "🌐 Share Publicly",
+    "🔒 取消公开": "🔒 Make Private",
+    "确定删除这条路线吗？此操作不可撤销。": "Delete this route? This can't be undone.",
+    "还没公开——只有你自己能看到这条路线。点「公开分享」后，链接和分享图任何人都能打开。":
+        "Not shared yet -- only you can see this route. Once you \"Share Publicly\", "
+        "the link and share image become viewable by anyone.",
+    "已公开——任何拿到链接的人都能看到这条路线（不需要登录）。":
+        "Shared -- anyone with the link can view this route, no login needed.",
+    "未命名路线": "Untitled Route",
+    "已删除该路线": "Route deleted.",
 }

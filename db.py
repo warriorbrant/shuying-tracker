@@ -198,6 +198,27 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
 );
 CREATE INDEX IF NOT EXISTS idx_bank_transactions_user_date ON bank_transactions(user_id, tx_date);
 
+-- User-drawn routes (click points on a Leaflet map -> polyline), not
+-- imported from anywhere -- see the custom_routes feature. `points` is a
+-- JSON array of {"lat":, "lng":} objects (an object per point rather than a
+-- bare [lat, lng] pair, deliberately, so the field names catch a swapped
+-- lat/lng bug immediately instead of silently plotting a valid-looking but
+-- wrong point). `is_locked` follows the exact same convention as
+-- novels.is_locked (1 = only the owner can view, 0 = anyone with the link
+-- can) but defaults to locked here, opposite of novels -- a route stays
+-- private until its owner explicitly shares it.
+CREATE TABLE IF NOT EXISTS custom_routes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    title TEXT NOT NULL DEFAULT '',
+    country TEXT NOT NULL DEFAULT '',
+    points TEXT NOT NULL,
+    is_locked INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_custom_routes_user_id ON custom_routes(user_id);
+
 -- Indexes on the foreign keys / date columns that every list query filters on.
 -- Cheap and idempotent; keeps per-novel and per-item lookups from full-scanning
 -- as chapters/logs grow (a novel already has dozens of chapters).
