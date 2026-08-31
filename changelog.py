@@ -3137,4 +3137,31 @@ CHANGELOG = [
         "lines_changed": 90,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线轮廓的标签拥挤问题重新解决——保留米色简洁风格，不带羊皮纸/山脉那套",
+        "title_en": "Route Outline crowded-label fix reapplied — kept the plain cream look this time",
+        "summary": (
+            "退回最初那版之后拥挤问题又出现了（毕竟那两个修复本来就是为了解决这个）。这次把「标签挤在"
+            "一起时自动找空位、必要时画引线连回对应点」和「画布从 1080×760 放大到 1500×1000」这两个"
+            "修复重新加了回来，但只保留跟画法本身有关的部分——米色背景、纯彩色圆点、没有羊皮纸底色、"
+            "没有城楼图标、也没有山脉河流标注，跟撤销前的简洁版本保持一致。用同一条丽江到武汉、经过"
+            "14 个城市（昆明附近、南昌附近各挤了三个点）的路线重新测过，两处密集区域标签都清晰可读，"
+            "视觉风格还是原来那个简单干净的样子。"
+        ),
+        "summary_en": (
+            "Reverting back to the original look brought the crowding problem right back with it -- those "
+            "two fixes existed specifically to solve it. Reapplied both: labels search for empty space "
+            "when crowded (with a leader line back to the point when they get pushed away from the "
+            "default straight-below spot), and the canvas grew from 1080x760 to 1500x1000. Kept only the "
+            "parts that are about layout, not the parchment/watchtower/mountain-river styling that came "
+            "out along with the revert -- still plain cream background, plain colored dots, matching the "
+            "simple look from before. Re-tested with the same 14-city Lijiang-to-Wuhan route (tight "
+            "clusters near Kunming and near Nanchang) -- both crowded areas are legible again, and the "
+            "visual style stayed simple and clean."
+        ),
+        "image": None,
+        "lines_changed": 60,
+        "estimated": False,
+    },
 ]

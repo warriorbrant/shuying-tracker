@@ -1224,11 +1224,19 @@ def build_route_outline_card(title, points):
     latitude-corrected equirectangular scale, not a real map projection)
     connected in order, with each named point's city label drawn next to
     it. For when the shape and the sequence of places matter more than the
-    surrounding geography -- faster too, since there's no tile fetching."""
-    W = 1080
+    surrounding geography -- faster too, since there's no tile fetching.
+
+    Sized well beyond the usual 1080-wide share card -- the whole route's
+    extent gets fit into this canvas at one uniform scale, so a route
+    spanning a long distance with a tight local cluster of points (a few
+    cities close together early in a long trip, say) leaves that cluster
+    only a handful of pixels across no matter how good the label placement
+    is. A bigger canvas gives every degree more pixels to work with, which
+    is what actually helps."""
+    W = 1500
     pad = 64
     header_h = 110
-    plot_h = 760
+    plot_h = 1000
     footer_h = 70
     H = header_h + plot_h + footer_h + pad
 
@@ -1241,6 +1249,7 @@ def build_route_outline_card(title, points):
     plot_top = header_h
     plot_left = pad
     plot_right = W - pad
+    plot_bottom = plot_top + plot_h
 
     if points:
         lats = [p["lat"] for p in points]
@@ -1268,6 +1277,39 @@ def build_route_outline_card(title, points):
             y = cy - (p["lat"] - lat_mid) * scale  # north is up
             return x, y
 
+        def boxes_overlap(a, b):
+            return a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]
+
+        # Try a ring of candidate positions around a point for a label,
+        # widening the ring each pass, and return the first spot that
+        # doesn't collide with anything already placed. Straight-below at
+        # the smallest radius is tried first, so an isolated point's label
+        # looks exactly like the old fixed placement -- only a point with
+        # something already nearby gets pushed outward. needs_leader is
+        # False only for that first straight-below case, so the caller
+        # knows when a connector line back to the point is needed to keep
+        # the label legible as belonging to it.
+        label_directions = [
+            (0, 1), (0, -1), (1.3, 0.15), (-1.3, 0.15),
+            (1, 0.9), (-1, 0.9), (1, -0.9), (-1, -0.9),
+        ]
+
+        def place_label(x, y, text, font, reserved):
+            bbox = draw.textbbox((0, 0), text, font=font)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            fallback = None
+            for pass_i, radius in enumerate((16, 34, 56, 84)):
+                for dir_i, (dx, dy) in enumerate(label_directions):
+                    ox, oy = x + dx * radius, y + dy * radius
+                    lx = min(max(ox - tw / 2, plot_left), plot_right - tw)
+                    ly = min(max(oy - th / 2, plot_top), plot_bottom - th)
+                    box = (lx - 5, ly - 3, lx + tw + 5, ly + th + 5)
+                    if fallback is None:
+                        fallback = (lx, ly, box)
+                    if not any(boxes_overlap(box, other) for other in reserved):
+                        return lx, ly, box, not (pass_i == 0 and dir_i == 0)
+            return fallback[0], fallback[1], fallback[2], True  # everything collided; use it anyway
+
         coords = [project(p) for p in points]
 
         if len(coords) >= 2:
@@ -1276,6 +1318,8 @@ def build_route_outline_card(title, points):
 
         label_font = _font(22)
         r = 8
+        reserved_boxes = []
+        city_labels = []  # (icon_x, icon_y, label_x, label_y, label, box, needs_leader)
         for i, (pt, (x, y)) in enumerate(zip(points, coords)):
             if i == 0:
                 dot_color = POSITIVE_COLOR
@@ -1287,14 +1331,18 @@ def build_route_outline_card(title, points):
             draw.ellipse([x - r, y - r, x + r, y + r], fill=dot_color)
 
             label = pt.get("label")
-            if label:
-                bbox = draw.textbbox((0, 0), label, font=label_font)
-                tw = bbox[2] - bbox[0]
-                th = bbox[3] - bbox[1]
-                lx = min(max(x - tw / 2, plot_left), plot_right - tw)
-                ly = y + r + 8
-                draw.rectangle([lx - 5, ly - 3, lx + tw + 5, ly + th + 5], fill=BG)
-                draw.text((lx, ly), label, font=label_font, fill=TEXT)
+            if not label:
+                continue
+            lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
+            reserved_boxes.append(box)
+            city_labels.append((x, y, lx, ly, label, box, needs_leader))
+
+        for icon_x, icon_y, lx, ly, label, box, needs_leader in city_labels:
+            if needs_leader:
+                label_cx, label_cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+                draw.line([(icon_x, icon_y), (label_cx, label_cy)], fill=MUTED, width=1)
+            draw.rectangle([box[0], box[1], box[2], box[3]], fill=BG)
+            draw.text((lx, ly), label, font=label_font, fill=TEXT)
     else:
         empty_font = _font(28)
         draw.text((pad, plot_top + plot_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)
