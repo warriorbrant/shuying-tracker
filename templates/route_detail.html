@@ -43,14 +43,12 @@
 {% block scripts %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
 <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='route-map.js') }}?v={{ asset_version }}"></script>
 <script>
 (function () {
   var points = {{ points | tojson }};
   var map = L.map('viewMap');
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  addRouteBaseLayers(map, { standard: {{ tr('标准地图') | tojson }}, terrain: {{ tr('地形图') | tojson }} });
 
   if (points.length) {
     var latlngs = points.map(function (p) { return [p.lat, p.lng]; });

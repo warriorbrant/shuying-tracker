@@ -2896,4 +2896,27 @@ CHANGELOG = [
         "lines_changed": 150,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线地图可以切换成地形图了",
+        "title_en": "Route maps can switch to a terrain view",
+        "summary": (
+            "画路线和查看路线两个页面的地图右上角多了个图层切换按钮，能在「标准地图」（原来的 OSM 街道图）"
+            "和「地形图」（OpenTopoMap，带等高线和地势晕渲，能看出山脉/海拔起伏）之间切换，同样不用申请"
+            "任何 API key。两个页面共用的图层设置逻辑抽成了一个小的公共 JS 文件（`route-map.js`），避免"
+            "同样的代码写两遍。分享图（真实地图那张 PNG）暂时还是固定用标准地图样式，没有跟着切换。"
+        ),
+        "summary_en": (
+            "Both the draw-route and view-route pages now have a layer-switcher control in the map's "
+            "top-right corner, toggling between \"Standard\" (the existing OSM street tiles) and "
+            "\"Terrain\" (OpenTopoMap, with contour lines and hillshading so mountain ranges and "
+            "elevation actually show up) -- no API key needed for either. Pulled the shared tile-layer "
+            "setup into a small common JS file (`route-map.js`) instead of duplicating it across both "
+            "templates. The share image (the real-map PNG) still always uses the standard style for now, "
+            "it doesn't follow the toggle."
+        ),
+        "image": None,
+        "lines_changed": 35,
+        "estimated": False,
+    },
 ]
