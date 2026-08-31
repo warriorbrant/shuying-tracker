@@ -41,7 +41,7 @@
 
 <section class="log-section">
   <h2>{{ tr('标注河流 / 山脉（可选）') }}</h2>
-  <p class="hint">{{ tr('先画好路线的点，再在这里输入河流、山脉的名字（一行一个）——河流会查出真实的河道形状连成线，山脉会标一个图标和名字，都会画在「路线轮廓」分享图上。查找范围是路线本身所在的一片区域，太远、查不到的会保留在框里方便重试。每次点「解析并标注」都会替换掉当前的标注，如果结果不满意，可以点「撤销本次标注」恢复成上一次的样子。') }}</p>
+  <p class="hint">{{ tr('先画好路线的点，再在这里输入河流、山脉的名字（一行一个）——河流会查出真实的河道形状连成线，山脉会标一个图标和名字，都会画在「路线轮廓」分享图上。查找范围是路线本身所在的一片区域，太远、查不到的会保留在框里方便重试。') }}</p>
   <div class="route-landmarks-row">
     <div class="route-landmarks-col">
       <label for="mountainsInput_text">{{ tr('山脉名称') }}</label>
@@ -54,7 +54,6 @@
   </div>
   <div class="route-map-actions">
     <button type="button" id="resolveLandmarksBtn" class="btn-link">{{ tr('🏔️ 解析并标注') }}</button>
-    <button type="button" id="rollbackLandmarksBtn" class="btn-link" style="display:none;">{{ tr('↩️ 撤销本次标注') }}</button>
     <span id="landmarkStatus" class="hint"></span>
   </div>
 </section>
@@ -269,13 +268,11 @@
   var mountainsDataInput = document.getElementById('mountainsInput');
   var riversDataInput = document.getElementById('riversInput');
   var resolveLandmarksBtn = document.getElementById('resolveLandmarksBtn');
-  var rollbackLandmarksBtn = document.getElementById('rollbackLandmarksBtn');
   var landmarkStatus = document.getElementById('landmarkStatus');
 
   var mountains = [];
   var rivers = [];
   var landmarkLayers = [];
-  var rollbackLandmarksSnapshot = null;
 
   function syncLandmarks() {
     mountainsDataInput.value = JSON.stringify(mountains);
@@ -331,22 +328,6 @@
     return null;
   }
 
-  // Single-level undo, same idea as the place-names box's rollback -- a
-  // resolve always fully replaces the current mountains/rivers, and a
-  // fresh query can land on a worse match (or a river that resolved fine
-  // last time times out this time), so there needs to be a way back to
-  // what was there before without retyping every name.
-  rollbackLandmarksBtn.addEventListener('click', function () {
-    if (!rollbackLandmarksSnapshot) return;
-    mountains = rollbackLandmarksSnapshot.mountains;
-    rivers = rollbackLandmarksSnapshot.rivers;
-    drawLandmarks();
-    syncLandmarks();
-    rollbackLandmarksSnapshot = null;
-    rollbackLandmarksBtn.style.display = 'none';
-    landmarkStatus.textContent = {{ tr('已恢复到标注之前的样子') | tojson }};
-  });
-
   resolveLandmarksBtn.addEventListener('click', function () {
     var mountainNames = mountainsTextInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     var riverNames = riversTextInput.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -356,10 +337,6 @@
       return;
     }
     resolveLandmarksBtn.disabled = true;
-    var snapshotBeforeResolve = {
-      mountains: mountains.map(function (m) { return { name: m.name, lat: m.lat, lng: m.lng }; }),
-      rivers: rivers.map(function (r) { return { name: r.name, segments: r.segments }; }),
-    };
     var bbox = routeBoundsWithMargin(points, 0.25, 0.5);
     (async function () {
       var newMountains = [];
@@ -390,8 +367,6 @@
       rivers = newRivers;
       drawLandmarks();
       syncLandmarks();
-      rollbackLandmarksSnapshot = snapshotBeforeResolve;
-      rollbackLandmarksBtn.style.display = '';
       var okCount = newMountains.length + newRivers.length;
       var summary = {{ tr('完成：成功 {ok} 个') | tojson }}.replace('{ok}', okCount);
       var failedAll = failedMountains.concat(failedRivers);
