@@ -549,6 +549,7 @@ TR = {
     # --- routes (draw-a-route feature) ---
     "🗺️ 路线": "🗺️ Routes",
     "标准地图": "Standard",
+    "分享图样式：": "Share image style: ",
     "地形图": "Terrain",
     "画新路线": "Draw a Route",
     "在地图上依次点几下，连成一条路线；也可以在下面直接输入地点名称，自动查坐标连线。点错了可以撤销最后一个点。":

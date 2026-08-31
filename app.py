@@ -2294,7 +2294,8 @@ def route_share_image(route_id):
         return "这条路线还没有公开分享，只有创建者能看", 403
 
     points = json.loads(route["points"])
-    buf = build_route_share_card(route["title"], points)
+    style = request.args.get("style") if request.args.get("style") in ("standard", "terrain") else "standard"
+    buf = build_route_share_card(route["title"], points, style=style)
 
     download = request.args.get("download")
     return send_file(

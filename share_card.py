@@ -1132,23 +1132,45 @@ def build_showcase_card(features):
     return buf
 
 
-def build_route_share_card(title, points):
+ROUTE_MAP_STYLES = {
+    "standard": {
+        "url_template": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "地图数据 © OpenStreetMap 贡献者",
+    },
+    "terrain": {
+        # staticmap's url_template only substitutes {z}/{x}/{y} (plain
+        # str.format) -- unlike Leaflet, it has no {s} subdomain rotation,
+        # so a fixed single subdomain is used here instead of route-map.js's
+        # {s} version. Fine for a one-off server-side render (no need for
+        # a browser's multi-subdomain parallel tile loading).
+        "url_template": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "attribution": "地图数据 © OpenStreetMap 贡献者、SRTM · 样式 © OpenTopoMap (CC-BY-SA)",
+    },
+}
+
+
+def build_route_share_card(title, points, style="standard"):
     """points: list of {"lat":, "lng":} dicts (already validated -- see
-    app.py's _parse_route_points). Unlike every other card in this file,
-    which draws its own abstract chart, this one renders the actual OSM
-    basemap via the `staticmap` library (pure Python, Pillow-based --
-    fetches real map tiles over the network) with the route drawn on top,
-    then composes that onto a branded card matching the rest of this
-    module's look."""
+    app.py's _parse_route_points). style: "standard" or "terrain", matching
+    the two base layers on the interactive map (see route-map.js) -- picks
+    which tile source staticmap renders from. Unlike every other card in
+    this file, which draws its own abstract chart, this one renders the
+    actual OSM/OpenTopoMap basemap via the `staticmap` library (pure
+    Python, Pillow-based -- fetches real map tiles over the network) with
+    the route drawn on top, then composes that onto a branded card matching
+    the rest of this module's look."""
     from staticmap import CircleMarker, Line, StaticMap
+
+    style_info = ROUTE_MAP_STYLES.get(style, ROUTE_MAP_STYLES["standard"])
 
     W = 1080
     pad = 48
     header_h = 100
     map_w = W - pad * 2
     map_h = 760
+    attribution_h = 28
     footer_h = 70
-    H = header_h + map_h + footer_h + pad
+    H = header_h + map_h + attribution_h + footer_h + pad
 
     card = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(card)
@@ -1159,6 +1181,7 @@ def build_route_share_card(title, points):
     if points:
         m = StaticMap(
             map_w, map_h, padding_x=30, padding_y=30,
+            url_template=style_info["url_template"],
             headers={"User-Agent": "zhixingheyi-app/1.0 (+personal project, contact via GitHub issues)"},
         )
         coords = [(p["lng"], p["lat"]) for p in points]  # staticmap wants (lon, lat)
@@ -1172,6 +1195,9 @@ def build_route_share_card(title, points):
     else:
         empty_font = _font(28)
         draw.text((pad, header_h + map_h / 2 - 15), "这条路线还没有点", font=empty_font, fill=MUTED)
+
+    attribution_font = _font(18)
+    draw.text((pad, header_h + map_h + 6), style_info["attribution"], font=attribution_font, fill=MUTED)
 
     footer_font = _font(24)
     watermark = f"知行合一AI实验室 · {date.today().isoformat()}"

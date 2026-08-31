@@ -2919,4 +2919,35 @@ CHANGELOG = [
         "lines_changed": 35,
         "estimated": False,
     },
+    {
+        "date": "2026-08-31",
+        "title": "路线分享图也能选地形图样式了，顺手补上了一直缺的地图版权信息",
+        "title_en": "Route share image can use terrain style too — also added the map attribution it was missing",
+        "summary": (
+            "上次说分享图暂时固定标准地图样式，现在补上了——路线详情页加了个「分享图样式」下拉框（标准/"
+            "地形），选好了「生成分享图」「先预览」两个链接会带上对应的参数。做的时候发现 `staticmap` 库"
+            "跟 Leaflet 不一样，不支持 `{s}` 子域名占位符（Leaflet 自己会轮换 a/b/c 三个子域名，"
+            "`staticmap` 只会原样把 `{s}` 当成字面量去请求，直接报错），改成固定用一个子域名就好了，"
+            "单张图片本来也不需要多子域名并发。顺便发现分享图这张 PNG 图片里其实从来没显示过地图版权"
+            "信息（网页上的交互地图是 Leaflet 自动加的，图片这边漏了），这次一并加上了——标准地图显示"
+            "「地图数据 © OpenStreetMap 贡献者」，地形图显示完整的 OpenStreetMap + SRTM + OpenTopoMap "
+            "版权声明。"
+        ),
+        "summary_en": (
+            "Followed up on last time's \"share image is still fixed to standard style for now\" -- added "
+            "a \"Share image style\" dropdown (Standard/Terrain) on the route detail page; picking one "
+            "appends the right parameter to both the generate and preview links. Hit a bug while building "
+            "it: `staticmap` doesn't support Leaflet's `{s}` subdomain placeholder (Leaflet rotates "
+            "through a/b/c subdomains itself; `staticmap` just tries to request the literal string `{s}` "
+            "and errors), fixed by pinning to a single subdomain -- a one-off image render doesn't need "
+            "the multi-subdomain parallelism anyway. Also noticed along the way that the share image PNG "
+            "never actually showed map attribution at all (the interactive map gets it for free from "
+            "Leaflet's built-in control, but the static image never had it baked in) -- added it now: "
+            "\"© OpenStreetMap contributors\" for standard, the full OpenStreetMap + SRTM + OpenTopoMap "
+            "notice for terrain."
+        ),
+        "image": None,
+        "lines_changed": 70,
+        "estimated": False,
+    },
 ]

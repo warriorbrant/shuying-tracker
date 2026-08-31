@@ -17,14 +17,21 @@
 
 {% if is_owner %}
 <section class="log-section">
+  <label class="checkbox-hint">
+    <span>{{ tr('分享图样式：') }}</span>
+    <select id="shareStyleSelect">
+      <option value="standard">{{ tr('标准地图') }}</option>
+      <option value="terrain">{{ tr('地形图') }}</option>
+    </select>
+  </label>
   <div class="actions">
     <form method="post" action="{{ url_for('route_share_toggle', route_id=route.id) }}" class="inline-delete">
       <button type="submit" class="btn-link">
         {% if route.is_locked %}{{ tr('🌐 公开分享') }}{% else %}{{ tr('🔒 取消公开') }}{% endif %}
       </button>
     </form>
-    <a class="btn-share" href="{{ url_for('route_share_image', route_id=route.id, download=1) }}">{{ tr('📤 生成分享图') }}</a>
-    <a class="btn-link" href="{{ url_for('route_share_image', route_id=route.id) }}" target="_blank">{{ tr('先预览') }}</a>
+    <a class="btn-share" id="routeShareBtn" href="{{ url_for('route_share_image', route_id=route.id, download=1) }}">{{ tr('📤 生成分享图') }}</a>
+    <a class="btn-link" id="routePreviewBtn" href="{{ url_for('route_share_image', route_id=route.id) }}" target="_blank">{{ tr('先预览') }}</a>
     <form method="post" action="{{ url_for('route_delete', route_id=route.id) }}"
           onsubmit="return confirm({{ tr('确定删除这条路线吗？此操作不可撤销。') | tojson }});" class="inline-delete">
       <button type="submit" class="btn-link-danger">{{ tr('删除') }}</button>
@@ -66,6 +73,22 @@
     map.fitBounds(line.getBounds(), { padding: [24, 24] });
   } else {
     map.setView([35, 105], 3);
+  }
+
+  var styleSelect = document.getElementById('shareStyleSelect');
+  var shareBtn = document.getElementById('routeShareBtn');
+  var previewBtn = document.getElementById('routePreviewBtn');
+  if (styleSelect && shareBtn && previewBtn) {
+    var shareBase = shareBtn.getAttribute('href');
+    var previewBase = previewBtn.getAttribute('href');
+    function withStyle(url) {
+      if (styleSelect.value !== 'terrain') return url;
+      return url + (url.indexOf('?') === -1 ? '?' : '&') + 'style=terrain';
+    }
+    styleSelect.addEventListener('change', function () {
+      shareBtn.setAttribute('href', withStyle(shareBase));
+      previewBtn.setAttribute('href', withStyle(previewBase));
+    });
   }
 })();
 </script>
