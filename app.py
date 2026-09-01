@@ -2123,6 +2123,13 @@ SHOWCASE_FEATURES = [
                    "the browser -- readers follow along on the same site.",
     },
     {
+        "endpoint": "routes_list", "emoji": "🗺️",
+        "title": "路线", "title_en": "Routes",
+        "desc": "在真实地图上手绘一条路线，或者直接输入地名自动连线，存好了随时能公开分享出去。",
+        "desc_en": "Hand-draw a route on a real map, or just type place names and have them connected "
+                   "automatically -- save it and share the link whenever you're ready.",
+    },
+    {
         "endpoint": "moment_new", "emoji": "📝",
         "title": "分享动态", "title_en": "Life Moments",
         "desc": "记录看书追剧、运动健身、生活点滴，还能把手机截图丢给 AI 自动识别导入。",

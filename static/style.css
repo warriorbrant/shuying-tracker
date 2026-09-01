@@ -2252,6 +2252,7 @@ label.checkbox-label {
 .showcase-card-2 { animation-delay: 0.15s; }
 .showcase-card-3 { animation-delay: 0.25s; }
 .showcase-card-4 { animation-delay: 0.35s; }
+.showcase-card-5 { animation-delay: 0.45s; }
 
 @keyframes showcase-card-in {
   from { opacity: 0; transform: translateY(14px); }
@@ -2344,6 +2345,33 @@ label.checkbox-label {
   75%, 90% { opacity: 1; transform: scale(1); }
   100%     { opacity: 0; transform: scale(0.5); }
 }
+
+.demo-routes-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: demo-draw 3.6s ease-in-out infinite;
+}
+
+.demo-routes-dot {
+  opacity: 0;
+  stroke: #fff;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: demo-dot-pop 3.6s ease-in-out infinite;
+}
+
+/* Same start-green/via-accent/end-red coloring as an actual route's own
+   dots, and staggered delays so each pops roughly when the line reaches
+   it instead of all three appearing at once. */
+.demo-routes-dot-1 { fill: #3d7a51; animation-delay: 0s; }
+.demo-routes-dot-2 { fill: var(--accent); animation-delay: 0.35s; }
+.demo-routes-dot-3 { fill: #a34a3d; animation-delay: 0.7s; }
 
 .demo-bar {
   transform-box: fill-box;
@@ -2449,6 +2477,8 @@ label.checkbox-label {
   .showcase-card,
   .demo-trading-line,
   .demo-trading-dot,
+  .demo-routes-line,
+  .demo-routes-dot,
   .demo-bar,
   .demo-novel-line,
   .demo-cursor,
@@ -2458,6 +2488,7 @@ label.checkbox-label {
     transform: none !important;
   }
   .demo-trading-line { stroke-dashoffset: 0 !important; }
+  .demo-routes-line { stroke-dashoffset: 0 !important; }
   .demo-novel-line { clip-path: inset(0 0 0 0) !important; }
 }
 

@@ -32,6 +32,15 @@
       <p class="demo-novel-line demo-novel-line-1">{{ tr('从前，有座山，山里有座庙……') }}<span class="demo-cursor">|</span></p>
       <p class="demo-novel-line demo-novel-line-2">{{ tr('第三章 · 山雨欲来') }}</p>
     </div>
+    {% elif f.endpoint == 'routes_list' %}
+    <div class="demo demo-routes" aria-hidden="true">
+      <svg viewBox="0 0 220 90" preserveAspectRatio="none">
+        <polyline class="demo-routes-line" points="14,70 90,26 206,50" fill="none"></polyline>
+        <circle class="demo-routes-dot demo-routes-dot-1" cx="14" cy="70" r="5"></circle>
+        <circle class="demo-routes-dot demo-routes-dot-2" cx="90" cy="26" r="4.5"></circle>
+        <circle class="demo-routes-dot demo-routes-dot-3" cx="206" cy="50" r="5"></circle>
+      </svg>
+    </div>
     {% else %}
     <div class="demo demo-moments" aria-hidden="true">
       <div class="demo-feed-row demo-feed-1"><span>📚</span>{{ tr('读完《百年孤独》第三章') }}</div>

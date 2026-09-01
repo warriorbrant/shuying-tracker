@@ -541,7 +541,7 @@ TR = {
     "网站现在有哪些功能": "What the Site Can Do",
     "功能一览": "Features",
     "✨ 功能一览": "✨ Features",
-    "交易 · 消费 · 创作 · 生活点滴，都在这一个地方": "Trading, spending, writing, and everyday life -- all in one place",
+    "交易 · 消费 · 创作 · 路线 · 生活点滴，都在这一个地方": "Trading, spending, writing, routes, and everyday life -- all in one place",
     "去看看 →": "Take a look →",
     "分享图是一张介绍这几个功能的图片，方便发给别人看。": "The share image is a poster introducing these features, handy for sending to someone else.",
     "从前，有座山，山里有座庙……": "Once upon a time, on a mountain, there was a temple...",

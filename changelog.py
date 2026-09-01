@@ -3342,4 +3342,27 @@ CHANGELOG = [
         "lines_changed": 628,
         "estimated": False,
     },
+    {
+        "date": "2026-09-01",
+        "title": "「功能一览」加上了路线",
+        "title_en": "Routes joins the feature showcase",
+        "summary": (
+            "「功能一览」页（`/showcase`，公开首页也放了同一组卡片）之前只介绍交易盈亏/消费追踪/小说创作/"
+            "分享动态四个功能，路线上线一阵子了却一直没加进去。补上了：新卡片配了个自己画的小演示动画——"
+            "一条折线自己画出来，起点绿、中间棕、终点红三个圆点依次弹出，跟真实路线的配色一致。海报风格的"
+            "分享图（Pillow 生成那张）也跟着变成五条，标题下面的一句话简介也把「路线」加进去了。"
+        ),
+        "summary_en": (
+            "The feature showcase page (`/showcase`, and the same card grid on the public homepage) "
+            "only ever introduced trading/expenses/novels/moments -- routes shipped a while ago but "
+            "never got added to the list. Fixed: a new card with its own little demo animation (a "
+            "zigzag line draws itself, with green/rust/red dots popping in at start, middle, and end -- "
+            "the exact same coloring a real route uses), the Pillow-rendered poster share image now "
+            "lists five items instead of four, and the one-line tagline under the title mentions routes "
+            "too."
+        ),
+        "image": None,
+        "lines_changed": 51,
+        "estimated": False,
+    },
 ]

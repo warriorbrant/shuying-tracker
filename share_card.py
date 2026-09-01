@@ -1130,7 +1130,7 @@ def build_showcase_card(features):
     title_font = _font(56, bold=True)
     subtitle_font = _font(28)
     draw.text((pad, pad), "知行合一AI实验室", font=title_font, fill=TEXT)
-    draw.text((pad, pad + 74), "交易 · 消费 · 创作 · 生活点滴，都在这一个地方", font=subtitle_font, fill=MUTED)
+    draw.text((pad, pad + 74), "交易 · 消费 · 创作 · 路线 · 生活点滴，都在这一个地方", font=subtitle_font, fill=MUTED)
     draw.line([(pad, header_h - 20), (W - pad, header_h - 20)], fill=BORDER, width=2)
 
     badge_r = 34
