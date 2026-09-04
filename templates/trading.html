@@ -164,13 +164,28 @@
   </label>
   {% endif %}
   {% if chart %}
-  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="pnl-chart" id="pnlChart" role="img" aria-label="{{ tr('累计盈亏走势图') }}">
     <line x1="0" y1="{{ chart.zero_y }}" x2="{{ chart.width }}" y2="{{ chart.zero_y }}" class="pnl-chart-zero"></line>
     <polyline points="{{ chart.points_str }}" class="pnl-chart-line {{ 'pnl-line-positive' if chart.positive else 'pnl-line-negative' }}" fill="none"></polyline>
     <circle cx="{{ chart.final_x }}" cy="{{ chart.final_y }}" r="4" class="{{ 'pnl-dot-positive' if chart.positive else 'pnl-dot-negative' }}"></circle>
     {% for lbl in chart.x_labels %}
       <text x="{{ lbl.x }}" y="{{ chart.height - 12 }}" class="pnl-chart-axis-label" text-anchor="middle">{{ lbl.label }}</text>
     {% endfor %}
+
+    {# Hover readout: hidden until pnlChartCapture below reports a mouse/touch
+       position, then JS moves this whole group to the nearest day's point
+       instead of anything here being pre-positioned. #}
+    <g id="pnlHoverGroup" class="pnl-hover-group" style="display:none;">
+      <line id="pnlHoverLine" class="pnl-hover-line" x1="0" y1="{{ chart.padding }}" x2="0" y2="{{ chart.height - chart.padding }}"></line>
+      <circle id="pnlHoverDot" r="4.5" class="pnl-hover-dot"></circle>
+      <rect id="pnlHoverBoxBg" class="pnl-hover-box-bg" rx="6" ry="6"></rect>
+      <text id="pnlHoverDate" class="pnl-hover-text pnl-hover-date" text-anchor="middle"></text>
+      <text id="pnlHoverValue" class="pnl-hover-text pnl-hover-value" text-anchor="middle"></text>
+    </g>
+
+    {# Transparent on top so it alone owns pointer events over the whole
+       plot area, including the empty space above/below the line. #}
+    <rect x="0" y="0" width="{{ chart.width }}" height="{{ chart.height }}" fill="transparent" id="pnlChartCapture"></rect>
   </svg>
   {% endif %}
 </section>
@@ -247,6 +262,90 @@
     shareBtn.setAttribute('href', withPositions(shareBase));
     previewBtn.setAttribute('href', withPositions(previewBase));
   });
+})();
+</script>
+<script>
+(function () {
+  var points = {{ (chart.hover_points if chart else []) | tojson }};
+  var svg = document.getElementById('pnlChart');
+  if (!svg || !points.length) return;
+
+  var capture = document.getElementById('pnlChartCapture');
+  var hoverGroup = document.getElementById('pnlHoverGroup');
+  var hoverLine = document.getElementById('pnlHoverLine');
+  var hoverDot = document.getElementById('pnlHoverDot');
+  var hoverBoxBg = document.getElementById('pnlHoverBoxBg');
+  var hoverDate = document.getElementById('pnlHoverDate');
+  var hoverValue = document.getElementById('pnlHoverValue');
+  var viewW = {{ chart.width }};
+
+  // One point per trading day in the range shown -- a linear scan over
+  // that (at most a few hundred) is plenty fast on every mousemove; no
+  // need for anything cleverer.
+  function nearestPoint(svgX) {
+    var best = points[0];
+    var bestDist = Math.abs(points[0].x - svgX);
+    for (var i = 1; i < points.length; i++) {
+      var d = Math.abs(points[i].x - svgX);
+      if (d < bestDist) { bestDist = d; best = points[i]; }
+    }
+    return best;
+  }
+
+  function showAt(clientX) {
+    var pt = svg.createSVGPoint();
+    pt.x = clientX;
+    var ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    // getScreenCTM already folds in the viewBox-to-rendered-size scale, so
+    // this maps a real screen coordinate straight to chart-space regardless
+    // of how wide the SVG is actually drawn on screen.
+    var svgPt = pt.matrixTransform(ctm.inverse());
+    var point = nearestPoint(svgPt.x);
+
+    hoverLine.setAttribute('x1', point.x);
+    hoverLine.setAttribute('x2', point.x);
+    hoverDot.setAttribute('cx', point.x);
+    hoverDot.setAttribute('cy', point.y);
+    hoverDate.textContent = point.date;
+    hoverValue.textContent = point.value;
+    hoverGroup.style.display = '';
+
+    // Size/position the background box from the two text lines' actual
+    // rendered width (only knowable after setting textContent above),
+    // then clamp horizontally so it never runs off either edge of the
+    // chart, and flip below the point instead of above when there's no
+    // room at the top.
+    var textW = Math.max(hoverDate.getBBox().width, hoverValue.getBBox().width);
+    var boxW = textW + 20;
+    var boxH = 44;
+    var boxX = Math.max(4, Math.min(point.x - boxW / 2, viewW - boxW - 4));
+    var boxY = point.y - boxH - 14;
+    if (boxY < 4) boxY = point.y + 14;
+
+    hoverBoxBg.setAttribute('x', boxX);
+    hoverBoxBg.setAttribute('y', boxY);
+    hoverBoxBg.setAttribute('width', boxW);
+    hoverBoxBg.setAttribute('height', boxH);
+    hoverDate.setAttribute('x', boxX + boxW / 2);
+    hoverDate.setAttribute('y', boxY + 17);
+    hoverValue.setAttribute('x', boxX + boxW / 2);
+    hoverValue.setAttribute('y', boxY + 35);
+  }
+
+  function hide() {
+    hoverGroup.style.display = 'none';
+  }
+
+  capture.addEventListener('mousemove', function (e) { showAt(e.clientX); });
+  capture.addEventListener('mouseleave', hide);
+  capture.addEventListener('touchstart', function (e) {
+    if (e.touches.length) { showAt(e.touches[0].clientX); e.preventDefault(); }
+  }, { passive: false });
+  capture.addEventListener('touchmove', function (e) {
+    if (e.touches.length) { showAt(e.touches[0].clientX); e.preventDefault(); }
+  }, { passive: false });
+  capture.addEventListener('touchend', hide);
 })();
 </script>
 {% endblock %}

@@ -389,6 +389,14 @@ def build_cumulative_series(daily_pnl):
     return series
 
 
+def _fmt_money(v):
+    # Same formatting as app.py's fmt_money -- duplicated rather than
+    # imported to avoid a circular import (app.py already imports this
+    # module), it's three lines.
+    sign = "-" if v < 0 else "+" if v > 0 else ""
+    return f"{sign}${abs(v):,.2f}"
+
+
 def build_pnl_chart(series, width=760, height=280, padding=40):
     if not series:
         return None
@@ -412,6 +420,21 @@ def build_pnl_chart(series, width=760, height=280, padding=40):
     label_positions = sorted(set([0, n - 1] + [n * k // 4 for k in (1, 2, 3)])) if n > 1 else [0]
     x_labels = [{"x": points[i][0], "label": series[i]["date"][5:]} for i in label_positions]
 
+    # Per-point data for the hover tooltip on the live page (the share
+    # image built from this same chart deliberately hides dollar amounts,
+    # but the page itself already shows exact figures elsewhere -- the
+    # per-day win/loss table above this chart -- so a hover value here
+    # isn't revealing anything the page doesn't already show).
+    hover_points = [
+        {
+            "x": points[i][0],
+            "y": points[i][1],
+            "date": p["date"],
+            "value": _fmt_money(p["cumulative"]),
+        }
+        for i, p in enumerate(series)
+    ]
+
     return {
         "width": width,
         "height": height,
@@ -422,4 +445,6 @@ def build_pnl_chart(series, width=760, height=280, padding=40):
         "final_value": values[-1],
         "positive": values[-1] >= 0,
         "x_labels": x_labels,
+        "hover_points": hover_points,
+        "padding": padding,
     }

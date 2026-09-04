@@ -3365,4 +3365,28 @@ CHANGELOG = [
         "lines_changed": 51,
         "estimated": False,
     },
+    {
+        "date": "2026-09-04",
+        "title": "累计盈亏走势图加了鼠标悬停看数值",
+        "title_en": "Hover the cumulative P&L chart to see each day's value",
+        "summary": (
+            "鼠标划过累计盈亏走势图，会自动吸附到最近的那一天，弹出一个小提示框显示当天的日期和累计盈亏"
+            "金额，还有一条竖着的参考线和一个跟着移动的圆点标出具体位置；提示框会自动避开图表左右两边，"
+            "靠边的时候也不会被截断。手机上用手指划也一样能看（触摸事件走的是同一套逻辑）。分享图那张不受"
+            "影响，本来就不显示具体金额，只有网页上这张交互图会显示金额——反正页面上方的按天盈亏表格本来"
+            "就已经显示着具体数字了，悬停显示金额不算多暴露什么。"
+        ),
+        "summary_en": (
+            "Hovering the cumulative P&L chart now snaps to the nearest trading day and pops up a small "
+            "tooltip with that day's date and cumulative P&L, plus a vertical guide line and a dot "
+            "marking the exact spot; the tooltip clamps itself away from both edges of the chart instead "
+            "of running off the side. Works with a finger on mobile too (touch events reuse the same "
+            "logic). The share image is unaffected -- it already hides exact dollar figures by design; "
+            "only this interactive on-page chart shows them, and the per-day win/loss table right above "
+            "it already displays exact numbers anyway, so a hover value here isn't revealing anything new."
+        ),
+        "image": None,
+        "lines_changed": 156,
+        "estimated": False,
+    },
 ]

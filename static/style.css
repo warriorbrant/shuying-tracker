@@ -1491,6 +1491,37 @@ button {
   fill: var(--muted);
 }
 
+#pnlChartCapture {
+  cursor: crosshair;
+}
+
+.pnl-hover-line {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.pnl-hover-dot {
+  fill: var(--accent);
+  stroke: var(--card-bg);
+  stroke-width: 2;
+}
+
+.pnl-hover-box-bg {
+  fill: var(--text);
+  opacity: 0.92;
+}
+
+.pnl-hover-text {
+  fill: var(--card-bg);
+  font-size: 11px;
+}
+
+.pnl-hover-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
 .pnl-month-nav {
   display: flex;
   gap: 12px;
