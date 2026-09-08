@@ -19,6 +19,10 @@
     <button type="button" id="clearPointsBtn" class="btn-link-danger">{{ tr('🗑️ 清空') }}</button>
     <span id="pointCount" class="hint">{{ tr('已选 {n} 个点', n=0) }}</span>
   </div>
+  <div id="pointsListWrap" style="display:none;">
+    <p class="hint">{{ tr('勾选某个地点后面的框，公开分享（链接和分享图）时就不会显示这个地点的名字——路线的形状和这个点本身还在，只是别人看不出是哪里，只有你自己能看到。') }}</p>
+    <div id="pointsList" class="route-points-list"></div>
+  </div>
 </section>
 
 <section class="log-section">
@@ -78,6 +82,35 @@
   var markers = [];
   var pointsInput = document.getElementById('pointsInput');
   var pointCount = document.getElementById('pointCount');
+  var pointsListWrap = document.getElementById('pointsListWrap');
+  var pointsList = document.getElementById('pointsList');
+
+  // Rebuilt from scratch on every sync() rather than patched incrementally
+  // -- the list is short (one row per named point) and this stays trivially
+  // correct through undo/clear/resolve/rollback instead of needing its own
+  // add/remove bookkeeping to mirror points[].
+  function renderPointsList() {
+    var labeled = points.filter(function (p) { return p.label; });
+    pointsListWrap.style.display = labeled.length ? '' : 'none';
+    pointsList.innerHTML = '';
+    points.forEach(function (p, i) {
+      if (!p.label) return;
+      var row = document.createElement('label');
+      row.className = 'route-point-row';
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = !!p.hide_label;
+      checkbox.addEventListener('change', function () {
+        p.hide_label = checkbox.checked;
+        sync();
+      });
+      row.appendChild(checkbox);
+      var span = document.createElement('span');
+      span.textContent = ' ' + (i + 1) + '. ' + p.label;
+      row.appendChild(span);
+      pointsList.appendChild(row);
+    });
+  }
 
   function sync() {
     var latlngs = points.map(function (p) { return [p.lat, p.lng]; });
@@ -85,11 +118,15 @@
     line.setLatLngs(latlngs);
     pointsInput.value = JSON.stringify(points);
     pointCount.textContent = {{ tr('已选 {n} 个点') | tojson }}.replace('{n}', points.length);
+    renderPointsList();
   }
 
-  function addPoint(lat, lng, label) {
+  function addPoint(lat, lng, label, hideLabel) {
     var p = { lat: lat, lng: lng };
-    if (label) p.label = label;
+    if (label) {
+      p.label = label;
+      if (hideLabel) p.hide_label = true;
+    }
     points.push(p);
     var marker = L.circleMarker([lat, lng], { radius: 5, color: '#fff', weight: 2, fillColor: '#3d7a51', fillOpacity: 1 }).addTo(map);
     if (label) marker.bindTooltip(label, { permanent: false });
@@ -108,7 +145,7 @@
   // behave identically to freshly-added ones (undo, clear, etc. all work).
   {% if route %}
   ({{ route.points | tojson }}).forEach(function (p) {
-    addPoint(p.lat, p.lng, p.label || null);
+    addPoint(p.lat, p.lng, p.label || null, p.hide_label);
   });
   if (points.length) {
     map.fitBounds(line.getBounds(), { padding: [24, 24] });
@@ -160,14 +197,14 @@
   // {lat,lng,label} data (not the Leaflet layers themselves) keeps this
   // independent of whatever markers/line objects exist at rollback time.
   function snapshotPoints() {
-    return points.map(function (p) { return { lat: p.lat, lng: p.lng, label: p.label }; });
+    return points.map(function (p) { return { lat: p.lat, lng: p.lng, label: p.label, hide_label: p.hide_label }; });
   }
 
   function restorePoints(snapshot) {
     points = [];
     markers.forEach(function (m) { map.removeLayer(m); });
     markers = [];
-    snapshot.forEach(function (p) { addPoint(p.lat, p.lng, p.label || null); });
+    snapshot.forEach(function (p) { addPoint(p.lat, p.lng, p.label || null, p.hide_label); });
     if (points.length) map.fitBounds(line.getBounds(), { padding: [24, 24] });
   }
 

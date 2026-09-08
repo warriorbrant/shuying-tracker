@@ -587,6 +587,11 @@ TR = {
     "↩️ 撤销上一个点": "↩️ Undo last point",
     "🗑️ 清空": "🗑️ Clear",
     "已选 {n} 个点": "{n} point(s) selected",
+    "勾选某个地点后面的框，公开分享（链接和分享图）时就不会显示这个地点的名字——路线的形状和这个点本身还在，只是别人看不出是哪里，只有你自己能看到。":
+        "Check the box next to a place and its name won't show when this route is shared (the public "
+        "link or the share image) -- the route's shape and that point itself are still there, other "
+        "people just can't tell where it is. Only you can still see the name.",
+    " 🙈（仅自己可见，其他人看不到这个名字）": " 🙈 (only you can see this -- hidden from others)",
     "路线名称": "Route name",
     "比如：东京三日步行路线": "e.g. 3-day Tokyo walking route",
     "国家/地区": "Country/Region",

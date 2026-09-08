@@ -1388,7 +1388,9 @@ def build_route_outline_card(title, points):
             draw.ellipse([x - r, y - r, x + r, y + r], fill=dot_color)
 
             raw_label = pt.get("label")
-            if not raw_label:
+            if not raw_label or pt.get("hide_label"):
+                # The dot above is drawn either way -- the route's shape and
+                # stop count stay intact -- only the name is withheld here.
                 continue
             # Numbered so a route that revisits the same place (an out-and-back
             # trip, say) doesn't show the identical name twice with no way to

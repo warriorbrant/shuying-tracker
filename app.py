@@ -2175,12 +2175,17 @@ ROUTE_MAX_POINTS = 2000  # generous for hand-clicked points; just a backstop
 
 def _parse_route_points(raw):
     """raw: the JSON string posted from the draw-route form (a list of
-    {"lat":, "lng":, "label":} objects, see db.py's custom_routes.points
-    comment -- "label" is optional, populated when a point came from typing
-    a place name in and geocoding it rather than clicking the map). Drops
-    anything malformed instead of failing the whole save -- a few bad
-    points from some client-side glitch shouldn't lose an otherwise-valid
-    route. Returns [] if raw doesn't even parse as JSON."""
+    {"lat":, "lng":, "label":, "hide_label":} objects, see db.py's
+    custom_routes.points comment -- "label" is optional, populated when a
+    point came from typing a place name in and geocoding it rather than
+    clicking the map. "hide_label" is optional too (defaults to falsy/
+    absent): when set on a labeled point, the point's dot/position still
+    shows everywhere, but its name is left off wherever the route is shown
+    to someone other than its owner -- the share image and the public
+    link's map -- for a stop the owner doesn't want to identify by name.
+    Drops anything malformed instead of failing the whole save -- a few
+    bad points from some client-side glitch shouldn't lose an otherwise-
+    valid route. Returns [] if raw doesn't even parse as JSON."""
     try:
         points = json.loads(raw or "[]")
     except (TypeError, ValueError):
@@ -2198,8 +2203,25 @@ def _parse_route_points(raw):
             label = p.get("label") if isinstance(p, dict) else None
             if isinstance(label, str) and label.strip():
                 point["label"] = label.strip()[:60]
+                if p.get("hide_label"):
+                    point["hide_label"] = True
             clean.append(point)
     return clean
+
+
+def _points_for_viewer(points, is_owner):
+    """A point marked hide_label keeps its dot/position for everyone, but
+    its name must never even reach a non-owner's browser -- not just be
+    hidden by CSS/JS, since the interactive map embeds `points` as plain
+    JSON in the page (view-source would otherwise still show it). The
+    owner's own views (edit page, and route_detail when they're the
+    viewer) always get the untouched data, same as before this existed."""
+    if is_owner:
+        return points
+    return [
+        {k: v for k, v in p.items() if k not in ("label", "hide_label")} if p.get("hide_label") else p
+        for p in points
+    ]
 
 
 def _route_is_locked_for_viewer(route):
@@ -2299,7 +2321,7 @@ def route_detail(route_id):
         return "这条路线还没有公开分享，只有创建者能看", 403
 
     is_owner = bool(g.user) and g.user["id"] == route["user_id"]
-    points = json.loads(route["points"])
+    points = _points_for_viewer(json.loads(route["points"]), is_owner)
     return render_template("route_detail.html", route=route, points=points, is_owner=is_owner)
 
 

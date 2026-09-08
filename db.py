@@ -201,12 +201,17 @@ CREATE INDEX IF NOT EXISTS idx_bank_transactions_user_date ON bank_transactions(
 -- User-drawn routes (click points on a Leaflet map -> polyline, or type
 -- place names and geocode them via Nominatim), not imported from anywhere
 -- -- see the custom_routes feature. `points` is a JSON array of
--- {"lat":, "lng":, "label":} objects (an object per point rather than a
--- bare [lat, lng] pair, deliberately, so the field names catch a swapped
--- lat/lng bug immediately instead of silently plotting a valid-looking but
--- wrong point); "label" is optional -- present when the point came from a
--- typed-and-geocoded place name, absent for a plain map click. `is_locked`
--- follows the exact same convention as
+-- {"lat":, "lng":, "label":, "hide_label":} objects (an object per point
+-- rather than a bare [lat, lng] pair, deliberately, so the field names
+-- catch a swapped lat/lng bug immediately instead of silently plotting a
+-- valid-looking but wrong point); "label" is optional -- present when the
+-- point came from a typed-and-geocoded place name, absent for a plain map
+-- click. "hide_label" is optional too, only meaningful on a labeled point:
+-- when set, that point's dot still shows everywhere, but its name is left
+-- off wherever the route is shown to someone other than the owner (the
+-- share image, the public link's map) -- lets a stop be part of the shape
+-- without being identified by name. `is_locked` follows the exact same
+-- convention as
 -- novels.is_locked (1 = only the owner can view, 0 = anyone with the link
 -- can) but defaults to locked here, opposite of novels -- a route stays
 -- private until its owner explicitly shares it.

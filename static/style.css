@@ -2588,3 +2588,24 @@ label.checkbox-label {
   background: #fff;
   resize: vertical;
 }
+
+.route-points-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.route-point-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.route-point-row input {
+  margin: 0;
+  flex: none;
+}

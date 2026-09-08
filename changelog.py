@@ -3389,4 +3389,31 @@ CHANGELOG = [
         "lines_changed": 156,
         "estimated": False,
     },
+    {
+        "date": "2026-09-08",
+        "title": "路线可以对特定地点隐藏标注了",
+        "title_en": "Routes can now hide a specific point's label when shared",
+        "summary": (
+            "画路线/编辑路线时，地图下面新增一份「已添加的地点」列表，每个有名字的点后面都有个勾选框——"
+            "勾上之后，公开分享（链接和分享图）时这个地点就不会显示名字了，路线的形状、这个点本身、它在"
+            "路线里的顺序都还在，只是不告诉别人具体是哪里；自己查看和编辑时还是能看到完整名字（会带一个"
+            "「仅自己可见」的小提示，提醒这条已经设成隐藏）。这个是真的在服务端把名字从数据里去掉再发给"
+            "别人的浏览器，不是前端拿 CSS 挡一下——不然打开网页源代码照样能看到。适合路线里有一站不太想"
+            "公开具体位置（比如自己家）又不想为此重新画一条路线的情况。"
+        ),
+        "summary_en": (
+            "Drawing or editing a route now shows a list of its named points below the map, each with a "
+            "checkbox -- check one and that point's name is left off wherever the route is shared (the "
+            "public link, the share image); the route's shape, that point itself, and its place in the "
+            "sequence all stay put, only the name is withheld. The owner's own view still shows the full "
+            "name (with a small \"only you can see this\" note as a reminder). The name is actually "
+            "stripped server-side before the page ever reaches someone else's browser, not just hidden "
+            "with CSS -- otherwise it would still be sitting in plain view-source. Useful for a route "
+            "with one stop the owner would rather not name publicly (home, say) without having to redraw "
+            "the whole thing without it."
+        ),
+        "image": None,
+        "lines_changed": 117,
+        "estimated": False,
+    },
 ]
