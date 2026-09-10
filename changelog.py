@@ -3416,4 +3416,28 @@ CHANGELOG = [
         "lines_changed": 117,
         "estimated": False,
     },
+    {
+        "date": "2026-09-10",
+        "title": "修复：路线轮廓隐藏了一个地点的标注后，后面的序号还是跳着的",
+        "title_en": "Fix: hiding a point's label still left a gap in the visible numbering",
+        "summary": (
+            "路线轮廓分享图上，城市名字前面的序号本来是按点在路线里的原始顺序编的——隐藏某个点的标注"
+            "后，这个点本身不再显示名字，但序号还是照占着，导致后面能看到的序号变成「11. ... 13. ...」"
+            "这种跳着的样子，看起来像是漏了一个或者哪里错了。现在改成只给「实际显示出来的」标签编号，"
+            "隐藏的点（以及原本就没有名字、纯地图点击加的点）不再占用序号，看到的序号总是连续的"
+            "1、2、3……往返同一个地方需要靠序号区分的场景也不受影响，只是号码现在只数看得见的那些。"
+        ),
+        "summary_en": (
+            "The city-name numbering on the Route Outline share image used to count a point's raw "
+            "position along the route -- hiding one point's label left that number unused, so what "
+            "actually showed up looked like \"11. ... 13. ...\" with no \"12\", reading like something "
+            "was missing or broken. Numbering now only counts labels that actually get drawn -- a "
+            "hidden point (and a plain, never-named map-click point) no longer consumes a number, so "
+            "what's visible is always a clean 1, 2, 3... The round-trip disambiguation this numbering "
+            "exists for still works exactly the same, it just counts only what's shown."
+        ),
+        "image": None,
+        "lines_changed": 13,
+        "estimated": False,
+    },
 ]

@@ -1377,6 +1377,7 @@ def build_route_outline_card(title, points):
         r = 8
         reserved_boxes = []
         city_labels = []  # (icon_x, icon_y, label_x, label_y, label, box, needs_leader)
+        shown_seq = 0  # counts only labels actually drawn -- see below
         for i, (pt, (x, y)) in enumerate(zip(points, coords)):
             if i == 0:
                 dot_color = POSITIVE_COLOR
@@ -1391,12 +1392,18 @@ def build_route_outline_card(title, points):
             if not raw_label or pt.get("hide_label"):
                 # The dot above is drawn either way -- the route's shape and
                 # stop count stay intact -- only the name is withheld here.
+                # Also, deliberately, this point does NOT consume a number:
+                # a hidden or unlabeled point sitting between two shown ones
+                # would otherwise show as a gap in the sequence (e.g. "11.
+                # ... 13. ...", nothing "12") that reads like a mistake.
                 continue
             # Numbered so a route that revisits the same place (an out-and-back
             # trip, say) doesn't show the identical name twice with no way to
-            # tell which stop is which -- the number is the point's order
-            # along the route, not a distance or ranking.
-            label = f"{i + 1}. {raw_label}"
+            # tell which stop is which -- the number is this label's order
+            # among the labels actually shown, not the point's raw index (see
+            # above), and not a distance or ranking.
+            shown_seq += 1
+            label = f"{shown_seq}. {raw_label}"
             lx, ly, box, needs_leader = place_label(x, y, label, label_font, reserved_boxes)
             reserved_boxes.append(box)
             city_labels.append((x, y, lx, ly, label, box, needs_leader))
