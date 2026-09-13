@@ -793,17 +793,17 @@ def _build_reference_row(measure, w, references):
     return h, draw_fn
 
 
-def build_chapter_share_card(novel, chapter, blocks=None, unmatched_routes=None):
-    """blocks: the same {"type": "text"/"route", ...} list build_chapter_blocks()
-    produces (pass None to fall back to plain paragraph splitting, no route
-    art -- kept for callers that don't have blocks handy). Any route block --
-    whether it's inline because its title showed up in the text, or tacked on
-    via unmatched_routes because it's attached to the chapter but never
-    mentioned by name -- gets its own outline share image (built the same way
-    a standalone route share does, city labels and all) scaled down to the
-    card's content width and pasted in, so the shape of the trip shows up
-    right in the chapter screenshot instead of only being a click-through link
-    on the live page."""
+def build_chapter_share_card(novel, chapter, blocks=None, routes=None):
+    """blocks: the same {"type": "text"/"character", ...} list
+    build_chapter_blocks() produces (pass None to fall back to plain
+    paragraph splitting -- kept for callers that don't have blocks handy).
+    routes: every route attached to this chapter (see novel_chapter_routes),
+    always rendered at the very top of the card, right below the title --
+    unlike characters, a route's map doesn't wait for its title to be
+    mentioned in the text; it leads the chapter, on the live page and in
+    this share image alike. Each gets its own outline share image (built
+    the same way a standalone route share does, city labels and all)
+    scaled down to the card's content width."""
     W = 1080
     pad = 64
     content_w = W - pad * 2
@@ -831,19 +831,18 @@ def build_chapter_share_card(novel, chapter, blocks=None, unmatched_routes=None)
         scale = content_w / img.width
         return img.resize((content_w, round(img.height * scale)), Image.LANCZOS)
 
-    # First pass: turn each block into something with a known height, so the
-    # canvas can be sized before anything is actually drawn.
+    # Routes come first, ahead of any text -- see the docstring. Then each
+    # text block, in order (character standees were dropped from this share
+    # image well before routes existed, so blocks is text-only in practice,
+    # but the loop stays generic).
     prepared = []
+    for route in routes or []:
+        img = route_image(route)
+        prepared.append(("route", img, img.height + route_gap))
     for block in blocks:
         if block["type"] == "text":
             lines = _wrap(measure, block["text"], body_font, content_w)
             prepared.append(("text", lines, len(lines) * line_h + para_gap))
-        elif block["type"] == "route":
-            img = route_image(block["route"])
-            prepared.append(("route", img, img.height + route_gap))
-    for route in (unmatched_routes or []):
-        img = route_image(route)
-        prepared.append(("route", img, img.height + route_gap))
 
     header_h = 0
     if novel_title_lines:

@@ -2533,18 +2533,21 @@ def novel_export_pdf(novel_id):
     )
 
 
-def build_chapter_blocks(content, characters, routes=None):
-    """Split chapter text into paragraphs and slot each character's standee (or,
-    for a travelogue reusing the novel feature, each attached route's outline
-    map) in right after the paragraph where its name/title is first mentioned,
-    so it reveals as the reader actually gets there rather than all at once at
-    the top of the page. Same matching rule for both: a plain substring check
-    against the paragraph text, no special markup to type -- just mention the
-    route by its title somewhere in the prose."""
-    routes = routes or []
+def build_chapter_blocks(content, characters):
+    """Split chapter text into paragraphs and slot each character's standee in
+    right after the paragraph where its name is first mentioned, so it
+    reveals as the reader actually gets there rather than all at once at the
+    top of the page. A plain substring check against the paragraph text, no
+    special markup to type -- just mention the character by name somewhere
+    in the prose.
+
+    Attached routes used to get the same inline, mention-triggered treatment
+    -- that's been dropped in favor of always showing every attached route's
+    map at the top of the chapter (see novel_chapter_read/
+    novel_chapter_share_image), so routes no longer pass through here at
+    all."""
     paragraphs = [p for p in content.split("\n") if p.strip()]
     introduced_chars = set()
-    introduced_routes = set()
     blocks = []
     for p in paragraphs:
         blocks.append({"type": "text", "text": p})
@@ -2553,14 +2556,8 @@ def build_chapter_blocks(content, characters, routes=None):
                 continue
             introduced_chars.add(ch["id"])
             blocks.append({"type": "character", "character": ch})
-        for rt in routes:
-            if rt["id"] in introduced_routes or not rt["title"] or rt["title"] not in p:
-                continue
-            introduced_routes.add(rt["id"])
-            blocks.append({"type": "route", "route": rt})
     unmatched_characters = [ch for ch in characters if ch["id"] not in introduced_chars]
-    unmatched_routes = [rt for rt in routes if rt["id"] not in introduced_routes]
-    return blocks, unmatched_characters, unmatched_routes
+    return blocks, unmatched_characters
 
 
 CHAPTER_LOCK_PREVIEW_PARAGRAPHS = 3
@@ -2626,9 +2623,9 @@ def novel_chapter_read(novel_id, chapter_id):
             p for p in chapter["content"].replace("\r\n", "\n").replace("\r", "\n").split("\n") if p.strip()
         ]
         preview_text = "\n".join(paragraphs[:CHAPTER_LOCK_PREVIEW_PARAGRAPHS])
-        blocks, unmatched_characters, unmatched_routes = build_chapter_blocks(preview_text, [])
+        blocks, unmatched_characters = build_chapter_blocks(preview_text, [])
     else:
-        blocks, unmatched_characters, unmatched_routes = build_chapter_blocks(chapter["content"], characters, routes)
+        blocks, unmatched_characters = build_chapter_blocks(chapter["content"], characters)
 
     # Same cache-busting versioning as the novel share link — see the comment there.
     share_ts = int(time.time())
@@ -2638,7 +2635,7 @@ def novel_chapter_read(novel_id, chapter_id):
     return render_template(
         "novel_chapter.html", novel=novel, chapter=chapter, chapters=chapters,
         blocks=blocks, unmatched_characters=unmatched_characters, videos=videos,
-        unmatched_routes=unmatched_routes,
+        routes=routes,
         prev_chapter=prev_chapter, next_chapter=next_chapter,
         share_url=share_url, preview_url=preview_url, locked=locked,
     )
@@ -2666,8 +2663,8 @@ def novel_chapter_share_image(novel_id, chapter_id):
     # filter attached routes by their own lock -- the owner can always see
     # their own routes regardless of that route's separate sharing setting.
     routes = [dict(r, points=json.loads(r["points"])) for r in route_rows]
-    blocks, _, unmatched_routes = build_chapter_blocks(chapter["content"], [], routes)
-    buf = build_chapter_share_card(dict(novel), dict(chapter), blocks=blocks, unmatched_routes=unmatched_routes)
+    blocks, _ = build_chapter_blocks(chapter["content"], [])
+    buf = build_chapter_share_card(dict(novel), dict(chapter), blocks=blocks, routes=routes)
 
     download = request.args.get("download")
     return send_file(

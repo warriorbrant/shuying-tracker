@@ -2186,36 +2186,6 @@ label.checkbox-label {
   border-radius: 999px;
 }
 
-.route-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-  margin-top: 1.4em;
-}
-
-.route-embed-card {
-  display: block;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-}
-
-.route-embed-card img {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.route-embed-card h3 {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text);
-}
-
 .showcase-hero {
   position: relative;
   text-align: center;

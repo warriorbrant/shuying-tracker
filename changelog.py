@@ -3440,4 +3440,28 @@ CHANGELOG = [
         "lines_changed": 13,
         "estimated": False,
     },
+    {
+        "date": "2026-09-13",
+        "title": "小说章节里的路线图改成固定放在最上方",
+        "title_en": "Route maps in novel chapters now always sit at the top",
+        "summary": (
+            "游记章节里嵌入的路线轮廓图，之前是跟着正文走的——提到路线标题的那一段之后才出现，没提到"
+            "的话就挪到文章末尾单独列一个小卡片。现在改成不管正文有没有提到，所有关联的路线图都固定"
+            "显示在章节最上方（紧跟在章节标题下面，比分享/朗读按钮还靠前），网页正文和生成的分享图都是"
+            "这个顺序。相当于游记先给一张地图定个调子，再往下看文字。人物立绘还是原来的机制，提到名字"
+            "才出现。"
+        ),
+        "summary_en": (
+            "The route outline map embedded in a travelogue chapter used to follow the text -- it "
+            "appeared right after the paragraph that mentioned the route's title, or got tucked into a "
+            "small card at the very end of the article if the title never came up. It now always shows "
+            "at the very top of the chapter regardless of whether the text mentions it -- right under "
+            "the chapter title, ahead of even the share/read-aloud buttons -- on both the live page and "
+            "the generated share image. Character standees keep their original mention-triggered "
+            "behavior; only routes changed."
+        ),
+        "image": None,
+        "lines_changed": 47,
+        "estimated": False,
+    },
 ]
